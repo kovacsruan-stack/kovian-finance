@@ -310,3 +310,10 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Cash-flow output is aggregated by day and excludes cancelled transactions.
 - Forecast, risk, context, accounts, transactions and revenue remain read-only federation surfaces.
 - No financial mutation capability was added to the KOVI internal contract.
+
+
+### 2026-09-20 ecosystem security continuation
+- Finance KOVI federation remains explicitly read-only at the internal contract boundary.
+- Forecast, risk, cash flow, context, accounts, transactions and revenue are exposed through bounded application-level contracts rather than unrestricted database access.
+- Financial mutations remain outside the KOVI federation surface and require explicit application authorization, idempotency and audit controls.
+- No successful CI/build is inferred from code changes without observed workflow evidence.
