@@ -54,5 +54,10 @@ jobs:
           test -z "$duplicates" || { echo "Duplicate Flyway migration versions:"; echo "$duplicates"; exit 1; }
       - name: Dependency review
         run: mvn -B -ntp dependency:tree -DoutputType=text -Dverbose=false
-      - name: Verify
+      - name: Verify backend
         run: mvn -B -ntp clean verify
+      - name: Build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
