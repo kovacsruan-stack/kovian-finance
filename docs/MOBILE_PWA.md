@@ -1,11 +1,11 @@
 # KOVIAN Finance Mobile/PWA
 
-O domínio Finance possui uma superfície PWA independente em `/app/`.
+O domínio Finance possui uma superfície PWA independente na raiz do frontend (`/`)..
 
 ## Instalação
 
 1. Publique o backend com HTTPS.
-2. Abra `/app/` no navegador móvel.
+2. Abra a URL HTTPS do frontend no navegador móvel.
 3. No iPhone use Compartilhar → Adicionar à Tela de Início.
 4. Em Android use o prompt de instalação quando disponível.
 
