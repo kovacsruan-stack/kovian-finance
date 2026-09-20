@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
+import com.kovian.finance.integration.KoviFinanceContextContract;
 
 @RestController
 @RequestMapping("/api/v1/ai/finance")
@@ -26,7 +27,7 @@ public class FinancialAiContextController {
    tx.add(Map.of("id",item.getId().toString(),"description",item.getDescription(),"amount",amount,"type",item.getTransactionType().name(),"occurredAt",item.getOccurredAt().toString()));
   }
   var net=income.subtract(expense);var savingsRate=income.signum()==0?BigDecimal.ZERO:net.divide(income,4,java.math.RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-  return Map.of("source","kovian-finance","ownerId",ownerId.toString(),"window",Map.of("from",from.toString(),"to",to.toString()),"summary",Map.of("income",income,"expense",expense,"net",net,"savingsRate",savingsRate),"categories",categories,"transactions",tx);
+  return Map.of("contract",KoviFinanceContextContract.current(ownerId,"/api/v1/ai/finance/context"),"source","kovian-finance","ownerId",ownerId.toString(),"window",Map.of("from",from.toString(),"to",to.toString()),"summary",Map.of("income",income,"expense",expense,"net",net,"savingsRate",savingsRate),"categories",categories,"transactions",tx);
  }
  @GetMapping("/context/summary")
  public Map<String,Object> summary(@RequestParam UUID ownerId,@RequestParam LocalDate from,@RequestParam LocalDate to){
