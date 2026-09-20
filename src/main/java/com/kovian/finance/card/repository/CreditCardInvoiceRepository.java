@@ -9,4 +9,6 @@ public interface CreditCardInvoiceRepository extends JpaRepository<CreditCardInv
  Optional<CreditCardInvoice> findByIdAndOwnerId(UUID id,UUID o);
  @Query("select i from CreditCardInvoice i where i.ownerId=:owner and i.dueDate between :from and :to and i.status <> com.kovian.finance.card.domain.InvoiceStatus.PAID order by i.dueDate asc")
  List<CreditCardInvoice> findDueBetweenForOwner(@Param("owner")UUID owner,@Param("from")LocalDate from,@Param("to")LocalDate to);
+ @Query("select i from CreditCardInvoice i where i.ownerId=:owner and i.dueDate < :today and i.status <> com.kovian.finance.card.domain.InvoiceStatus.PAID order by i.dueDate asc")
+ List<CreditCardInvoice> findOverdueForOwner(@Param("owner")UUID owner,@Param("today")LocalDate today);
 }
