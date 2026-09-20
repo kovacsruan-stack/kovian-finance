@@ -1,0 +1,1 @@
+package com.kovian.finance.ai.domain; import java.time.OffsetDateTime; public record FinancialInsight(String type,String title,String explanation,String severity,OffsetDateTime generatedAt) {}
