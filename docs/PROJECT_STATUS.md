@@ -348,3 +348,13 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 ## UI/UX phase
 
 A mobile-first Finance frontend shell has been added under `frontend/`. KOVIAN Fitness already has a full frontend; its shared layout now includes a mobile bottom navigation, safe-area handling, touch-target improvements and responsive card/table behavior. The ecosystem UI/UX system is documented in the KOVIAN control-plane repository at `docs/UI_UX_SYSTEM.md`.
+
+
+## UI/mobile hardening — September 2026
+
+- Finance frontend shell expanded with responsive feature states.
+- Added strict TypeScript + Vite build configuration.
+- Added PWA manifest/icon and mobile metadata.
+- Mobile navigation uses drawer + bottom navigation.
+- Dashboard and secondary screens use mobile-first spacing and accessible focus states.
+- Backend remains the source of truth for financial data and authorization.
