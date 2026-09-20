@@ -366,3 +366,7 @@ A mobile-first Finance frontend shell has been added under `frontend/`. KOVIAN F
 - Prometheus metrics registry is enabled.
 - Local Docker image and ecosystem platform integration are registered in the KOVIAN control plane.
 - CI includes Flyway validation, backend verification and frontend build; successful execution must still be observed before marking the gate passed.
+
+
+## Scope completion estimate — 2026-09-20
+Estimated completion toward the documented Finance 1.0 scope: **78%**. This is a scope estimate, not a test/build percentage. Core financial domain, security, ledger, idempotency, outbox, imports/reconciliation, notifications, forecast and frontend foundations are implemented; remaining work is concentrated in deep accounting audit/E2E, advanced banking/Open Finance, real broker integration, production operations and final release gates.
