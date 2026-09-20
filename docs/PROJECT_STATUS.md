@@ -337,3 +337,9 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Owner-facing Outbox reads remain non-mutating and owner-scoped.
 - Strengthened internal finance credential contract tests for exact-match, wrong-length and minimum-length behavior.
 - Full CI/build evidence remains a release gate; no workflow result is claimed without observed execution.
+
+
+## 2026-09-20 CI hardening checkpoint
+- Finance CI now uses read-only repository permissions, concurrency cancellation and a bounded 15-minute job timeout.
+- Maven test execution uses non-interactive mode and the Java 21 toolchain cache.
+- These workflow changes improve isolation and deterministic CI behavior; they do not imply a successful workflow run.
