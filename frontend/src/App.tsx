@@ -1,10 +1,10 @@
 import {useState,type ReactNode} from 'react'
 import {NavLink,Route,Routes,useNavigate} from 'react-router-dom'
-import {ArrowDownLeft,ArrowUpRight,BarChart3,Bell,BrainCircuit,ChevronRight,Home,Plus,Settings2,Target,Wallet,Menu,X,MoreHorizontal} from 'lucide-react'
+import {ArrowDownLeft,ArrowUpRight,BarChart3,Bell,BrainCircuit,ChevronRight,Home,Plus,Settings2,Target,Wallet,Menu,X,MoreHorizontal,Receipt,ShieldCheck,Sparkles} from 'lucide-react'
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const items=[['/','Início',Home],['/contas','Contas',Wallet],['/transacoes','Transações',ArrowUpRight],['/metas','Metas',Target],['/ia','KOVI AI',BrainCircuit]] as const
 function Shell({children}:{children:ReactNode}){
- const [open,setOpen]=useState(false); const nav=useNavigate()
+ const [open,setOpen]=useState(false)
  return <div className="app-shell">
   {open&&<button className="scrim" aria-label="Fechar menu" onClick={()=>setOpen(false)}/>}
   <aside className={open?'drawer drawer-open':'drawer'}>
@@ -24,5 +24,17 @@ function Dashboard(){
  <div className="list-card"><div><div className="dot warning"/><span><b>Fatura do cartão</b><small>vence em 3 dias</small></span><strong>{money(1240)}</strong></div><div><div className="dot primary-dot"/><span><b>Meta: Reserva</b><small>68% concluída</small></span><strong>R$ 6.800</strong></div></div>
  <div className="ai-card"><BrainCircuit size={22}/><div><span>KOVI AI</span><strong>Você está dentro do seu orçamento este mês.</strong><small>Veja os principais insights financeiros.</small></div><ChevronRight size={19}/></div></div>
 }
-function Placeholder({title}:{title:string}){return <div className="page"><div className="page-head"><div><p className="eyebrow">KOVIAN FINANCE</p><h1>{title}</h1><p className="muted">Tela preparada para integração com os serviços financeiros.</p></div><button className="primary"><Plus size={17}/>Adicionar</button></div><div className="empty-card"><Wallet size={28}/><strong>{title}</strong><span>Os dados aparecerão aqui quando conectados à API.</span></div></div>}
+function Placeholder({title}:{title:string}){
+ const config:Record<string,{icon:typeof Wallet,desc:string,action:string,items:string[]}>={
+  Contas:{icon:Wallet,desc:'Organize contas bancárias, carteiras e saldos em um único lugar.',action:'Nova conta',items:['Saldo consolidado','Contas bancárias','Carteiras e dinheiro']},
+  Transações:{icon:Receipt,desc:'Acompanhe entradas, saídas e transferências com rastreabilidade.',action:'Nova transação',items:['Entradas e despesas','Filtros por período','Categorias e status']},
+  Metas:{icon:Target,desc:'Defina objetivos financeiros e acompanhe o progresso ao longo do tempo.',action:'Nova meta',items:['Reserva de emergência','Objetivos personalizados','Progresso por período']},
+  'KOVI AI':{icon:Sparkles,desc:'Insights financeiros explicáveis, baseados nos dados autorizados da sua conta.',action:'Ver insights',items:['Fluxo de caixa','Orçamento','Sinais de atenção']},
+ }
+ const item=config[title]??{icon:Wallet,desc:'Área do ecossistema KOVIAN Finance.',action:'Adicionar',items:[]}; const Icon=item.icon
+ return <div className="page"><div className="page-head"><div><p className="eyebrow">KOVIAN FINANCE</p><h1>{title}</h1><p className="muted">{item.desc}</p></div><button className="primary"><Plus size={17}/>{item.action}</button></div>
+  <div className="feature-grid">{item.items.map((label)=><article className="feature-card" key={label}><Icon size={19}/><div><strong>{label}</strong><span>Disponível quando os dados da API forem conectados.</span></div><ChevronRight size={17}/></article>)}</div>
+  <div className="empty-card"><ShieldCheck size={28}/><strong>Dados protegidos por design</strong><span>As operações financeiras serão autorizadas no backend e auditadas.</span></div>
+ </div>
+}
 export default function App(){return <Shell><Routes><Route path="/" element={<Dashboard/>}/><Route path="/contas" element={<Placeholder title="Contas"/>}/><Route path="/transacoes" element={<Placeholder title="Transações"/>}/><Route path="/metas" element={<Placeholder title="Metas"/>}/><Route path="/ia" element={<Placeholder title="KOVI AI"/>}/><Route path="*" element={<Placeholder title="KOVIAN Finance"/>}/></Routes></Shell>}
