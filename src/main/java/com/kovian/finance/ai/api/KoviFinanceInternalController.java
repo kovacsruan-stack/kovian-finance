@@ -17,7 +17,7 @@ public class KoviFinanceInternalController {
  private final FinancialAiContextController context; private final FinancialTransactionRepository transactions; private final FinancialAccountRepository accounts; private final String apiKey;
  public KoviFinanceInternalController(FinancialAiContextController context,FinancialTransactionRepository transactions,FinancialAccountRepository accounts,@Value("${kovian.kovi.internal-api-key:}")String apiKey){this.context=context;this.transactions=transactions;this.accounts=accounts;this.apiKey=apiKey;}
  @GetMapping("/capabilities")
- public Map<String,Object> capabilities(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key){authorize(key);return Map.of("source","kovian-finance","domain","finance","contractVersion","1.3","capabilities",List.of("finance.get_balance","finance.list_transactions","finance.get_revenue","finance.get_context","finance.get_context_summary"),"mutations",List.of());}
+ public Map<String,Object> capabilities(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key){authorize(key);return Map.of("source","kovian-finance","domain","finance","contractVersion","1.3","capabilities",List.of("finance.get_balance","finance.list_transactions","finance.get_revenue","finance.get_context","finance.get_context_summary","finance.get_forecast"),"mutations",List.of());}
  @GetMapping("/context/summary")
  public Map<String,Object> summary(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key,@RequestParam UUID ownerId,@RequestParam LocalDate from,@RequestParam LocalDate to){authorize(key);return context.summary(ownerId,from,to);}
  @GetMapping("/context")
