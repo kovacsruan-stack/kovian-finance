@@ -1,0 +1,1 @@
+package com.kovian.finance.debt.repository; import com.kovian.finance.debt.domain.Debt; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface DebtRepository extends JpaRepository<Debt,UUID>{List<Debt> findByOwnerIdOrderByName(UUID o);Optional<Debt> findByIdAndOwnerId(UUID id,UUID o);}
