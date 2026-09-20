@@ -13,6 +13,8 @@ import java.math.BigDecimal;import java.time.*;import java.util.*;import java.ni
 public class FinancialAiContextController {
  private final FinancialTransactionRepository transactions; private final String internalApiKey;
  FinancialAiContextController(FinancialTransactionRepository t,@Value("${kovian.kovi.internal-api-key:}")String key){transactions=t;internalApiKey=key;}
+ @GetMapping("/capabilities")
+ public Map<String,Object> capabilities(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key){authorize(key);return Map.of("source","kovian-finance","domain","finance","capabilities",List.of("finance.context","finance.context.summary","finance.accounts.read","finance.transactions.read","finance.forecast.read","finance.risk.read"),"mutationsRequireGovernance",true);}
  @GetMapping("/context")
  public Map<String,Object> context(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key,@RequestParam UUID ownerId,@RequestParam LocalDate from,@RequestParam LocalDate to){
   authorize(key);validateRange(from,to);var start=from.atStartOfDay().atOffset(ZoneOffset.UTC);var end=to.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
