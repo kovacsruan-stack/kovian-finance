@@ -1,0 +1,1 @@
+package com.kovian.finance.card.repository; import com.kovian.finance.card.domain.CreditCardPurchase; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface CreditCardPurchaseRepository extends JpaRepository<CreditCardPurchase,UUID>{List<CreditCardPurchase> findByInvoiceIdOrderByInstallmentNumber(UUID id);}
