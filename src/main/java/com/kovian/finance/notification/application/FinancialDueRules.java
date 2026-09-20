@@ -22,6 +22,7 @@ public class FinancialDueRules {
  @Transactional
  public void evaluate(LocalDate today,UUID owner){
   LocalDate horizon=today.plusDays(3);
+  invoices.findOverdueForOwner(owner,today).forEach(i->notify(owner,"CARD_INVOICE_OVERDUE","CRITICAL","Fatura do cartão em atraso","A fatura venceu em "+i.getDueDate()+" e ainda não foi marcada como paga.","CreditCardInvoice",i.getId(),"card-overdue:"+i.getId()+":"+i.getDueDate()));
   invoices.findDueBetweenForOwner(owner,today,horizon).forEach(i->notify(owner,"CARD_INVOICE_DUE","WARNING","Fatura do cartão próxima do vencimento","A fatura vence em "+i.getDueDate()+".","CreditCardInvoice",i.getId(),"card:"+i.getId()+":"+i.getDueDate()));
   recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceBetweenOrderByNextOccurrence(owner,today,horizon).forEach(r->notify(owner,"RECURRING_DUE","INFO","Lançamento recorrente próximo","Existe um lançamento recorrente previsto para "+r.getNextOccurrence()+".","RecurringTransaction",r.getId(),"recurring:"+r.getId()+":"+r.getNextOccurrence()));
   debts.findByOwnerIdAndStatusAndOutstandingAmountGreaterThanOrderByStartDateAsc(owner,DebtStatus.ACTIVE,java.math.BigDecimal.ZERO).forEach(d->notify(owner,"DEBT_ACTIVE","INFO","Dívida em aberto","A dívida possui saldo pendente de "+d.getOutstandingAmount()+".","Debt",d.getId(),"debt:"+d.getId()+":"+today));
