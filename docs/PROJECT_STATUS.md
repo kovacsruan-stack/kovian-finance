@@ -289,3 +289,9 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Record KOVI forecast federation expansion checkpoint.
 - Domain contracts remain bounded, authenticated and read-only for KOVI intelligence access.
 - Production CI/build remains a separate validation gate and is not marked successful without observed evidence.
+
+
+### 2026-09-20 continuation
+- Record expanded KOVI read-tool federation.
+- Cross-domain access remains authenticated, bounded and read-only unless an explicit governed mutation flow is invoked.
+- CI status remains evidence-based; no successful build is inferred from code changes alone.
