@@ -1,0 +1,3 @@
+package com.kovian.finance.reconciliation.repository;
+import com.kovian.finance.reconciliation.domain.ReconciliationRun; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*;
+public interface ReconciliationRunRepository extends JpaRepository<ReconciliationRun,UUID>{Optional<ReconciliationRun> findByIdAndOwnerId(UUID id,UUID ownerId);List<ReconciliationRun> findTop50ByOwnerIdOrderByCreatedAtDesc(UUID ownerId);}
