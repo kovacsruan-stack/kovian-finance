@@ -270,3 +270,7 @@ User preference: implement complete macroblocks and avoid fragmented/piecemeal u
 - Added aggregate income, expense, net cash flow, savings rate, category totals and transaction evidence.
 - Cancelled transactions are excluded from AI context.
 - Latest main commit: `7484d923bf70101fdcc3e268bed98a47e0a7c452`.
+
+
+### KOVI Integration Readiness
+The Finance application exposes a bounded read-only financial intelligence context for KOVI. Mutation capabilities remain subject to KOVI confirmation, authorization, idempotency and audit controls. External connector implementation remains a separate production gate.
