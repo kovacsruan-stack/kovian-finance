@@ -283,3 +283,9 @@ The Finance application exposes a bounded read-only financial intelligence conte
 
 ### KOVI Finance internal federation
 Added a fail-closed internal KOVI capability/context surface authenticated by `X-KOVI-INTERNAL-KEY`, with a minimum 32-character secret requirement. The route exposes read-only finance capabilities and context; mutations are not exposed through this contract.
+
+
+### 2026-09-20 large continuation checkpoint
+- Record KOVI forecast federation expansion checkpoint.
+- Domain contracts remain bounded, authenticated and read-only for KOVI intelligence access.
+- Production CI/build remains a separate validation gate and is not marked successful without observed evidence.
