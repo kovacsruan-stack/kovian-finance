@@ -20,11 +20,12 @@ public record KoviFinanceToolContract(
         Objects.requireNonNull(contractVersion);
         Objects.requireNonNull(requestId);
         Objects.requireNonNull(workspaceId);
+        Objects.requireNonNull(actorId);
         Objects.requireNonNull(operation);
         Objects.requireNonNull(input);
         Objects.requireNonNull(issuedAt);
         if (!CURRENT_VERSION.equals(contractVersion)) throw new IllegalArgumentException("UNSUPPORTED_FINANCE_CONTRACT_VERSION");
-        if (requestId.isBlank() || operation.isBlank()) throw new IllegalArgumentException("INVALID_FINANCE_TOOL_REQUEST");
+        if (requestId.isBlank() || operation.isBlank()) throw new IllegalArgumentException("INVALID_FINANCE_TOOL_REQUEST");\n        if (!supportedReadOperations().contains(operation)) throw new IllegalArgumentException("UNSUPPORTED_FINANCE_TOOL_OPERATION");
     }
     public List<String> supportedReadOperations() {
         return List.of("get_financial_summary","get_cash_flow","get_income_expenses","get_budget_status","get_goals","get_debts","get_credit_card_status","get_upcoming_bills","get_forecast","get_financial_risks","get_category_analysis");
