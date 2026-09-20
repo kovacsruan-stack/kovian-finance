@@ -12,8 +12,10 @@ public class OutboxEventService {
  private final OutboxEventRepository repository; private final ObjectMapper objectMapper;
  public OutboxEventService(OutboxEventRepository repository,ObjectMapper objectMapper){this.repository=repository;this.objectMapper=objectMapper;}
  @Transactional
- public OutboxEvent record(String aggregateType,UUID aggregateId,String eventType,Object payload){
-  try{return repository.save(new OutboxEvent(CurrentUser.ownerId(),aggregateType,aggregateId,eventType,objectMapper.writeValueAsString(payload)));}
+ public OutboxEvent record(String aggregateType,UUID aggregateId,String eventType,Object payload){return record(aggregateType,aggregateId,eventType,1,payload);}
+ @Transactional
+ public OutboxEvent record(String aggregateType,UUID aggregateId,String eventType,int eventVersion,Object payload){
+  try{return repository.save(new OutboxEvent(CurrentUser.ownerId(),aggregateType,aggregateId,eventType,eventVersion,objectMapper.writeValueAsString(payload)));}
   catch(JsonProcessingException e){throw new IllegalArgumentException("Unable to serialize domain event",e);}
  }
  @Transactional(readOnly=true)
