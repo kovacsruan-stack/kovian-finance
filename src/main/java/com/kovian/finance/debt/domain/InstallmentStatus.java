@@ -1,0 +1,1 @@
+package com.kovian.finance.debt.domain; public enum InstallmentStatus { PENDING, PAID, OVERDUE }
