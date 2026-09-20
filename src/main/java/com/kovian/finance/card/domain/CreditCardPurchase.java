@@ -1,0 +1,8 @@
+package com.kovian.finance.card.domain;
+import jakarta.persistence.*; import java.math.BigDecimal; import java.time.LocalDate; import java.time.OffsetDateTime; import java.util.UUID;
+@Entity @Table(name="credit_card_purchases")
+public class CreditCardPurchase {
+ @Id @GeneratedValue(strategy=GenerationType.UUID) UUID id; @Column(name="owner_id",nullable=false) UUID ownerId; @Column(name="card_id",nullable=false) UUID cardId; @Column(name="invoice_id",nullable=false) UUID invoiceId; @Column(nullable=false) String description; @Column(name="total_amount",nullable=false,precision=19,scale=4) BigDecimal totalAmount; @Column(name="installment_amount",nullable=false,precision=19,scale=4) BigDecimal installmentAmount; @Column(name="installment_number",nullable=false) int installmentNumber; @Column(name="total_installments",nullable=false) int totalInstallments; @Column(name="purchased_at",nullable=false) LocalDate purchasedAt; @Column(name="created_at",nullable=false) OffsetDateTime createdAt=OffsetDateTime.now();
+ protected CreditCardPurchase(){} public CreditCardPurchase(UUID o,UUID c,UUID i,String d,BigDecimal total,BigDecimal installment,int n,int totalI,LocalDate date){ownerId=o;cardId=c;invoiceId=i;description=d;totalAmount=total;installmentAmount=installment;installmentNumber=n;totalInstallments=totalI;purchasedAt=date;}
+ public UUID getId(){return id;} public UUID getOwnerId(){return ownerId;} public UUID getInvoiceId(){return invoiceId;} public BigDecimal getInstallmentAmount(){return installmentAmount;} public int getInstallmentNumber(){return installmentNumber;} public int getTotalInstallments(){return totalInstallments;}
+}
