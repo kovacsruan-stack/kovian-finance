@@ -329,3 +329,11 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Added owner-scoped overdue credit-card invoice detection.
 - Added deterministic 30-day negative-cash-flow risk notifications with owner-scoped transaction reads and daily deduplication.
 - Financial rule evaluation remains advisory/notification-only and does not mutate financial source-of-truth aggregates.
+
+
+## Checkpoint 2026-09-20
+
+- Outbox dispatcher now claims pending events with PostgreSQL `FOR UPDATE SKIP LOCKED`, preventing competing dispatcher instances from processing the same pending batch concurrently.
+- Owner-facing Outbox reads remain non-mutating and owner-scoped.
+- Strengthened internal finance credential contract tests for exact-match, wrong-length and minimum-length behavior.
+- Full CI/build evidence remains a release gate; no workflow result is claimed without observed execution.
