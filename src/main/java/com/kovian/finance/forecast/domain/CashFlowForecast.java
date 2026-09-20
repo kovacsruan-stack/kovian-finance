@@ -1,0 +1,1 @@
+package com.kovian.finance.forecast.domain; import java.math.BigDecimal; import java.time.LocalDate; public record CashFlowForecast(LocalDate date,BigDecimal projectedIncome,BigDecimal projectedExpense,BigDecimal projectedCashFlow,BigDecimal projectedBalance) {}
