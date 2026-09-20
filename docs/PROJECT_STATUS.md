@@ -376,3 +376,8 @@ Estimated completion toward the documented Finance 1.0 scope: **78%**. This is a
 - Finance frontend PWA now has a service worker, iOS metadata and automated frontend build/PWA checks.
 - Backend CORS is explicitly configurable through KOVIAN_CORS_ALLOWED_ORIGINS.
 - Render service `kovian-finance-web` was created, but the first build was blocked by the workspace build-minute quota rather than a reported application build error.
+
+
+## Workstation-first integration
+
+The project is part of the KOVIAN local integration stack. Native tests remain the source of truth before integration. Local execution is expected on the developer PC through the shared KOVIAN Compose environment; Render is not a required runtime dependency for development validation.
