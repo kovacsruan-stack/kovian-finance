@@ -1,0 +1,1 @@
+package com.kovian.finance.analytics.domain; public record FinancialMetric(String key,String label,java.math.BigDecimal value,String unit) {}
