@@ -1,0 +1,1 @@
+package com.kovian.finance.card.domain; public enum InvoiceStatus { OPEN, CLOSED, PAID, OVERDUE }
