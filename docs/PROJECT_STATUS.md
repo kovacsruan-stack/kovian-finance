@@ -343,3 +343,8 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Finance CI now uses read-only repository permissions, concurrency cancellation and a bounded 15-minute job timeout.
 - Maven test execution uses non-interactive mode and the Java 21 toolchain cache.
 - These workflow changes improve isolation and deterministic CI behavior; they do not imply a successful workflow run.
+
+
+## UI/UX phase
+
+A mobile-first Finance frontend shell has been added under `frontend/`. KOVIAN Fitness already has a full frontend; its shared layout now includes a mobile bottom navigation, safe-area handling, touch-target improvements and responsive card/table behavior. The ecosystem UI/UX system is documented in the KOVIAN control-plane repository at `docs/UI_UX_SYSTEM.md`.
