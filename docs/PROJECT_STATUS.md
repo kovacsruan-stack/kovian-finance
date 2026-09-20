@@ -370,3 +370,9 @@ A mobile-first Finance frontend shell has been added under `frontend/`. KOVIAN F
 
 ## Scope completion estimate — 2026-09-20
 Estimated completion toward the documented Finance 1.0 scope: **78%**. This is a scope estimate, not a test/build percentage. Core financial domain, security, ledger, idempotency, outbox, imports/reconciliation, notifications, forecast and frontend foundations are implemented; remaining work is concentrated in deep accounting audit/E2E, advanced banking/Open Finance, real broker integration, production operations and final release gates.
+
+
+## 2026-09-20 mobile/security continuation
+- Finance frontend PWA now has a service worker, iOS metadata and automated frontend build/PWA checks.
+- Backend CORS is explicitly configurable through KOVIAN_CORS_ALLOWED_ORIGINS.
+- Render service `kovian-finance-web` was created, but the first build was blocked by the workspace build-minute quota rather than a reported application build error.
