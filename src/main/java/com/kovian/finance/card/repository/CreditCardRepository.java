@@ -1,0 +1,1 @@
+package com.kovian.finance.card.repository; import com.kovian.finance.card.domain.CreditCard; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface CreditCardRepository extends JpaRepository<CreditCard,UUID>{List<CreditCard> findByOwnerIdOrderByName(UUID o);Optional<CreditCard> findByIdAndOwnerId(UUID id,UUID o);}
