@@ -10,6 +10,6 @@ public final class KoviIntelligencePolicy {
                 && Objects.equals(tenantId, requestedTenantId);
     }
     public static boolean allowsMutation(String permission) {
-        return "finance.mutation".equals(permission) && false;
+        return false;
     }
 }
