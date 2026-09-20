@@ -14,6 +14,12 @@ public class OutboxEventService {
  @Transactional
  public OutboxEvent record(String aggregateType,UUID aggregateId,String eventType,Object payload){return record(aggregateType,aggregateId,eventType,1,payload);}
  @Transactional
+ public OutboxEvent recordForOwner(UUID ownerId,String aggregateType,UUID aggregateId,String eventType,int eventVersion,Object payload){
+  if(ownerId==null) throw new IllegalArgumentException("Owner is required.");
+  try{return repository.save(new OutboxEvent(ownerId,aggregateType,aggregateId,eventType,eventVersion,objectMapper.writeValueAsString(payload)));}
+  catch(JsonProcessingException e){throw new IllegalArgumentException("Unable to serialize domain event",e);}
+ }
+ @Transactional
  public OutboxEvent record(String aggregateType,UUID aggregateId,String eventType,int eventVersion,Object payload){
   try{return repository.save(new OutboxEvent(CurrentUser.ownerId(),aggregateType,aggregateId,eventType,eventVersion,objectMapper.writeValueAsString(payload)));}
   catch(JsonProcessingException e){throw new IllegalArgumentException("Unable to serialize domain event",e);}
