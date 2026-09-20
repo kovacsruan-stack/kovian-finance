@@ -295,3 +295,10 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Record expanded KOVI read-tool federation.
 - Cross-domain access remains authenticated, bounded and read-only unless an explicit governed mutation flow is invoked.
 - CI status remains evidence-based; no successful build is inferred from code changes alone.
+
+
+### 2026-09-20 KOVI Finance intelligence expansion
+- Internal federation contract advanced to 1.4 and explicitly declares the surface read-only.
+- Added bounded daily cash-flow intelligence (finance.get_cash_flow) over a maximum 366-day window.
+- Cancelled transactions remain excluded and no mutation capability is exposed.
+- Finance federation now covers accounts, transactions, revenue, cash flow, context, summary, forecast and risk.
