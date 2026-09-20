@@ -19,5 +19,5 @@ public class OutboxEventService {
   catch(JsonProcessingException e){throw new IllegalArgumentException("Unable to serialize domain event",e);}
  }
  @Transactional(readOnly=true)
- public List<OutboxEvent> pendingBatch(){return repository.findTop100ByStatusAndAvailableAtLessThanEqualAndOwnerIdOrderByCreatedAtAsc(OutboxStatus.PENDING,OffsetDateTime.now(),CurrentUser.ownerId());}
+ public List<OutboxEvent> pendingBatch(){var events=repository.claimPending(OutboxStatus.PENDING.name(),OffsetDateTime.now()); events.forEach(OutboxEvent::markProcessing); return events;}
 }
