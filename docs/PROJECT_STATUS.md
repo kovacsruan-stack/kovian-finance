@@ -317,3 +317,10 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Forecast, risk, cash flow, context, accounts, transactions and revenue are exposed through bounded application-level contracts rather than unrestricted database access.
 - Financial mutations remain outside the KOVI federation surface and require explicit application authorization, idempotency and audit controls.
 - No successful CI/build is inferred from code changes without observed workflow evidence.
+
+
+### 2026-09-20 continuous implementation checkpoint — financial rules hardening
+- Scheduled financial rules are now evaluated per owner instead of using cross-tenant repository scans.
+- Invoice, recurring, debt and goal rule queries now carry explicit owner predicates.
+- Added owner-scoped database indexes for scheduled-rule access paths and owner discovery.
+- This closes a tenant-isolation/performance gap in the notification scheduler; CI/build remains unverified until an observed successful workflow exists.
