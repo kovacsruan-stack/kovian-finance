@@ -33,3 +33,6 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+kovian:
+  notifications:
+    rules-interval-ms: ${KOVIAN_NOTIFICATION_RULES_INTERVAL_MS:60000}
