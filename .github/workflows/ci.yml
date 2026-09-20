@@ -6,6 +6,7 @@ on:
     branches: [main]
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: kovian-finance-ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
