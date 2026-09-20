@@ -279,3 +279,7 @@ The Finance application exposes a bounded read-only financial intelligence conte
 ### 2026-09-20 continuation checkpoint
 - record bounded KOVI finance summary context milestone.
 - Changes are implemented as bounded, authorization-aware domain contracts; CI/build status remains unclaimed until an observed successful run exists.
+
+
+### KOVI Finance internal federation
+Added a fail-closed internal KOVI capability/context surface authenticated by `X-KOVI-INTERNAL-KEY`, with a minimum 32-character secret requirement. The route exposes read-only finance capabilities and context; mutations are not exposed through this contract.
