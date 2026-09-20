@@ -1,0 +1,1 @@
+package com.kovian.finance.asset.repository; import com.kovian.finance.asset.domain.FinancialAsset; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*; public interface FinancialAssetRepository extends JpaRepository<FinancialAsset,UUID>{List<FinancialAsset> findByOwnerIdAndActiveTrue(UUID o);}
