@@ -1,3 +1,7 @@
+> **Ecosystem master roadmap:** https://github.com/kovacsruan-stack/kovi-ai/blob/main/ECOSYSTEM_MASTER_ROADMAP.md
+>
+> Finance remains a parallel product track while KOVI AI is the primary platform project.
+
 # KOVIAN Finance — Project Status & Continuation Handoff
 
 Updated: 2026-09-20
