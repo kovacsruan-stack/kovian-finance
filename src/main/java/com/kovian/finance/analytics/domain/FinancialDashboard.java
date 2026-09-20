@@ -1,0 +1,1 @@
+package com.kovian.finance.analytics.domain; import java.math.BigDecimal; import java.time.LocalDate; import java.util.List; public record FinancialDashboard(LocalDate from,LocalDate to,BigDecimal income,BigDecimal expense,BigDecimal cashFlow,BigDecimal assets,BigDecimal liabilities,BigDecimal netWorth,BigDecimal savingsRate,List<FinancialMetric> metrics) {}
