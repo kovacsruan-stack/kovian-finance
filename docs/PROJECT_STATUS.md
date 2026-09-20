@@ -324,3 +324,8 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Invoice, recurring, debt and goal rule queries now carry explicit owner predicates.
 - Added owner-scoped database indexes for scheduled-rule access paths and owner discovery.
 - This closes a tenant-isolation/performance gap in the notification scheduler; CI/build remains unverified until an observed successful workflow exists.
+
+### 2026-09-20 continuation — rules engine expansion
+- Added owner-scoped overdue credit-card invoice detection.
+- Added deterministic 30-day negative-cash-flow risk notifications with owner-scoped transaction reads and daily deduplication.
+- Financial rule evaluation remains advisory/notification-only and does not mutate financial source-of-truth aggregates.
