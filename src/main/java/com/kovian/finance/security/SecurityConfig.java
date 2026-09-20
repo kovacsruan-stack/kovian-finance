@@ -1,44 +1,15 @@
 package com.kovian.finance.security;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-
-@Configuration
-public class SecurityConfig {
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, OwnerIsolationFilter ownerIsolationFilter) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-            .headers(headers -> headers
-                .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
-                .frameOptions(frame -> frame.deny())
-                .contentTypeOptions(content -> {})
-                .referrerPolicy(ref -> ref.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health", "/actuator/info", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(new JwtAuthenticationConverter())))
-            .addFilterAfter(ownerIsolationFilter, BearerTokenAuthenticationFilter.class);
-        return http.build();
-    }
-
-    @Bean
-    OwnerIsolationFilter ownerIsolationFilter(com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
-        return new OwnerIsolationFilter(objectMapper);
-    }
-
-    @Bean
-    JwtDecoder jwtDecoder(@Value("${KOVIAN_JWT_SECRET}") String secret) {
-        if (secret == null || secret.length() < 32) throw new IllegalStateException("KOVIAN_JWT_SECRET must contain at least 32 characters");
-        return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256")).build();
-    }
+import org.springframework.beans.factory.annotation.Value; import org.springframework.context.annotation.Bean; import org.springframework.context.annotation.Configuration; import org.springframework.data.redis.core.StringRedisTemplate; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer; import org.springframework.security.oauth2.jwt.JwtDecoder; import org.springframework.security.oauth2.jwt.NimbusJwtDecoder; import org.springframework.security.web.SecurityFilterChain; import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter; import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter; import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter; import javax.crypto.spec.SecretKeySpec; import java.nio.charset.StandardCharsets; import java.time.Duration;
+@Configuration public class SecurityConfig{
+ @Bean SecurityFilterChain securityFilterChain(HttpSecurity http,OwnerIsolationFilter ownerIsolationFilter,RateLimitFilter rateLimitFilter,CorrelationIdFilter correlationIdFilter)throws Exception{
+  http.csrf(AbstractHttpConfigurer::disable).headers(headers->headers.httpStrictTransportSecurity(h->h.includeSubDomains(true).maxAgeInSeconds(31536000)).frameOptions(f->f.deny()).contentTypeOptions(c->{}).referrerPolicy(r->r.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
+   .authorizeHttpRequests(auth->auth.requestMatchers("/actuator/health","/actuator/info","/swagger-ui/**","/v3/api-docs/**").permitAll().anyRequest().authenticated())
+   .oauth2ResourceServer(oauth->oauth.jwt(jwt->jwt.jwtAuthenticationConverter(new JwtAuthenticationConverter())))
+   .addFilterAfter(correlationIdFilter,BearerTokenAuthenticationFilter.class).addFilterAfter(rateLimitFilter,CorrelationIdFilter.class).addFilterAfter(ownerIsolationFilter,RateLimitFilter.class);
+  return http.build();
+ }
+ @Bean OwnerIsolationFilter ownerIsolationFilter(com.fasterxml.jackson.databind.ObjectMapper mapper){return new OwnerIsolationFilter(mapper);}
+ @Bean CorrelationIdFilter correlationIdFilter(){return new CorrelationIdFilter();}
+ @Bean RateLimitFilter rateLimitFilter(StringRedisTemplate redis,@Value("${KOVIAN_RATE_LIMIT:120}")int limit){return new RateLimitFilter(redis,limit,Duration.ofMinutes(1));}
+ @Bean JwtDecoder jwtDecoder(@Value("${KOVIAN_JWT_SECRET}")String secret){if(secret==null||secret.length()<32)throw new IllegalStateException("KOVIAN_JWT_SECRET must contain at least 32 characters");return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8),"HmacSHA256")).build();}
 }
