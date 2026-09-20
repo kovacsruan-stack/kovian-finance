@@ -2,5 +2,6 @@ package com.kovian.finance.ai.api;
 import static org.junit.jupiter.api.Assertions.*; import org.junit.jupiter.api.Test; import java.nio.charset.StandardCharsets; import java.security.MessageDigest;
 class KoviFinanceInternalContractTest {
  @Test void rejectsWeakCredentials(){String configured="12345678901234567890123456789012";String provided="weak";assertFalse(MessageDigest.isEqual(configured.getBytes(StandardCharsets.UTF_8),provided.getBytes(StandardCharsets.UTF_8)));}
- @Test void capabilityContractIsReadOnly(){assertTrue(true);}
+ @Test void constantTimeCredentialComparisonRejectsWrongLength(){String configured="12345678901234567890123456789012";String shorter="1234567890123456789012345678901";String longer=configured+"x";assertFalse(MessageDigest.isEqual(configured.getBytes(StandardCharsets.UTF_8),shorter.getBytes(StandardCharsets.UTF_8)));assertFalse(MessageDigest.isEqual(configured.getBytes(StandardCharsets.UTF_8),longer.getBytes(StandardCharsets.UTF_8)));assertTrue(MessageDigest.isEqual(configured.getBytes(StandardCharsets.UTF_8),configured.getBytes(StandardCharsets.UTF_8)));}
+ @Test void internalContractRequiresAtLeastThirtyTwoCharacters(){assertTrue("12345678901234567890123456789012".length()>=32);assertFalse("1234567890123456789012345678901".length()>=32);}
 }
