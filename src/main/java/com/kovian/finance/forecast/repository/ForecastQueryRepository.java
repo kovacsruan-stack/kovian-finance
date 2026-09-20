@@ -1,0 +1,1 @@
+package com.kovian.finance.forecast.repository; import com.kovian.finance.transaction.domain.TransactionType; import java.math.BigDecimal; import java.time.LocalDate; import java.util.UUID; public interface ForecastQueryRepository { BigDecimal sum(UUID ownerId, TransactionType type, LocalDate from, LocalDate to); }
