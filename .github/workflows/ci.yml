@@ -43,5 +43,5 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - name: Test
+      - name: Verify
         run: mvn -B -ntp test
