@@ -68,3 +68,8 @@ Authentication, authorization, tenant isolation, input validation, rate limiting
 16. Finalize KOVIAN Fitness integration, production deployment and 1.0 homologation.
 
 For the detailed continuation checklist, see [docs/PROJECT_STATUS.md](PROJECT_STATUS.md).
+
+
+## KOVI boundary hardening
+
+The AI integration is fail-closed and domain-owned. Requests are tenant-scoped, context crossing the boundary is bounded/minimized, and domain mutations remain owned by the product. KOVI receives governed context rather than unrestricted persistence access.
