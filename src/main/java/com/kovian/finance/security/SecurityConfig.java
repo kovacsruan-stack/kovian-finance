@@ -3,7 +3,7 @@ import org.springframework.beans.factory.annotation.Value; import org.springfram
 @Configuration public class SecurityConfig{
  @Bean SecurityFilterChain securityFilterChain(HttpSecurity http,OwnerIsolationFilter ownerIsolationFilter,RateLimitFilter rateLimitFilter,CorrelationIdFilter correlationIdFilter)throws Exception{
   http.csrf(AbstractHttpConfigurer::disable).headers(headers->headers.httpStrictTransportSecurity(h->h.includeSubDomains(true).maxAgeInSeconds(31536000)).frameOptions(f->f.deny()).contentTypeOptions(c->{}).referrerPolicy(r->r.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
-   .authorizeHttpRequests(auth->auth.requestMatchers("/actuator/health","/actuator/info","/swagger-ui/**","/v3/api-docs/**").permitAll().anyRequest().authenticated())
+   .authorizeHttpRequests(auth->auth.requestMatchers("/actuator/health","/actuator/info","/swagger-ui/**","/v3/api-docs/**").permitAll().requestMatchers("/api/v1/internal/kovi/**").permitAll().anyRequest().authenticated())
    .oauth2ResourceServer(oauth->oauth.jwt(jwt->jwt.jwtAuthenticationConverter(new JwtAuthenticationConverter())))
    .addFilterAfter(correlationIdFilter,BearerTokenAuthenticationFilter.class).addFilterAfter(rateLimitFilter,CorrelationIdFilter.class).addFilterAfter(ownerIsolationFilter,RateLimitFilter.class);
   return http.build();
