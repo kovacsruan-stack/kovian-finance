@@ -19,6 +19,8 @@ CREATE INDEX IF NOT EXISTS idx_kovian_analytics_event_subject_occurred
     ON kovian_analytics_event (tenant_id, subject_id, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_kovian_analytics_event_type_occurred
     ON kovian_analytics_event (tenant_id, event_type, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_kovian_analytics_event_source_purpose
+    ON kovian_analytics_event (tenant_id, source, purpose, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_kovian_analytics_event_deletion
     ON kovian_analytics_event (deleted_at)
     WHERE deleted_at IS NOT NULL;
