@@ -9,15 +9,15 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
 @Configuration
 public class SecurityConfig {
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
+    SecurityFilterChain securityFilterChain(HttpSecurity http, OwnerIsolationFilter ownerIsolationFilter) throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable)
             .headers(headers -> headers
                 .httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000))
                 .frameOptions(frame -> frame.deny())
@@ -26,19 +26,19 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/actuator/info", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+            .oauth2ResourceServer(oauth -> oauth.jwt(jwt -> jwt.jwtAuthenticationConverter(new JwtAuthenticationConverter())))
+            .addFilterAfter(ownerIsolationFilter, BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
-    JwtDecoder jwtDecoder(@Value("${KOVIAN_JWT_SECRET}") String secret) {
-        if (secret == null || secret.length() < 32) {
-            throw new IllegalStateException("KOVIAN_JWT_SECRET must contain at least 32 characters");
-        }
-        return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256")).build();
+    OwnerIsolationFilter ownerIsolationFilter(com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+        return new OwnerIsolationFilter(objectMapper);
     }
 
-    private JwtAuthenticationConverter jwtAuthenticationConverter() {
-        return new JwtAuthenticationConverter();
+    @Bean
+    JwtDecoder jwtDecoder(@Value("${KOVIAN_JWT_SECRET}") String secret) {
+        if (secret == null || secret.length() < 32) throw new IllegalStateException("KOVIAN_JWT_SECRET must contain at least 32 characters");
+        return NimbusJwtDecoder.withSecretKey(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256")).build();
     }
 }
