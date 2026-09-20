@@ -36,3 +36,5 @@ server:
 kovian:
   notifications:
     rules-interval-ms: ${KOVIAN_NOTIFICATION_RULES_INTERVAL_MS:60000}
+  kovi:
+    internal-api-key: ${KOVI_INTERNAL_API_KEY:}
