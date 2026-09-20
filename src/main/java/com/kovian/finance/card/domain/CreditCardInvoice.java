@@ -1,0 +1,9 @@
+package com.kovian.finance.card.domain;
+import jakarta.persistence.*; import java.math.BigDecimal; import java.time.*; import java.util.UUID;
+@Entity @Table(name="credit_card_invoices",uniqueConstraints=@UniqueConstraint(columnNames={"card_id","reference_month"}))
+public class CreditCardInvoice {
+ @Id @GeneratedValue(strategy=GenerationType.UUID) UUID id; @Column(name="owner_id",nullable=false) UUID ownerId; @Column(name="card_id",nullable=false) UUID cardId; @Column(name="reference_month",nullable=false) LocalDate referenceMonth; @Column(name="closing_date",nullable=false) LocalDate closingDate; @Column(name="due_date",nullable=false) LocalDate dueDate; @Enumerated(EnumType.STRING) @Column(nullable=false) InvoiceStatus status=InvoiceStatus.OPEN; @Column(name="total_amount",nullable=false,precision=19,scale=4) BigDecimal totalAmount=BigDecimal.ZERO; @Column(name="paid_amount",nullable=false,precision=19,scale=4) BigDecimal paidAmount=BigDecimal.ZERO; @Column(name="created_at",nullable=false) OffsetDateTime createdAt=OffsetDateTime.now();
+ protected CreditCardInvoice(){} public CreditCardInvoice(UUID o,UUID c,LocalDate m,LocalDate close,LocalDate due){ownerId=o;cardId=c;referenceMonth=m;closingDate=close;dueDate=due;}
+ public UUID getId(){return id;} public UUID getOwnerId(){return ownerId;} public UUID getCardId(){return cardId;} public LocalDate getReferenceMonth(){return referenceMonth;} public LocalDate getDueDate(){return dueDate;} public InvoiceStatus getStatus(){return status;} public BigDecimal getTotalAmount(){return totalAmount;} public BigDecimal getPaidAmount(){return paidAmount;}
+ public void addAmount(BigDecimal a){totalAmount=totalAmount.add(a);} public void close(){status=InvoiceStatus.CLOSED;} public void markPaid(){paidAmount=totalAmount;status=InvoiceStatus.PAID;}
+}
