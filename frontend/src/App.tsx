@@ -1,5 +1,5 @@
 import {useState,type ReactNode} from 'react'
-import {NavLink,Route,Routes,useNavigate} from 'react-router-dom'
+import {NavLink,Route,Routes} from 'react-router-dom'
 import {ArrowDownLeft,ArrowUpRight,BarChart3,Bell,BrainCircuit,ChevronRight,Home,Plus,Settings2,Target,Wallet,Menu,X,MoreHorizontal,Receipt,ShieldCheck,Sparkles} from 'lucide-react'
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
 const items=[['/','Início',Home],['/contas','Contas',Wallet],['/transacoes','Transações',ArrowUpRight],['/metas','Metas',Target],['/ia','KOVI AI',BrainCircuit]] as const
