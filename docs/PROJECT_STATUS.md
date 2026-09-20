@@ -358,3 +358,11 @@ A mobile-first Finance frontend shell has been added under `frontend/`. KOVIAN F
 - Mobile navigation uses drawer + bottom navigation.
 - Dashboard and secondary screens use mobile-first spacing and accessible focus states.
 - Backend remains the source of truth for financial data and authorization.
+
+
+## 2026-09-20 implementation checkpoint
+- Notification creation now publishes NOTIFICATION_CREATED.v1 through the transactional outbox using an owner-safe internal path, including scheduled rule execution.
+- Deterministic cash-flow risk notification has a unit test.
+- Prometheus metrics registry is enabled.
+- Local Docker image and ecosystem platform integration are registered in the KOVIAN control plane.
+- CI includes Flyway validation, backend verification and frontend build; successful execution must still be observed before marking the gate passed.
