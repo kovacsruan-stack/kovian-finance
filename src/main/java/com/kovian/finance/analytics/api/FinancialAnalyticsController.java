@@ -1,0 +1,18 @@
+package com.kovian.finance.analytics.api;
+import com.kovian.finance.analytics.domain.*; import com.kovian.finance.transaction.domain.*; import com.kovian.finance.transaction.repository.*; import com.kovian.finance.asset.repository.*; import com.kovian.finance.liability.repository.*; import com.kovian.finance.debt.repository.*; import org.springframework.web.bind.annotation.*; import java.math.*; import java.time.*; import java.util.*;
+@RestController @RequestMapping("/api/v1/analytics")
+public class FinancialAnalyticsController {
+ private final FinancialTransactionRepository transactions; private final FinancialAssetRepository assets; private final FinancialLiabilityRepository liabilities; private final DebtRepository debts;
+ public FinancialAnalyticsController(FinancialTransactionRepository t,FinancialAssetRepository a,FinancialLiabilityRepository l,DebtRepository d){transactions=t;assets=a;liabilities=l;debts=d;}
+ @GetMapping("/dashboard") public FinancialDashboard dashboard(@RequestParam UUID ownerId,@RequestParam LocalDate from,@RequestParam LocalDate to){
+   if(to.isBefore(from)) throw new IllegalArgumentException("Invalid date range");
+   var f=from.atStartOfDay().atOffset(ZoneOffset.UTC); var end=to.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+   BigDecimal income=BigDecimal.ZERO,expense=BigDecimal.ZERO;
+   for(var tx:transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(ownerId,f,end)){if(tx.getStatus()==TransactionStatus.CANCELLED)continue;if(tx.getTransactionType()==TransactionType.INCOME)income=income.add(tx.getAmount());if(tx.getTransactionType()==TransactionType.EXPENSE)expense=expense.add(tx.getAmount());}
+   var a=assets.findByOwnerIdAndActiveTrue(ownerId).stream().map(com.kovian.finance.asset.domain.FinancialAsset::getCurrentValue).reduce(BigDecimal.ZERO,BigDecimal::add);
+   var l=liabilities.findByOwnerIdAndActiveTrue(ownerId).stream().map(com.kovian.finance.liability.domain.FinancialLiability::getAmount).reduce(BigDecimal.ZERO,BigDecimal::add).add(debts.findByOwnerIdOrderByName(ownerId).stream().filter(d->d.getStatus()==com.kovian.finance.debt.domain.DebtStatus.ACTIVE).map(com.kovian.finance.debt.domain.Debt::getOutstandingAmount).reduce(BigDecimal.ZERO,BigDecimal::add));
+   var flow=income.subtract(expense); var rate=income.signum()==0?BigDecimal.ZERO:flow.divide(income,4,RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
+   var metrics=List.of(new FinancialMetric("income","Receitas",income,"BRL"),new FinancialMetric("expense","Despesas",expense,"BRL"),new FinancialMetric("cash_flow","Fluxo líquido",flow,"BRL"),new FinancialMetric("savings_rate","Taxa de poupança",rate,"%"));
+   return new FinancialDashboard(from,to,income,expense,flow,a,l,a.subtract(l),rate,metrics);
+ }
+}
