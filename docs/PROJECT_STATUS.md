@@ -263,3 +263,10 @@ When the user says to continue the project, do not restart the architecture or r
 9. Do not claim CI/build success unless it was actually verified.
 
 User preference: implement complete macroblocks and avoid fragmented/piecemeal updates.
+
+
+## 2026-09-20 Continuous Implementation Checkpoint
+- Hardened the read-only AI context contract with bounded 365-day windows.
+- Added aggregate income, expense, net cash flow, savings rate, category totals and transaction evidence.
+- Cancelled transactions are excluded from AI context.
+- Latest main commit: `7484d923bf70101fdcc3e268bed98a47e0a7c452`.
