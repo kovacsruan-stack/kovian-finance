@@ -45,10 +45,26 @@ Authentication, authorization, tenant isolation, input validation, rate limiting
 
 ## Delivery phases
 
+### Completed foundation
+
 1. Core domain and persistence.
 2. Accounts, categories and transactions.
 3. Budgets, goals, recurring transactions and cards.
 4. Debts, assets, liabilities and forecasting.
-5. KOVI AI financial intelligence.
-6. KOVIAN Fitness integration.
-7. Open Finance/bank integrations after the ledger is stable.
+5. Security, audit, idempotency and ledger invariants.
+6. Transactional outbox, retries and recovery.
+7. CSV import and reconciliation.
+8. Persistent notifications and automated financial rules.
+
+### Remaining release phases
+
+9. Harden the Financial Rules Engine and optimize scheduled queries.
+10. Complete event contracts, owner-safe outbox flows and real broker/consumer integration.
+11. Expose controlled KOVI AI Finance tools with explicit authorization for mutations.
+12. Complete financial-domain audit and end-to-end invariants for cards, debts, installments and reconciliation.
+13. Expand automated tests, CI/CD and production security/observability.
+14. Add advanced banking imports and future Open Finance adapters.
+15. Complete the user-facing frontend and end-to-end product experience.
+16. Finalize KOVIAN Fitness integration, production deployment and 1.0 homologation.
+
+For the detailed continuation checklist, see [docs/PROJECT_STATUS.md](PROJECT_STATUS.md).
