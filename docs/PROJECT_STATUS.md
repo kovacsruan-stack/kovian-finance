@@ -302,3 +302,11 @@ Added a fail-closed internal KOVI capability/context surface authenticated by `X
 - Added bounded daily cash-flow intelligence (finance.get_cash_flow) over a maximum 366-day window.
 - Cancelled transactions remain excluded and no mutation capability is exposed.
 - Finance federation now covers accounts, transactions, revenue, cash flow, context, summary, forecast and risk.
+
+
+### 2026-09-20 large continuation checkpoint — Finance intelligence surface 1.4
+- KOVI Finance internal capability contract advanced to 1.4.
+- Added bounded read-only cash-flow intelligence with explicit date-window validation.
+- Cash-flow output is aggregated by day and excludes cancelled transactions.
+- Forecast, risk, context, accounts, transactions and revenue remain read-only federation surfaces.
+- No financial mutation capability was added to the KOVI internal contract.
