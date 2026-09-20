@@ -44,4 +44,4 @@ jobs:
           java-version: "21"
           cache: maven
       - name: Verify
-        run: mvn -B -ntp test
+        run: mvn -B -ntp clean verify
