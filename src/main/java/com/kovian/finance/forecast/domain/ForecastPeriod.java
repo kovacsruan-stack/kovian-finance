@@ -1,0 +1,1 @@
+package com.kovian.finance.forecast.domain; public enum ForecastPeriod { WEEK, MONTH, QUARTER, YEAR }
