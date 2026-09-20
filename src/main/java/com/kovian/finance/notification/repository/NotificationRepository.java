@@ -1,0 +1,3 @@
+package com.kovian.finance.notification.repository;
+import com.kovian.finance.notification.domain.Notification; import org.springframework.data.jpa.repository.JpaRepository; import java.util.*;
+public interface NotificationRepository extends JpaRepository<Notification,UUID>{List<Notification> findTop100ByOwnerIdOrderByCreatedAtDesc(UUID ownerId);List<Notification> findTop100ByOwnerIdAndReadAtIsNullOrderByCreatedAtDesc(UUID ownerId);Optional<Notification> findByIdAndOwnerId(UUID id,UUID ownerId);boolean existsByOwnerIdAndDeduplicationKey(UUID ownerId,String key);}
