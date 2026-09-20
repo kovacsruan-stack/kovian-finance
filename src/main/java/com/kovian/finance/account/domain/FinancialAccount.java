@@ -9,6 +9,7 @@ import java.util.UUID;
 @Table(name="financial_accounts", uniqueConstraints=@UniqueConstraint(name="uq_financial_account_owner_name", columnNames={"owner_id","name"}))
 public class FinancialAccount {
     @Id private UUID id;
+    @Version @Column(nullable=false) private Long version;
     @Column(name="owner_id", nullable=false) private UUID ownerId;
     @Column(nullable=false, length=120) private String name;
     @Enumerated(EnumType.STRING) @Column(name="account_type", nullable=false, length=30) private AccountType accountType;
@@ -20,7 +21,6 @@ public class FinancialAccount {
     @Column(name="updated_at", nullable=false) private OffsetDateTime updatedAt;
 
     protected FinancialAccount() {}
-
     public FinancialAccount(UUID ownerId, String name, AccountType type, String currency, BigDecimal openingBalance) {
         if (ownerId == null || name == null || name.isBlank()) throw new IllegalArgumentException("Owner and account name are required");
         if (openingBalance == null) throw new IllegalArgumentException("Opening balance is required");
