@@ -274,3 +274,8 @@ User preference: implement complete macroblocks and avoid fragmented/piecemeal u
 
 ### KOVI Integration Readiness
 The Finance application exposes a bounded read-only financial intelligence context for KOVI. Mutation capabilities remain subject to KOVI confirmation, authorization, idempotency and audit controls. External connector implementation remains a separate production gate.
+
+
+### 2026-09-20 continuation checkpoint
+- record bounded KOVI finance summary context milestone.
+- Changes are implemented as bounded, authorization-aware domain contracts; CI/build status remains unclaimed until an observed successful run exists.
