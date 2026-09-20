@@ -18,6 +18,6 @@ public class OutboxEventService {
   try{return repository.save(new OutboxEvent(CurrentUser.ownerId(),aggregateType,aggregateId,eventType,eventVersion,objectMapper.writeValueAsString(payload)));}
   catch(JsonProcessingException e){throw new IllegalArgumentException("Unable to serialize domain event",e);}
  }
- @Transactional(readOnly=true)
+ @Transactional
  public List<OutboxEvent> pendingBatch(){var events=repository.claimPending(OutboxStatus.PENDING.name(),OffsetDateTime.now()); events.forEach(OutboxEvent::markProcessing); return events;}
 }
