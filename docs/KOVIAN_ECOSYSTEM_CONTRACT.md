@@ -21,3 +21,14 @@ A commercial project may consume Finance capabilities only through declared vers
 ## Evolution
 
 Breaking changes require a new contract version and compatibility/deprecation handling.
+ 
+
+## 2026-09-21 commercial-builder alignment
+
+KOVI AI now models commercial software as a first-class Project. When KOVI DEV changes Finance, the intended relationship is:
+
+Project -> Finance-bound DevTask -> governed repository changes -> verification evidence -> release -> Finance production gate.
+
+Finance remains the financial source of truth even when KOVI is the engineering orchestrator.
+
+The ecosystem master specification is maintained in KOVI AI; this document is the Finance-side boundary contract and should be consulted before cross-product changes.
