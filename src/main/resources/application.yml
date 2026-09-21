@@ -28,7 +28,6 @@ management:
       show-details: never
       probes:
         enabled: true
-  endpoint:
     prometheus:
       enabled: true
 springdoc:
