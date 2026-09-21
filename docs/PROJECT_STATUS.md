@@ -441,3 +441,8 @@ Automated testing and final validation remain intentionally deferred until imple
 Added production profile hardening, disabled public API documentation in production, prevented API response caching, and aligned workstation profile explicitly.
 
 Testing and final validation remain deferred by implementation strategy and are not represented as passed.
+
+
+## 2026-09-21 ecosystem architecture persistence checkpoint
+
+The KOVIAN commercial-builder model is now explicitly persisted across the ecosystem. Finance remains the financial source of truth and KOVI remains the governed generative/engineering layer. Finance-side contracts, financial invariants and production gates remain authoritative; KOVI project/DevTask records are orchestration evidence, not replacements for Finance domain state.
