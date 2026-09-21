@@ -37,7 +37,7 @@ public class TransferService {
                                    String description, String idempotencyKey) {
         UUID ownerId=CurrentUser.ownerId();
         validate(fromAccountId,toAccountId,amount,description,idempotencyKey);
-        BigDecimal normalized=amount.setScale(4);
+        BigDecimal normalized=amount.setScale(4,java.math.RoundingMode.HALF_UP);
         String requestHash=hash(fromAccountId+"|"+toAccountId+"|"+normalized.toPlainString()+"|"+description.trim());
         UUID proposedTransferId=UUID.randomUUID();
 
