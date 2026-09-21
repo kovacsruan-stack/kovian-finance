@@ -2,7 +2,7 @@ import {useState,type ReactNode} from 'react'
 import {NavLink,Route,Routes} from 'react-router-dom'
 import {ArrowDownLeft,ArrowUpRight,BarChart3,Bell,BrainCircuit,ChevronRight,Home,Plus,Settings2,Target,Wallet,Menu,X,MoreHorizontal,Receipt,ShieldCheck,Sparkles} from 'lucide-react'
 const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
-const items=[['/','Início',Home],['/contas','Contas',Wallet],['/transacoes','Transações',ArrowUpRight],['/metas','Metas',Target],['/ia','KOVI AI',BrainCircuit]] as const
+const items=[['/','Início',Home],['/controle','Controle',ShieldCheck],['/contas','Contas',Wallet],['/transacoes','Transações',ArrowUpRight],['/metas','Metas',Target],['/ia','KOVI AI',BrainCircuit]] as const
 function Shell({children}:{children:ReactNode}){
  const [open,setOpen]=useState(false)
  return <div className="app-shell">
@@ -37,4 +37,4 @@ function Placeholder({title}:{title:string}){
   <div className="empty-card"><ShieldCheck size={28}/><strong>Dados protegidos por design</strong><span>As operações financeiras serão autorizadas no backend e auditadas.</span></div>
  </div>
 }
-export default function App(){return <Shell><Routes><Route path="/" element={<Dashboard/>}/><Route path="/contas" element={<Placeholder title="Contas"/>}/><Route path="/transacoes" element={<Placeholder title="Transações"/>}/><Route path="/metas" element={<Placeholder title="Metas"/>}/><Route path="/ia" element={<Placeholder title="KOVI AI"/>}/><Route path="*" element={<Placeholder title="KOVIAN Finance"/>}/></Routes></Shell>}
+export default function App(){return <Shell><Routes><Route path="/" element={<Dashboard/>}/><Route path="/contas" element={<Placeholder title="Contas"/>}/><Route path="/transacoes" element={<Placeholder title="Transações"/>}/><Route path="/metas" element={<Placeholder title="Metas"/>}/><Route path="/ia" element={<Placeholder title="KOVI AI"/>}/><Route path="/controle" element={<ControlPlane/>}/><Route path="*" element={<Placeholder title="KOVIAN Finance"/>}/></Routes></Shell>}
