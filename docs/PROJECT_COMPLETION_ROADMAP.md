@@ -1,34 +1,9 @@
-# KOVIAN Finance Implementation Roadmap
+KOVIAN Finance Implementation Roadmap
 
-## Current implementation scope: 89%
+Current implementation scope: 94%
 
-### Completed foundation
-- accounts, transactions and owner isolation
-- budgets, goals, recurring commitments
-- cards, debts and assets
-- forecast, scenarios and anomaly detection
-- audit and security controls
-- idempotency and concurrency foundations
-- imports/reconciliation foundation
-- outbox/event transport
-- notifications
-- KOVI read-only federation
-- production configuration and observability hardening
+Frontend checkpoint (2026-09-21): added a dedicated Finance Control Plane surface for financial close, reconciliation exceptions and governed exports, complementing the existing dashboard, accounts, transactions, goals and KOVI AI surfaces.
 
-### Latest implementation block
-- financial close-period lifecycle foundation
-- reconciliation-run evidence foundation
-- governed financial data-export request lifecycle
-- production target documentation
+Next highest-value implementation gap: bind the new control-plane UI to live close/reconciliation/export services, complete remaining accounting invariants and external connector boundaries, then perform full validation.
 
-### Remaining implementation
-- deeper accounting/reconciliation invariants
-- critical mutation lifecycle coverage
-- card/debt/installment/payment completion
-- external banking/Open Finance connector boundaries
-- operational alerting and recovery automation
-- backup/restore automation
-- final UI/product polish
-- final validation and production cutover
-
-Percentages measure implementation/documentation scope only. Tests and full runtime validation remain a separate final phase.
+Percentages measure implementation/documentation scope only; tests and full runtime validation remain a separate final phase.
