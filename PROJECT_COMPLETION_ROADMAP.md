@@ -36,3 +36,10 @@ Implementation scope: **97%**
 Finance now has an explicit KOVIAN OS application manifest and remains domain-authoritative for all financial mutations. KOVI runtime workloads may host the application but cannot bypass Finance services.
 
 Testing/runtime validation remains separate.
+
+
+## 2026-09-21 implementation checkpoint
+
+Implementation scope: **98%**
+
+KOVIAN OS compatibility is now persisted as a governed application boundary. Finance remains authoritative for financial data and mutations. Remaining work is concentrated in live frontend binding, connector completeness, production observability/DR and final validation.
