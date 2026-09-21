@@ -423,3 +423,12 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 Workstation integration checkpoint: unified ecosystem launcher now starts Finance with isolated PostgreSQL/Redis, exposes the Finance frontend on 5174 for mobile testing, includes health/readiness probes, and participates in unified health verification.
 
 The percentage is a scope estimate for implemented engineering work, not a claim that local builds, automated tests, end-to-end tests, or production deployment have passed. Those remain verification gates.
+
+
+## 2026-09-21 implementation continuation — pre-validation scope
+
+**Current scope estimate: 85%**
+
+Production fail-fast profile, operations/recovery runbook, LGPD engineering requirements and explicit remaining implementation scope are now added.
+
+Automated testing and final validation remain intentionally deferred until implementation scope is closed.
