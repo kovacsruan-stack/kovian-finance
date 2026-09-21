@@ -36,6 +36,7 @@ public class SecurityConfig {
                 .httpStrictTransportSecurity(h -> h.includeSubDomains(true).maxAgeInSeconds(31536000))
                 .frameOptions(f -> f.deny())
                 .contentTypeOptions(c -> {})
+                .permissionsPolicy(p -> p.policy("camera=(), microphone=(), geolocation=()"))
                 .referrerPolicy(r -> r.policy(
                     org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
             .authorizeHttpRequests(auth -> auth
