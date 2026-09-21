@@ -1,0 +1,9 @@
+{
+  "appId": "kovian-finance",
+  "version": "1.0.0",
+  "status": "ACTIVE",
+  "capabilities": ["financial-context.read","forecast.read","reconciliation.evidence.read","close.evidence.read","exports.governed"],
+  "agentCapabilities": ["financial-context.summarize","forecast.context"],
+  "permissions": ["finance.context.read"],
+  "mutationPolicy": "FINANCE_SERVICE_ONLY"
+}
