@@ -41,3 +41,14 @@ http://localhost:8082/actuator/health
 ```
 
 A healthy HTTP response confirms reachability only; it is not a substitute for the project's full test suite or end-to-end validation.
+
+
+## Unified KOVIAN workstation
+
+For running KOVI AI, KOVIAN Fitness and KOVIAN Finance together, use the launcher in the `kovi-ai` repository. The Finance frontend is exposed on port 5174 and the API on 8082. The launcher also injects the PC IPv4 into the local CORS allowlist for mobile testing on the same Wi-Fi network.
+
+Health/readiness endpoints:
+
+- `/actuator/health`
+- `/actuator/health/liveness`
+- `/actuator/health/readiness`
