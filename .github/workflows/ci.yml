@@ -61,3 +61,35 @@ jobs:
         run: |
           npm install --package-lock=false
           npm run build
+
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Capture backend diagnostics
+        shell: bash
+        env:
+          DATABASE_URL: jdbc:postgresql://localhost:5432/kovian_finance
+          DATABASE_USERNAME: kovian
+          DATABASE_PASSWORD: kovian
+          REDIS_URL: redis://localhost:6379
+          KOVIAN_JWT_SECRET: ci-only-test-secret-at-least-32-characters-long
+        run: |
+          set +e
+          mvn -B -ntp clean verify > finance-maven-diagnostics.log 2>&1
+          echo "MVN_EXIT=$?" >> finance-maven-diagnostics.log
+          exit 0
+      - name: Upload diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finance-build-diagnostics
+          path: finance-maven-diagnostics.log
+          if-no-files-found: warn
