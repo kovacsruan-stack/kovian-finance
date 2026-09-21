@@ -58,7 +58,7 @@ public class SecurityConfig {
         CorsConfiguration c = new CorsConfiguration();
         c.setAllowedOrigins(Arrays.stream(origins.split(",")).map(String::trim).filter(s -> !s.isBlank()).toList());
         c.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
-        c.setAllowedHeaders(List.of("Authorization","Content-Type","Idempotency-Key","X-Request-ID"));
+        c.setAllowedHeaders(List.of("Authorization","Content-Type","Idempotency-Key","X-Request-ID","X-KOVI-INTERNAL-KEY"));
         c.setExposedHeaders(List.of("X-Request-ID","Retry-After"));
         c.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource s = new UrlBasedCorsConfigurationSource();
