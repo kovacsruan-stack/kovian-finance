@@ -67,7 +67,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    OwnerIsolationFilter ownerIsolationFilter(com.fasterxml.jackson.databind.ObjectMapper mapper){ return new OwnerIsolationFilter(mapper); }
+    OwnerIsolationFilter ownerIsolationFilter(tools.jackson.databind.ObjectMapper mapper){ return new OwnerIsolationFilter(mapper); }
 
     @Bean
     KoviInternalAuthenticationFilter koviInternalAuthenticationFilter(
