@@ -22,7 +22,7 @@ public class OutboxEvent{
  public OutboxEvent(UUID ownerId,String aggregateType,UUID aggregateId,String eventType,String payload){this(ownerId,aggregateType,aggregateId,eventType,1,payload);}
  public OutboxEvent(UUID ownerId,String aggregateType,UUID aggregateId,String eventType,Integer eventVersion,String payload){
   if(ownerId==null||aggregateType==null||aggregateType.isBlank()||aggregateType.length()>80||aggregateId==null)throw new IllegalArgumentException("Invalid outbox aggregate.");
-  if(eventType==null||!eventType.matches("^[A-Z0-9]+(?:_[A-Z0-9]+)+\\.v[0-9]+$")||eventType.length()>100)throw new IllegalArgumentException("Event type must use the versioned EVENT_NAME.vN contract.");
+  if(eventType==null||!eventType.matches("^[A-Za-z0-9]+(?:[_.-][A-Za-z0-9]+)*\\.v[0-9]+$")||eventType.length()>100)throw new IllegalArgumentException("Event type must use the versioned EVENT_NAME.vN contract.");
   if(eventVersion==null||eventVersion<1||eventVersion>100)throw new IllegalArgumentException("Event version must be between 1 and 100.");
   if(payload==null||payload.isBlank()||payload.length()>1_000_000)throw new IllegalArgumentException("Outbox payload is required and must be at most 1 MB.");
   this.id=UUID.randomUUID();this.ownerId=ownerId;this.aggregateType=aggregateType;this.aggregateId=aggregateId;this.eventType=eventType;this.eventVersion=eventVersion;this.payload=payload;this.status=OutboxStatus.PENDING;this.attempts=0;this.availableAt=OffsetDateTime.now();this.createdAt=this.availableAt;
