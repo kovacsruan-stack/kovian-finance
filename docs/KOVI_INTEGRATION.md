@@ -15,3 +15,7 @@ Representative signals:
 - recurring.due
 
 The KOVI integration runtime is responsible for external messaging, calendar and workflow execution.
+
+
+## Internal security
+The KOVI internal API is protected centrally by the Spring Security chain with a timing-safe credential filter, while controller-level checks remain as defense in depth. Metrics track authenticated internal traffic and rejected credentials.
