@@ -58,7 +58,9 @@ public class OwnerIsolationFilter extends OncePerRequestFilter {
         catch (IllegalArgumentException ex) { return null; }
     }
 
-    private static final class PayloadTooLargeException extends IOException {}\n\n    private class CachedBodyRequest extends jakarta.servlet.http.HttpServletRequestWrapper {
+    private static final class PayloadTooLargeException extends IOException {}
+
+    private class CachedBodyRequest extends jakarta.servlet.http.HttpServletRequestWrapper {
         private final byte[] body;
         CachedBodyRequest(HttpServletRequest request, int maxBytes) throws IOException {
             super(request);
