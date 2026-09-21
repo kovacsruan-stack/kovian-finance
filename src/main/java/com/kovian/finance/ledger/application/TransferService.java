@@ -37,7 +37,7 @@ public class TransferService {
                                    String description, String idempotencyKey) {
         UUID ownerId=CurrentUser.ownerId();
         validate(fromAccountId,toAccountId,amount,description,idempotencyKey);
-        BigDecimal normalized=amount.setScale(4);
+        BigDecimal normalized=amount.setScale(4,java.math.RoundingMode.HALF_UP);
         String requestHash=hash(fromAccountId+"|"+toAccountId+"|"+normalized.toPlainString()+"|"+description.trim());
         UUID proposedTransferId=UUID.randomUUID();
 
@@ -53,7 +53,7 @@ public class TransferService {
             WHERE owner_id=? AND operation=? AND idempotency_key=? FOR UPDATE
             """,ownerId,OPERATION,idempotencyKey);
 
-        if(!requestHash.equals(record.get("request_hash",String.class))) throw new IdempotencyConflictException();
+        if(!requestHash.equals(String.valueOf(record.get("request_hash")))) throw new IdempotencyConflictException();
 
         Object resource=record.get("resource_id");
         UUID existingTransferId=resource==null?null:UUID.fromString(resource.toString());
@@ -82,8 +82,10 @@ public class TransferService {
         entries.save(new LedgerEntry(transfer.getId(),fromAccountId,normalized.negate()));
         entries.save(new LedgerEntry(transfer.getId(),toAccountId,normalized));
 
-        jdbc.update("""UPDATE idempotency_records SET resource_id=?
-                       WHERE owner_id=? AND operation=? AND idempotency_key=?""",
+        jdbc.update("""
+            UPDATE idempotency_records SET resource_id=?
+            WHERE owner_id=? AND operation=? AND idempotency_key=?
+            """,
             transfer.getId(),ownerId,OPERATION,idempotencyKey);
 
         audit.record("LEDGER_TRANSFER_POSTED","LedgerTransfer",transfer.getId(),

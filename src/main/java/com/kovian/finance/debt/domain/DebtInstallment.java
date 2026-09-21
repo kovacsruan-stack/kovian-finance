@@ -6,4 +6,3 @@ public class DebtInstallment {
  protected DebtInstallment(){} public DebtInstallment(UUID o,UUID d,int n,LocalDate due,BigDecimal principal,BigDecimal interest){ownerId=o;debtId=d;installmentNumber=n;dueDate=due;principalAmount=principal;interestAmount=interest;amount=principal.add(interest);}
  public UUID getId(){return id;} public UUID getDebtId(){return debtId;} public BigDecimal getAmount(){return amount;} public InstallmentStatus getStatus(){return status;} public void pay(UUID tx){status=InstallmentStatus.PAID;paidAt=OffsetDateTime.now();paymentTransactionId=tx;}
 }
-enum InstallmentStatus { PENDING, PAID, OVERDUE }
