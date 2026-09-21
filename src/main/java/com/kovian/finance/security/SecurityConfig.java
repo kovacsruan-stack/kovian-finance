@@ -37,6 +37,7 @@ public class SecurityConfig {
                 .frameOptions(f -> f.deny())
                 .contentTypeOptions(c -> {})
                 .permissionsPolicyHeader(p -> p.policy("camera=(), microphone=(), geolocation=()"))
+                .crossOriginResourcePolicy(c -> c.policy(org.springframework.security.web.header.writers.CrossOriginResourcePolicyHeaderWriter.CrossOriginResourcePolicy.SAME_ORIGIN))
                 .referrerPolicy(r -> r.policy(
                     org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
             .authorizeHttpRequests(auth -> auth
