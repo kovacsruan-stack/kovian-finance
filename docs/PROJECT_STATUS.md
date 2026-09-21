@@ -369,7 +369,7 @@ A mobile-first Finance frontend shell has been added under `frontend/`. KOVIAN F
 
 
 ## Scope completion estimate — 2026-09-20
-Estimated completion toward the documented Finance 1.0 scope: **78%**. This is a scope estimate, not a test/build percentage. Core financial domain, security, ledger, idempotency, outbox, imports/reconciliation, notifications, forecast and frontend foundations are implemented; remaining work is concentrated in deep accounting audit/E2E, advanced banking/Open Finance, real broker integration, production operations and final release gates.
+Estimated completion toward the documented Finance 1.0 scope: **79%**. This is a scope estimate, not a test/build percentage. Core financial domain, security, ledger, idempotency, outbox, imports/reconciliation, notifications, forecast and frontend foundations are implemented; remaining work is concentrated in deep accounting audit/E2E, advanced banking/Open Finance, real broker integration, production operations and final release gates.
 
 
 ## 2026-09-20 mobile/security continuation
@@ -389,3 +389,9 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 - KOVI internal federation forecast metadata is aligned to contract version 1.4.
 - Finance remains the source of truth for deterministic financial data.
 - Actual build/test/CI success remains unclaimed until an observed successful run exists.
+
+
+## 2026-09-21 continuation checkpoint
+- Finance KOVI forecast federation metadata is aligned to contract 1.4.
+- Workstation orchestration is integrated on main.
+- Financial source-of-truth boundaries remain enforced; KOVI federation remains read-only.
