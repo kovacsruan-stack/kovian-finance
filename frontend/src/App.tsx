@@ -17,12 +17,34 @@ function Shell({children}:{children:ReactNode}){
  </div>
 }
 function Dashboard(){
- return <div className="page"><div className="page-head"><div><p className="eyebrow">SETEMBRO 2026</p><h1>Seu dinheiro, em um só lugar.</h1><p className="muted">Uma visão simples do que entrou, saiu e do que vem pela frente.</p></div><button className="primary"><Plus size={17}/>Lançamento</button></div>
- <section className="hero-card"><div><span>Saldo total</span><strong>{money(12450.72)}</strong><small>↑ 8,4% em relação ao mês anterior</small></div><div className="hero-orb"><Wallet size={26}/></div></section>
- <div className="stat-grid"><article><span>Receitas</span><strong>{money(8420)}</strong><i className="positive"><ArrowDownLeft size={15}/>12,2%</i></article><article><span>Despesas</span><strong>{money(5360)}</strong><i className="negative"><ArrowUpRight size={15}/>4,8%</i></article><article><span>Patrimônio</span><strong>{money(38640)}</strong><i className="positive"><BarChart3 size={15}/>6,1%</i></article></div>
- <div className="section-title"><div><h2>Próximos movimentos</h2><span>Visão rápida</span></div><ChevronRight size={18}/></div>
- <div className="list-card"><div><div className="dot warning"/><span><b>Fatura do cartão</b><small>vence em 3 dias</small></span><strong>{money(1240)}</strong></div><div><div className="dot primary-dot"/><span><b>Meta: Reserva</b><small>68% concluída</small></span><strong>R$ 6.800</strong></div></div>
- <div className="ai-card"><BrainCircuit size={22}/><div><span>KOVI AI</span><strong>Você está dentro do seu orçamento este mês.</strong><small>Veja os principais insights financeiros.</small></div><ChevronRight size={19}/></div></div>
+ const [accounts,setAccounts]=useState<FinanceAccount[]>([])
+ const [transactions,setTransactions]=useState<FinanceTransaction[]>([])
+ const [goals,setGoals]=useState<FinanceGoal[]>([])
+ const [loading,setLoading]=useState(true)
+ const [error,setError]=useState<string|null>(null)
+ useEffect(()=>{
+  const ownerId=getOwnerId()
+  if(!ownerId){setLoading(false);setError('Faça login para carregar seus dados financeiros.');return}
+  const now=new Date();const from=new Date(now);from.setDate(from.getDate()-90)
+  void Promise.all([
+   getAccounts(ownerId),
+   getGoals(ownerId),
+   getTransactions(from.toISOString(),now.toISOString()),
+  ]).then(([accountData,goalData,transactionData])=>{
+   setAccounts(accountData);setGoals(goalData);setTransactions(transactionData);setError(null)
+  }).catch(()=>setError('Não foi possível carregar os dados financeiros.')).finally(()=>setLoading(false))
+ },[])
+ const balance=accounts.reduce((sum,a)=>sum+Number(a.currentBalance||0),0)
+ const income=transactions.filter(t=>t.type==='INCOME'&&t.status!=='CANCELLED').reduce((sum,t)=>sum+Number(t.amount||0),0)
+ const expense=transactions.filter(t=>t.type==='EXPENSE'&&t.status!=='CANCELLED').reduce((sum,t)=>sum+Number(t.amount||0),0)
+ const nextGoal=goals.find(g=>g.active)
+ return <div className="page"><div className="page-head"><div><p className="eyebrow">KOVIAN FINANCE</p><h1>Seu dinheiro, em um só lugar.</h1><p className="muted">Dados sincronizados com o backend financeiro autorizado.</p></div><button className="primary"><Plus size={17}/>Lançamento</button></div>
+ {error&&<div className="empty-card"><ShieldCheck size={28}/><strong>{error}</strong><span>Entre no ambiente autenticado do KOVIAN para consultar os dados da sua conta.</span></div>}
+ <section className="hero-card"><div><span>Saldo total</span><strong>{loading?'Carregando…':money(balance)}</strong><small>{accounts.length} conta(s) ativa(s)</small></div><div className="hero-orb"><Wallet size={26}/></div></section>
+ <div className="stat-grid"><article><span>Receitas · 90 dias</span><strong>{loading?'—':money(income)}</strong><i className="positive"><ArrowDownLeft size={15}/>{transactions.filter(t=>t.type==='INCOME').length} lançamentos</i></article><article><span>Despesas · 90 dias</span><strong>{loading?'—':money(expense)}</strong><i className="negative"><ArrowUpRight size={15}/>{transactions.filter(t=>t.type==='EXPENSE').length} lançamentos</i></article><article><span>Metas ativas</span><strong>{loading?'—':goals.filter(g=>g.active).length}</strong><i className="positive"><Target size={15}/>{nextGoal?money(nextGoal.currentAmount):'Sem meta'}</i></article></div>
+ <div className="section-title"><div><h2>Contas</h2><span>{accounts.length ? 'Saldos sincronizados' : 'Nenhuma conta encontrada'}</span></div><ChevronRight size={18}/></div>
+ <div className="list-card">{accounts.slice(0,4).map(account=><div key={account.id}><div className="dot primary-dot"/><span><b>{account.name}</b><small>{account.accountType} · {account.currency}</small></span><strong>{money(Number(account.currentBalance||0))}</strong></div>)}{!loading&&!accounts.length&&<div><span><b>Nenhuma conta cadastrada</b><small>Cadastre uma conta para começar.</small></span></div>}</div>
+ <div className="ai-card"><BrainCircuit size={22}/><div><span>KOVI AI</span><strong>Insights financeiros baseados nos dados autorizados.</strong><small>O KOVI permanece somente como camada de inteligência; o Finance continua sendo a fonte de verdade.</small></div><ChevronRight size={19}/></div></div>
 }
 function Placeholder({title}:{title:string}){
  const config:Record<string,{icon:typeof Wallet,desc:string,action:string,items:string[]}>={
