@@ -395,3 +395,9 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 - Finance KOVI forecast federation metadata is aligned to contract 1.4.
 - Workstation orchestration is integrated on main.
 - Financial source-of-truth boundaries remain enforced; KOVI federation remains read-only.
+
+
+## 2026-09-21 outbox contract hardening
+- Outbox events now validate owner/aggregate identity, version range, versioned event naming and a 1 MB payload ceiling at construction time.
+- Added regression coverage for versioned event names and payload bounds.
+- The outbox remains transactional and read-only to KOVI; external transport remains a production gate.
