@@ -23,11 +23,8 @@ public class OwnerIsolationFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        UUID owner = CurrentUser.ownerId();
-        if (owner == null) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Owner context is required");
-            return;
-        }
+        UUID owner;
+        try { owner = CurrentUser.ownerId(); } catch (IllegalStateException ex) { response.sendError(HttpServletResponse.SC_FORBIDDEN, "Owner context is required"); return; }
         String queryOwner = request.getParameter("ownerId");
         if (queryOwner != null && !owner.equals(parse(queryOwner))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Owner scope violation");
