@@ -411,3 +411,7 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 
 ## 2026-09-21 workstation smoke validation
 - Added documented Finance actuator health validation for workstation startup.
+
+
+## 2026-09-21 container runtime validation
+- Added container-level Finance healthcheck against `/actuator/health`.
