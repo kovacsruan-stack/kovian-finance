@@ -419,7 +419,7 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 
 ## Latest implementation checkpoint
 
-**Current scope estimate: 82%**
+**Current scope estimate: 83%**
 
 Workstation integration checkpoint: unified ecosystem launcher now starts Finance with isolated PostgreSQL/Redis, exposes the Finance frontend on 5174 for mobile testing, includes health/readiness probes, and participates in unified health verification.
 
