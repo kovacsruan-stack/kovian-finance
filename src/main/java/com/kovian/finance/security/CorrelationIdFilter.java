@@ -4,6 +4,6 @@ public class CorrelationIdFilter extends OncePerRequestFilter{
  public static final String HEADER="X-Correlation-Id";
  @Override protected void doFilterInternal(HttpServletRequest req,HttpServletResponse res,FilterChain chain)throws ServletException,IOException{
   String id=req.getHeader(HEADER); if(id==null||id.isBlank()||id.length()>120)id=UUID.randomUUID().toString();
-  try{MDC.put(HEADER,id);res.setHeader(HEADER,id);chain.doFilter(req,res);}finally{MDC.remove(HEADER);}
+  try{MDC.put(HEADER,id);res.setHeader(HEADER,id);res.setHeader("Cache-Control","no-store");res.setHeader("Pragma","no-cache");chain.doFilter(req,res);}finally{MDC.remove(HEADER);}
  }
 }
