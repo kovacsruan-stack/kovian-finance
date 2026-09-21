@@ -30,3 +30,14 @@ npm run dev -- --host 127.0.0.1 --port 5174
 ```
 
 The Vite proxy target is `http://localhost:8082` and can be overridden with `VITE_API_PROXY_TARGET`.
+
+
+### Workstation health validation
+
+After startup, verify:
+
+```text
+http://localhost:8082/actuator/health
+```
+
+A healthy HTTP response confirms reachability only; it is not a substitute for the project's full test suite or end-to-end validation.
