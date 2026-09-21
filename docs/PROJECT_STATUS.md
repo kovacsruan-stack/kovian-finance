@@ -381,3 +381,11 @@ Estimated completion toward the documented Finance 1.0 scope: **78%**. This is a
 ## Workstation-first integration
 
 The project is part of the KOVIAN local integration stack. Native tests remain the source of truth before integration. Local execution is expected on the developer PC through the shared KOVIAN Compose environment; Render is not a required runtime dependency for development validation.
+
+
+## 2026-09-21 workstation validation checkpoint
+
+- Local Docker Compose/workstation orchestration is integrated on main.
+- KOVI internal federation forecast metadata is aligned to contract version 1.4.
+- Finance remains the source of truth for deterministic financial data.
+- Actual build/test/CI success remains unclaimed until an observed successful run exists.
