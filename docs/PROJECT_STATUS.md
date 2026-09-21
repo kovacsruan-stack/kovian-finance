@@ -432,3 +432,12 @@ The percentage is a scope estimate for implemented engineering work, not a claim
 Production fail-fast profile, operations/recovery runbook, LGPD engineering requirements and explicit remaining implementation scope are now added.
 
 Automated testing and final validation remain intentionally deferred until implementation scope is closed.
+
+
+## 2026-09-21 pre-validation implementation continuation
+
+**Current scope estimate: 86%**
+
+Added production profile hardening, disabled public API documentation in production, prevented API response caching, and aligned workstation profile explicitly.
+
+Testing and final validation remain deferred by implementation strategy and are not represented as passed.
