@@ -415,3 +415,12 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 
 ## 2026-09-21 container runtime validation
 - Added container-level Finance healthcheck against `/actuator/health`.
+
+
+## Latest implementation checkpoint
+
+**Current scope estimate: 82%**
+
+Workstation integration checkpoint: unified ecosystem launcher now starts Finance with isolated PostgreSQL/Redis, exposes the Finance frontend on 5174 for mobile testing, includes health/readiness probes, and participates in unified health verification.
+
+The percentage is a scope estimate for implemented engineering work, not a claim that local builds, automated tests, end-to-end tests, or production deployment have passed. Those remain verification gates.
