@@ -53,7 +53,7 @@ public class TransferService {
             WHERE owner_id=? AND operation=? AND idempotency_key=? FOR UPDATE
             """,ownerId,OPERATION,idempotencyKey);
 
-        if(!requestHash.equals(record.get("request_hash",String.class))) throw new IdempotencyConflictException();
+        if(!requestHash.equals(String.valueOf(record.get("request_hash")))) throw new IdempotencyConflictException();
 
         Object resource=record.get("resource_id");
         UUID existingTransferId=resource==null?null:UUID.fromString(resource.toString());
