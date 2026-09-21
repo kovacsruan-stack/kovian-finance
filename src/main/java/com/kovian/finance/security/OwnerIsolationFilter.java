@@ -30,9 +30,18 @@ public class OwnerIsolationFilter extends OncePerRequestFilter {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Owner scope violation");
             return;
         }
-        if (request.getContentType() != null && request.getContentType().toLowerCase().contains("application/json")
-                && request.getContentLengthLong() > 0 && request.getContentLengthLong() <= 1_000_000) {
-            CachedBodyRequest wrapped = new CachedBodyRequest(request);
+        if (request.getContentType() != null && request.getContentType().toLowerCase().contains("application/json")) {
+            if (request.getContentLengthLong() > 1_000_000) {
+                response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "JSON request body is too large");
+                return;
+            }
+            CachedBodyRequest wrapped;
+            try {
+                wrapped = new CachedBodyRequest(request, 1_000_000);
+            } catch (PayloadTooLargeException ex) {
+                response.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "JSON request body is too large");
+                return;
+            }
             String bodyOwner = wrapped.ownerId();
             if (bodyOwner != null && !owner.equals(parse(bodyOwner))) {
                 response.sendError(HttpServletResponse.SC_FORBIDDEN, "Owner scope violation");
@@ -49,11 +58,13 @@ public class OwnerIsolationFilter extends OncePerRequestFilter {
         catch (IllegalArgumentException ex) { return null; }
     }
 
-    private class CachedBodyRequest extends jakarta.servlet.http.HttpServletRequestWrapper {
+    private static final class PayloadTooLargeException extends IOException {}\n\n    private class CachedBodyRequest extends jakarta.servlet.http.HttpServletRequestWrapper {
         private final byte[] body;
-        CachedBodyRequest(HttpServletRequest request) throws IOException {
+        CachedBodyRequest(HttpServletRequest request, int maxBytes) throws IOException {
             super(request);
-            body=request.getInputStream().readAllBytes();
+            byte[] data=request.getInputStream().readNBytes(maxBytes + 1);
+            if(data.length > maxBytes) throw new PayloadTooLargeException();
+            body=data;
         }
         String ownerId() {
             try {
