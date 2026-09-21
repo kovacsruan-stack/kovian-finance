@@ -75,6 +75,12 @@ public class OwnerIsolationFilter extends OncePerRequestFilter {
                 return value==null||value.isNull()?null:value.asText();
             } catch(Exception ex) { return null; }
         }
+        @Override public java.io.BufferedReader getReader() throws IOException {
+            String encoding=getCharacterEncoding();
+            java.nio.charset.Charset charset=encoding==null?StandardCharsets.UTF_8:java.nio.charset.Charset.forName(encoding);
+            return new java.io.BufferedReader(new java.io.InputStreamReader(getInputStream(),charset));
+        }
+
         @Override public jakarta.servlet.ServletInputStream getInputStream() {
             return new jakarta.servlet.ServletInputStream() {
                 private final java.io.ByteArrayInputStream input=new java.io.ByteArrayInputStream(body);
