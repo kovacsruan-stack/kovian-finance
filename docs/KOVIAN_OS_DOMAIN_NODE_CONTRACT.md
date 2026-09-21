@@ -1,20 +1,27 @@
-# KOVIAN OS Domain Node Contract
+# KOVIAN OS Domain Application Contract
 
-Finance is a KOVIAN OS domain application, not an execution node.
+Finance is a first-class KOVIAN OS application.
 
-## OS capabilities
-Finance may expose:
+## Exposed capability classes
 - bounded financial context;
-- reporting/forecast context;
+- forecasting/reporting context;
 - reconciliation and close evidence;
 - governed exports;
-- approved financial actions through Finance-owned services.
+- approved financial actions.
 
-## Rules
-- OS nodes execute workloads; Finance owns financial data.
-- Agent capabilities are declared, scoped and auditable.
-- No arbitrary node command can mutate financial persistence.
-- RLS, owner isolation and idempotency remain authoritative.
-- Production financial operations remain behind Finance controls.
+## Execution boundary
+KOVIAN OS Nodes may host Finance application/runtime workloads, but Nodes do not own financial data. All financial writes remain inside Finance services.
 
-This contract lets KOVIAN OS treat Finance as a first-class application while preserving financial ownership and auditability.
+## Agent boundary
+Agent capabilities must be:
+- declared;
+- scoped;
+- owner-authorized;
+- idempotent where applicable;
+- auditable.
+
+## Financial boundary
+RLS, owner isolation, reconciliation, close controls and evidence remain authoritative.
+
+## Commercial builder boundary
+KOVI DEV can create or modify Finance code through governed repository workflows. It cannot bypass Finance service boundaries.
