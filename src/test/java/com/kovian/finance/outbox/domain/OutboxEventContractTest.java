@@ -20,9 +20,9 @@ class OutboxEventContractTest {
     }
 
     @Test
-    void rejectsUnversionedEventNames() {
+    void rejectsMalformedEventNames() {
         assertThatThrownBy(() -> new OutboxEvent(
-                OWNER, "Notification", AGGREGATE, "NOTIFICATION_CREATED", 1, "{}"
+                OWNER, "Notification", AGGREGATE, "NOTIFICATION CREATED!", 1, "{}"
         )).isInstanceOf(IllegalArgumentException.class);
     }
 
