@@ -1,7 +1,7 @@
 import {useState,type ReactNode} from 'react'
 import {NavLink,Route,Routes} from 'react-router-dom'
 import {ArrowDownLeft,ArrowUpRight,BarChart3,Bell,BrainCircuit,ChevronRight,Home,Plus,Settings2,Target,Wallet,Menu,X,MoreHorizontal,Receipt,ShieldCheck,Sparkles} from 'lucide-react'
-const money=(v:number)=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
+const money=(v:number,currency='BRL')=>v.toLocaleString('pt-BR',{style:'currency',currency})
 const items=[['/','Início',Home],['/controle','Controle',ShieldCheck],['/contas','Contas',Wallet],['/transacoes','Transações',ArrowUpRight],['/metas','Metas',Target],['/ia','KOVI AI',BrainCircuit]] as const
 function Shell({children}:{children:ReactNode}){
  const [open,setOpen]=useState(false)
@@ -34,16 +34,18 @@ function Dashboard(){
    setAccounts(accountData);setGoals(goalData);setTransactions(transactionData);setError(null)
   }).catch(()=>setError('Não foi possível carregar os dados financeiros.')).finally(()=>setLoading(false))
  },[])
- const balance=accounts.reduce((sum,a)=>sum+Number(a.currentBalance||0),0)
- const income=transactions.filter(t=>t.type==='INCOME'&&t.status!=='CANCELLED').reduce((sum,t)=>sum+Number(t.amount||0),0)
- const expense=transactions.filter(t=>t.type==='EXPENSE'&&t.status!=='CANCELLED').reduce((sum,t)=>sum+Number(t.amount||0),0)
+ const brlAccounts=new Set(accounts.filter(a=>a.currency==='BRL').map(a=>a.id))
+ const balance=accounts.filter(a=>a.currency==='BRL').reduce((sum,a)=>sum+Number(a.currentBalance||0),0)
+ const brlTransactions=transactions.filter(t=>brlAccounts.has(t.accountId))
+ const income=brlTransactions.filter(t=>t.type==='INCOME'&&t.status!=='CANCELLED').reduce((sum,t)=>sum+Number(t.amount||0),0)
+ const expense=brlTransactions.filter(t=>t.type==='EXPENSE'&&t.status!=='CANCELLED').reduce((sum,t)=>sum+Number(t.amount||0),0)
  const nextGoal=goals.find(g=>g.active)
  return <div className="page"><div className="page-head"><div><p className="eyebrow">KOVIAN FINANCE</p><h1>Seu dinheiro, em um só lugar.</h1><p className="muted">Dados sincronizados com o backend financeiro autorizado.</p></div><button className="primary"><Plus size={17}/>Lançamento</button></div>
  {error&&<div className="empty-card"><ShieldCheck size={28}/><strong>{error}</strong><span>Entre no ambiente autenticado do KOVIAN para consultar os dados da sua conta.</span></div>}
- <section className="hero-card"><div><span>Saldo total</span><strong>{loading?'Carregando…':money(balance)}</strong><small>{accounts.length} conta(s) ativa(s)</small></div><div className="hero-orb"><Wallet size={26}/></div></section>
+ <section className="hero-card"><div><span>Saldo BRL</span><strong>{loading?'Carregando…':money(balance)}</strong><small>{accounts.length} conta(s) · somente BRL consolidado</small></div><div className="hero-orb"><Wallet size={26}/></div></section>
  <div className="stat-grid"><article><span>Receitas · 90 dias</span><strong>{loading?'—':money(income)}</strong><i className="positive"><ArrowDownLeft size={15}/>{transactions.filter(t=>t.type==='INCOME').length} lançamentos</i></article><article><span>Despesas · 90 dias</span><strong>{loading?'—':money(expense)}</strong><i className="negative"><ArrowUpRight size={15}/>{transactions.filter(t=>t.type==='EXPENSE').length} lançamentos</i></article><article><span>Metas ativas</span><strong>{loading?'—':goals.filter(g=>g.active).length}</strong><i className="positive"><Target size={15}/>{nextGoal?money(nextGoal.currentAmount):'Sem meta'}</i></article></div>
  <div className="section-title"><div><h2>Contas</h2><span>{accounts.length ? 'Saldos sincronizados' : 'Nenhuma conta encontrada'}</span></div><ChevronRight size={18}/></div>
- <div className="list-card">{accounts.slice(0,4).map(account=><div key={account.id}><div className="dot primary-dot"/><span><b>{account.name}</b><small>{account.accountType} · {account.currency}</small></span><strong>{money(Number(account.currentBalance||0))}</strong></div>)}{!loading&&!accounts.length&&<div><span><b>Nenhuma conta cadastrada</b><small>Cadastre uma conta para começar.</small></span></div>}</div>
+ <div className="list-card">{accounts.slice(0,4).map(account=><div key={account.id}><div className="dot primary-dot"/><span><b>{account.name}</b><small>{account.accountType} · {account.currency}</small></span><strong>{money(Number(account.currentBalance||0),account.currency)}</strong></div>)}{!loading&&!accounts.length&&<div><span><b>Nenhuma conta cadastrada</b><small>Cadastre uma conta para começar.</small></span></div>}</div>
  <div className="ai-card"><BrainCircuit size={22}/><div><span>KOVI AI</span><strong>Insights financeiros baseados nos dados autorizados.</strong><small>O KOVI permanece somente como camada de inteligência; o Finance continua sendo a fonte de verdade.</small></div><ChevronRight size={19}/></div></div>
 }
 function Placeholder({title}:{title:string}){
