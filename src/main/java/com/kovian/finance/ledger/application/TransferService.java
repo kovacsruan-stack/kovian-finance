@@ -82,8 +82,10 @@ public class TransferService {
         entries.save(new LedgerEntry(transfer.getId(),fromAccountId,normalized.negate()));
         entries.save(new LedgerEntry(transfer.getId(),toAccountId,normalized));
 
-        jdbc.update("""UPDATE idempotency_records SET resource_id=?
-                       WHERE owner_id=? AND operation=? AND idempotency_key=?""",
+        jdbc.update("""
+            UPDATE idempotency_records SET resource_id=?
+            WHERE owner_id=? AND operation=? AND idempotency_key=?
+            """,
             transfer.getId(),ownerId,OPERATION,idempotencyKey);
 
         audit.record("LEDGER_TRANSFER_POSTED","LedgerTransfer",transfer.getId(),
