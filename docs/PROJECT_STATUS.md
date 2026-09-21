@@ -407,3 +407,7 @@ The project is part of the KOVIAN local integration stack. Native tests remain t
 - Outbox aggregate, payload and event-name invariants are enforced at construction time while preserving existing version-field compatibility.
 - Added regression coverage for malformed names and oversized payloads.
 - Internal KOVI authentication and owner-isolation security boundaries remain intact.
+
+
+## 2026-09-21 workstation smoke validation
+- Added documented Finance actuator health validation for workstation startup.
