@@ -21,6 +21,11 @@ management:
       show-details: never
       probes:
         enabled: true
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 server:
   forward-headers-strategy: framework
   error:
