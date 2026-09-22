@@ -107,19 +107,27 @@ export function getOwnerId(): string | null {
   return typeof candidate === 'string' ? candidate : null
 }
 
-async function get<T>(path: string): Promise<T> {
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const accessToken = token()
   if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
-
   const response = await fetch(baseUrl + path, {
+    ...init,
     headers: {
       Accept: 'application/json',
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
+      ...(init?.headers ?? {}),
     },
   })
-
   if (!response.ok) throw new Error(`FINANCE_API_${response.status}`)
+  if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
+}
+
+async function get<T>(path: string): Promise<T> { return request<T>(path) }
+
+async function post<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, { method: 'POST', body: JSON.stringify(body) })
 }
 
 export function getAccounts(ownerId: string) {
@@ -154,4 +162,26 @@ export function getCategories(ownerId: string, kind: FinanceCategory['kind']) {
 
 export function getBudgets(ownerId: string, from: string, to: string) {
   return get<FinanceBudget[]>(`/budgets?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
+}
+
+export function createTransaction(input: { accountId: string; categoryId: string; description: string; amount: number; type: 'INCOME' | 'EXPENSE'; occurredAt: string; externalId?: string }) {
+  return post<FinanceTransaction>('/transactions', input)
+}
+
+export function cancelTransaction(id: string) { return post<void>(`/transactions/${id}/cancel`, {}) }
+
+export function createAccount(input: { ownerId: string; name: string; accountType: string; currency: string; openingBalance: number }) {
+  return post<FinanceAccount>('/accounts', input)
+}
+
+export function createCategory(input: { ownerId: string; name: string; kind: FinanceCategory['kind']; parentId?: string | null }) {
+  return post<FinanceCategory>('/categories', input)
+}
+
+export function createBudget(input: { ownerId: string; categoryId: string; period: FinanceBudget['period']; periodStart: string; limitAmount: number }) {
+  return post<FinanceBudget>('/budgets', input)
+}
+
+export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
+  return post<FinanceGoal>('/goals', input)
 }
