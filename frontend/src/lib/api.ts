@@ -27,6 +27,15 @@ export type FinanceGoal = {
   active: boolean
 }
 
+export type ReconciliationRun = {
+  id: string
+  accountId: string
+  expectedBalance: number
+  actualBalance: number
+  difference: number
+  status: string
+}
+
 const baseUrl = (import.meta.env.VITE_API_BASE_URL?.trim() || '/api/v1').replace(/\/$/, '')
 
 function token(): string | null {
@@ -65,12 +74,14 @@ export function getOwnerId(): string | null {
 async function get<T>(path: string): Promise<T> {
   const accessToken = token()
   if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
+
   const response = await fetch(baseUrl + path, {
     headers: {
       Accept: 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
   })
+
   if (!response.ok) throw new Error(`FINANCE_API_${response.status}`)
   return response.json() as Promise<T>
 }
@@ -87,4 +98,8 @@ export function getTransactions(from: string, to: string) {
   return get<FinanceTransaction[]>(
     `/transactions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
   )
+}
+
+export function getReconciliationHistory() {
+  return get<ReconciliationRun[]>('/reconciliation')
 }
