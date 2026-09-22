@@ -17,38 +17,50 @@ import java.util.*;
 public class GoalController {
     private final FinancialGoalRepository repository;
 
-    public GoalController(FinancialGoalRepository repository) { this.repository = repository; }
+    public GoalController(FinancialGoalRepository repository) {
+        this.repository = repository;
+    }
 
     @PostMapping
     ResponseEntity<GoalResponse> create(@Valid @RequestBody CreateGoalRequest request) {
         UUID ownerId = CurrentUser.ownerId();
-        if (request.ownerId() != null && !ownerId.equals(request.ownerId()))
+        if (request.ownerId() != null && !ownerId.equals(request.ownerId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner scope violation");
-        var goal = repository.save(new FinancialGoal(ownerId, request.name(), request.targetAmount(), request.targetDate()));
+        }
+        var goal = repository.save(new FinancialGoal(
+                ownerId, request.name(), request.targetAmount(), request.targetDate()
+        ));
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(goal));
     }
 
     @GetMapping
     List<GoalResponse> list(@RequestParam(required = false) UUID ownerId) {
         UUID currentOwnerId = CurrentUser.ownerId();
-        if (ownerId != null && !currentOwnerId.equals(ownerId))
+        if (ownerId != null && !currentOwnerId.equals(ownerId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner scope violation");
-        return repository.findByOwnerIdAndActiveTrueOrderByTargetDateAsc(currentOwnerId).stream().map(this::toResponse).toList();
+        }
+        return repository.findByOwnerIdAndActiveTrueOrderByTargetDateAsc(currentOwnerId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    private GoalResponse toResponse(FinancialGoal g) {
-        return new GoalResponse(g.getId(), g.getName(), g.getTargetAmount(), g.getCurrentAmount(), g.getTargetDate(), g.isActive());
+    private GoalResponse toResponse(FinancialGoal goal) {
+        return new GoalResponse(
+                goal.getId(), goal.getName(), goal.getTargetAmount(),
+                goal.getCurrentAmount(), goal.getTargetDate(), goal.isActive()
+        );
     }
 
     public record CreateGoalRequest(
-        UUID ownerId,
-        @NotBlank @Size(max=140) String name,
-        @NotNull @DecimalMin("0.01") BigDecimal targetAmount,
-        OffsetDateTime targetDate
+            UUID ownerId,
+            @NotBlank @Size(max = 140) String name,
+            @NotNull @DecimalMin("0.01") BigDecimal targetAmount,
+            OffsetDateTime targetDate
     ) {}
 
     public record GoalResponse(
-        UUID id, String name, BigDecimal targetAmount, BigDecimal currentAmount,
-        OffsetDateTime targetDate, boolean active
+            UUID id, String name, BigDecimal targetAmount, BigDecimal currentAmount,
+            OffsetDateTime targetDate, boolean active
     ) {}
 }
