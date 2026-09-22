@@ -1,0 +1,15 @@
+{
+  "language": "Português",
+  "languageShort": "PT",
+  "common": {
+    "overview": "Visão geral",
+    "projects": "Projetos",
+    "settings": "Configurações",
+    "integrations": "Integrações",
+    "search": "Buscar",
+    "new": "Novo",
+    "viewAll": "Ver tudo",
+    "recent": "Atividade recente",
+    "quickActions": "Ações rápidas"
+  }
+}
