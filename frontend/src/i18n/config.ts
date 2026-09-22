@@ -10,7 +10,7 @@ const resources = {
     dashboardTitle: 'Seu centro de comando inteligente.', dashboardDesc: 'Orquestre projetos, agentes e automações sem começar por configurações técnicas.',
     status: 'Status do KOVI', ready: 'Operação pronta para continuar', chatTitle: 'Conversar com KOVI',
     financeOverview: 'Visão geral', accounts: 'Contas', transactions: 'Transações', goals: 'Metas e orçamento',
-    reports: 'Relatórios', subscriptions: 'Assinaturas', financeIntegrations: 'Integrações', financeSettings: 'Configurações'
+    reports: 'Relatórios', subscriptions: 'Assinaturas', cards: 'Cartões', budgets: 'Orçamentos', recurring: 'Recorrentes', categories: 'Categorias', financeIntegrations: 'Integrações', financeSettings: 'Configurações', more: 'Mais', group_principal: 'Principal', group_planejamento: 'Planejamento', group_organizacao: 'Organização', group_sistema: 'Sistema'
   }},
   en: { common: {
     language: 'English', overview: 'Overview', chat: 'Chat with KOVI', projects: 'Projects',
@@ -19,7 +19,7 @@ const resources = {
     dashboardTitle: 'Your intelligent command center.', dashboardDesc: 'Orchestrate projects, agents and automations without starting with technical configuration.',
     status: 'KOVI status', ready: 'Operation ready to continue', chatTitle: 'Chat with KOVI',
     financeOverview: 'Overview', accounts: 'Accounts', transactions: 'Transactions', goals: 'Goals & budget',
-    reports: 'Reports', subscriptions: 'Subscriptions', financeIntegrations: 'Integrations', financeSettings: 'Settings'
+    reports: 'Reports', subscriptions: 'Subscriptions', cards: 'Cards', budgets: 'Budgets', recurring: 'Recurring', categories: 'Categories', financeIntegrations: 'Integrations', financeSettings: 'Settings', more: 'More', group_principal: 'Main', group_planejamento: 'Planning', group_organizacao: 'Organization', group_sistema: 'System'
   }},
 }
 void i18n.use(LanguageDetector).use(initReactI18next).init({

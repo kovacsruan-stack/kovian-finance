@@ -1,21 +1,30 @@
 ﻿import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, ChevronRight, CreditCard, FileText, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Target, Wallet, X } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, FileText, FolderTree, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Target, Wallet, X } from 'lucide-react'
 import { getAccounts, getGoals, getOwnerId, getTransactions, type FinanceAccount, type FinanceGoal, type FinanceTransaction } from './lib/api'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
 const money = (value: number, currency = 'BRL') => value.toLocaleString('pt-BR', { style: 'currency', currency })
-type Item = { to: string; key: string; icon: typeof Wallet }
+type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'planejamento' | 'organizacao' | 'sistema' }
 const items: Item[] = [
-  { to: '/', key: 'financeOverview', icon: BarChart3 },
-  { to: '/contas', key: 'accounts', icon: Wallet },
-  { to: '/transacoes', key: 'transactions', icon: Receipt },
-  { to: '/metas', key: 'goals', icon: Target },
-  { to: '/relatorios', key: 'reports', icon: BarChart3 },
-  { to: '/assinaturas', key: 'subscriptions', icon: CreditCard },
-  { to: '/integracoes', key: 'financeIntegrations', icon: ShieldCheck },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings2 },
+  { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
+  { to: '/transacoes', key: 'transactions', icon: Receipt, group: 'principal' },
+  { to: '/contas', key: 'accounts', icon: Wallet, group: 'principal' },
+  { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'principal' },
+  { to: '/orcamentos', key: 'budgets', icon: Target, group: 'planejamento' },
+  { to: '/metas', key: 'goals', icon: Target, group: 'planejamento' },
+  { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'planejamento' },
+  { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
+  { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
+  { to: '/integracoes', key: 'financeIntegrations', icon: ShieldCheck, group: 'sistema' },
+  { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
+]
+const navGroups = [
+  { key: 'principal', items: items.filter(item => item.group === 'principal') },
+  { key: 'planejamento', items: items.filter(item => item.group === 'planejamento') },
+  { key: 'organizacao', items: items.filter(item => item.group === 'organizacao') },
+  { key: 'sistema', items: items.filter(item => item.group === 'sistema') },
 ]
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
@@ -27,11 +36,11 @@ function Shell({ children }: { children: ReactNode }) {
   useEffect(() => { const onKey = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setPalette(v => !v); setQuery('') } if (event.key === 'Escape') setPalette(false) }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
   return <div className="app-shell">{open && <button className="scrim" aria-label="Fechar menu" onClick={() => setOpen(false)} />}
     <aside className={open ? 'drawer drawer-open' : 'drawer'}><div className="brand"><div className="brand-mark">K</div><div><strong>KOVIAN</strong><span>Finance</span></div><button className="icon-button mobile-only" onClick={() => setOpen(false)}><X size={18} /></button></div>
-      <nav className="nav-groups">{items.map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}</nav>
+      <nav className="nav-groups">{navGroups.map(group => <div className="nav-group" key={group.key}><span className="nav-group-title">{t(`group_${group.key}`)}</span>{group.items.map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}</div>)}</nav>
       <div className="runtime-card"><ShieldCheck size={16} /><div><strong>Dados protegidos</strong><span>Backend como fonte de verdade</span></div></div>
     </aside>
     <div className="content"><header className="topbar"><div className="top-left"><button className="icon-button mobile-only" onClick={() => setOpen(true)}><Menu size={19} /></button><div><small>KOVIAN ECOSYSTEM</small><strong>Finance</strong></div></div><div className="top-actions"><button className="search-box" aria-label="Buscar" onClick={() => setPalette(true)}><Search size={15} /><span>Buscar...</span><kbd>ÔîÿK</kbd></button><LanguageSwitcher /><span className="status-dot"><i /> Online</span><div className="avatar" aria-label="KOVIAN">K</div></div></header>{palette && <div className="palette-overlay" role="dialog" aria-modal="true" aria-label="Buscar" onMouseDown={e => { if (e.target === e.currentTarget) setPalette(false) }}><div className="palette"><div className="palette-input"><Search size={17} /><input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar no KOVIAN Finance..." /></div><div className="palette-list">{filtered.map(item => { const Icon = item.icon; return <NavLink key={item.to} to={item.to} className="palette-item" onClick={() => setPalette(false)}><Icon size={17} /><span>{item.label}</span><ChevronRight size={15} /></NavLink> })}{!filtered.length && <div className="palette-empty">Nenhum resultado encontrado.</div>}</div><small className="palette-hint">Esc ┬À fechar ┬À Ctrl/Ôîÿ K</small></div></div>}{children}
-      <nav className="bottom-nav">{items.slice(0, 4).map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}<button onClick={() => setOpen(true)}><MoreHorizontal size={18} /><span>Mais</span></button></nav>
+      <nav className="bottom-nav">{[items[0], items[1], items[4], items[5]].map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}<button onClick={() => setOpen(true)}><MoreHorizontal size={18} /><span>{t('more')}</span></button></nav>
     </div>
   </div>
 }function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{title}</h1><p>{desc}</p></div>{action}</section> }
@@ -54,6 +63,10 @@ const pageConfig: Record<string, { title: string; desc: string; icon: typeof Wal
   '/metas': { title: 'Metas e or├ºamento', desc: 'Defina objetivos e acompanhe o progresso ao longo do tempo.', icon: Target, items: ['Reserva de emerg├¬ncia', 'Objetivos personalizados', 'Or├ºamento mensal'], actionTo: '/metas', itemRoutes: ['/metas','/metas','/metas'] },
   '/relatorios': { title: 'Relat├│rios', desc: 'Transforme seus dados financeiros em vis├úo clara para decis├úo.', icon: BarChart3, items: ['Fluxo de caixa', 'Resumo por per├¡odo', 'Categorias'], actionTo: '/relatorios', itemRoutes: ['/relatorios','/relatorios','/relatorios'] },
   '/assinaturas': { title: 'Assinaturas', desc: 'Controle despesas recorrentes e compromissos financeiros.', icon: CreditCard, items: ['Recorr├¬ncias', 'Pr├│ximos vencimentos', 'Hist├│rico'], actionTo: '/assinaturas', itemRoutes: ['/assinaturas','/assinaturas','/assinaturas'] },
+  '/cartoes': { title: 'Cartões', desc: 'Acompanhe limites, faturas, vencimentos e compras parceladas.', icon: CreditCard, items: ['Meus cartões', 'Faturas abertas', 'Compras parceladas'], actionTo: '/cartoes', itemRoutes: ['/cartoes','/cartoes','/cartoes'] },
+  '/orcamentos': { title: 'Orçamentos', desc: 'Defina limites por categoria e acompanhe o consumo do mês.', icon: Target, items: ['Orçamento mensal', 'Limites por categoria', 'Alertas de gastos'], actionTo: '/orcamentos', itemRoutes: ['/orcamentos','/orcamentos','/orcamentos'] },
+  '/recorrentes': { title: 'Recorrentes', desc: 'Organize contas, receitas e compromissos que se repetem.', icon: CalendarClock, items: ['Contas recorrentes', 'Receitas recorrentes', 'Próximos vencimentos'], actionTo: '/recorrentes', itemRoutes: ['/recorrentes','/recorrentes','/recorrentes'] },
+  '/categorias': { title: 'Categorias', desc: 'Organize receitas e despesas por categorias, subcategorias e tags.', icon: FolderTree, items: ['Despesas', 'Receitas', 'Tags e subcategorias'], actionTo: '/categorias', itemRoutes: ['/categorias','/categorias','/categorias'] },
   '/integracoes': { title: 'Integra├º├Áes', desc: 'Conecte fontes autorizadas mantendo credenciais fora da interface.', icon: ShieldCheck, items: ['Bancos', 'Importa├º├Áes', 'Servi├ºos externos'], actionTo: '/integracoes', itemRoutes: ['/integracoes','/integracoes','/integracoes'] },
   '/configuracoes': { title: 'Configura├º├Áes', desc: 'Prefer├¬ncias da conta e controles avan├ºados do produto.', icon: Settings2, items: ['Perfil', 'Seguran├ºa', 'Prefer├¬ncias'], actionTo: '/configuracoes', itemRoutes: ['/configuracoes','/configuracoes','/configuracoes'] },
 }
