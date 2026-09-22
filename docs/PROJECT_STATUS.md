@@ -381,3 +381,13 @@ Estimated completion toward the documented Finance 1.0 scope: **78%**. This is a
 ## Workstation-first integration
 
 The project is part of the KOVIAN local integration stack. Native tests remain the source of truth before integration. Local execution is expected on the developer PC through the shared KOVIAN Compose environment; Render is not a required runtime dependency for development validation.
+
+
+## 2026-09-21 continuation checkpoint — outbox transport foundation
+
+- Added a governed HTTP outbox transport adapter behind the existing OutboxEventPublisher boundary.
+- Logging remains the default transport; HTTP transport is explicitly opt-in through KOVIAN_OUTBOX_TRANSPORT=http.
+- HTTP transport requires a configured endpoint and uses a dedicated outbox credential header.
+- Finance test suite remains passing after the transport addition.
+- Accounting ownership remains entirely inside KOVIAN Finance; the transport only publishes already-persisted domain events.
+- This reduces the remaining M2 event-architecture gap without claiming a real broker is deployed.

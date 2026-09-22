@@ -34,7 +34,23 @@ server:
     include-message: never
     include-stacktrace: never
 kovian:
+  accelerators:
+    lago:
+      enabled: ${KOVIAN_LAGO_ENABLED:false}
+      base-url: ${KOVIAN_LAGO_BASE_URL:}
+      usage-path: ${KOVIAN_LAGO_USAGE_PATH:/api/v1/events}
+      api-key: ${KOVIAN_LAGO_API_KEY:}
+    killbill:
+      enabled: ${KOVIAN_KILLBILL_ENABLED:false}
+      base-url: ${KOVIAN_KILLBILL_BASE_URL:}
+      subscription-path: ${KOVIAN_KILLBILL_SUBSCRIPTION_PATH:/1.0/kb/accounts}
+      api-key: ${KOVIAN_KILLBILL_API_KEY:}
   notifications:
     rules-interval-ms: ${KOVIAN_NOTIFICATION_RULES_INTERVAL_MS:60000}
   kovi:
     internal-api-key: ${KOVI_INTERNAL_API_KEY:}
+  outbox:
+    transport: ${KOVIAN_OUTBOX_TRANSPORT:log}
+    http:
+      endpoint: ${KOVIAN_OUTBOX_HTTP_ENDPOINT:}
+      api-key: ${KOVIAN_OUTBOX_HTTP_API_KEY:}
