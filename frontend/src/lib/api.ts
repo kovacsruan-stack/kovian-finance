@@ -47,6 +47,7 @@ export type FinanceInvoice = {
   totalAmount: number
   paidAmount: number
 }
+export type FinancePurchase = { id: string; cardId: string; invoiceId: string; description: string; totalAmount: number; installmentAmount: number; installmentNumber: number; totalInstallments: number; purchasedAt: string }
 
 export type FinanceCategory = {
   id: string
@@ -183,6 +184,12 @@ export function createCategory(input: { ownerId: string; name: string; kind: Fin
 export function createBudget(input: { ownerId: string; categoryId: string; period: FinanceBudget['period']; periodStart: string; limitAmount: number }) {
   return post<FinanceBudget>('/budgets', input)
 }
+
+export function createCard(input: { ownerId: string; name: string; brand?: string; lastFour?: string; creditLimit: number; closingDay: number; dueDay: number }) { return post<FinanceCard>('/cards', input) }
+export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input) }
+export function getInvoicePurchases(id: string) { return get<FinancePurchase[]>(`/cards/invoices/${id}/purchases`) }
+export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${id}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
+export function payInvoice(id: string, ownerId: string, accountId: string) { return post<void>(`/cards/invoices/${id}/pay?ownerId=${encodeURIComponent(ownerId)}&accountId=${encodeURIComponent(accountId)}`, {}) }
 
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
   return post<FinanceGoal>('/goals', input)
