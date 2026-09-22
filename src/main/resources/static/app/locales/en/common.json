@@ -1,0 +1,15 @@
+{
+  "language": "English",
+  "languageShort": "EN",
+  "common": {
+    "overview": "Overview",
+    "projects": "Projects",
+    "settings": "Settings",
+    "integrations": "Integrations",
+    "search": "Search",
+    "new": "New",
+    "viewAll": "View all",
+    "recent": "Recent activity",
+    "quickActions": "Quick actions"
+  }
+}

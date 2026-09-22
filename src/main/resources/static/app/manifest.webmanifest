@@ -1,1 +1,13 @@
-{"name":"KOVIAN Finance","short_name":"Finance","start_url":"/app/","scope":"/app/","display":"standalone","background_color":"#0b1220","theme_color":"#111827","description":"KOVIAN Finance","icons":[{"src":"/app/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "name":"KOVIAN Finance",
+  "short_name":"Finance",
+  "description":"Gestão financeira do ecossistema KOVIAN.",
+  "lang":"pt-BR",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "orientation":"portrait-primary",
+  "background_color":"#07110f",
+  "theme_color":"#07110f",
+  "icons":[{"src":"/kovian-finance-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
