@@ -1,5 +1,7 @@
-import {useState,type ReactNode} from 'react'
+import {useEffect,useState,type ReactNode} from 'react'
 import {NavLink,Route,Routes} from 'react-router-dom'
+import ControlPlane from './ControlPlane'
+import {getAccounts,getGoals,getOwnerId,getTransactions,type FinanceAccount,type FinanceGoal,type FinanceTransaction} from './lib/api'
 import {ArrowDownLeft,ArrowUpRight,BarChart3,Bell,BrainCircuit,ChevronRight,Home,Plus,Settings2,Target,Wallet,Menu,X,MoreHorizontal,Receipt,ShieldCheck,Sparkles} from 'lucide-react'
 const money=(v:number,currency='BRL')=>v.toLocaleString('pt-BR',{style:'currency',currency})
 const items=[['/','Início',Home],['/controle','Controle',ShieldCheck],['/contas','Contas',Wallet],['/transacoes','Transações',ArrowUpRight],['/metas','Metas',Target],['/ia','KOVI AI',BrainCircuit]] as const
