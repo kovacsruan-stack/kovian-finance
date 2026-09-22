@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, FileText, FolderTree, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Target, Wallet, X } from 'lucide-react'
-import { getAccounts, getGoals, getOwnerId, getTransactions, type FinanceAccount, type FinanceGoal, type FinanceTransaction } from './lib/api'
+import { getAccounts, getBudgets, getCards, getCategories, getGoals, getInvoices, getOwnerId, getTransactions, type FinanceAccount, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinanceTransaction } from './lib/api'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -71,8 +71,26 @@ const pageConfig: Record<string, { title: string; desc: string; icon: typeof Wal
   '/configuracoes': { title: 'Configura├º├Áes', desc: 'Prefer├¬ncias da conta e controles avan├ºados do produto.', icon: Settings2, items: ['Perfil', 'Seguran├ºa', 'Prefer├¬ncias'], actionTo: '/configuracoes', itemRoutes: ['/configuracoes','/configuracoes','/configuracoes'] },
 }
 function FinancePage({ config }: { config: typeof pageConfig[string] }) {
-  const { title, desc, icon: Icon, items, actionTo, itemRoutes } = config
-  return <main className="page"><Header title={title} desc={desc} action={<NavLink className="primary" to={actionTo}><Plus size={17} /> Adicionar</NavLink>} /><div className="feature-grid">{items.map((item, index) => <NavLink className="feature-card" to={itemRoutes[index] ?? actionTo} key={item}><div className="feature-icon"><Icon size={18} /></div><div><strong>{item}</strong><span>Componente preparado para dados reais e auditoria.</span></div><ChevronRight size={16} /></NavLink>)}</div><section className="panel empty-state"><Icon size={30} /><div><strong>├ürea pronta para integra├º├úo</strong><p>As opera├º├Áes continuam autorizadas no backend financeiro.</p></div></section></main>
+  const ownerId = getOwnerId()
+  const [cards, setCards] = useState<FinanceCard[]>([])
+  const [invoices, setInvoices] = useState<FinanceInvoice[]>([])
+  const [categories, setCategories] = useState<FinanceCategory[]>([])
+  const [budgets, setBudgets] = useState<FinanceBudget[]>([])
+  const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    if (!ownerId) return
+    setLoading(true)
+    const now = new Date(); const from = new Date(now.getFullYear(), now.getMonth(), 1); const to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const load = config.actionTo === '/cartoes' ? Promise.all([getCards(ownerId), getInvoices(ownerId)]).then(([c, i]) => { setCards(c); setInvoices(i) }) : config.actionTo === '/categorias' ? getCategories(ownerId, 'EXPENSE').then(setCategories) : config.actionTo === '/orcamentos' ? getBudgets(ownerId, from.toISOString(), to.toISOString()).then(setBudgets) : Promise.resolve()
+    void load.catch(() => undefined).finally(() => setLoading(false))
+  }, [ownerId, config.actionTo])
+  const isCards = config.actionTo === '/cartoes'; const isCategories = config.actionTo === '/categorias'; const isBudgets = config.actionTo === '/orcamentos'
+  return <main className="page"><Header title={config.title} desc={config.desc} action={<NavLink className="primary" to={config.actionTo}><Plus size={17} /> Adicionar</NavLink>} />
+    {isCards && <><div className="feature-grid">{cards.map(card => <article className="feature-card" key={card.id}><div className="feature-icon"><CreditCard size={18} /></div><div><strong>{card.name} {card.lastFour ? `•••• ${card.lastFour}` : ''}</strong><span>{card.brand || 'Cartão'} · Limite {money(card.creditLimit)} · Fecha dia {card.closingDay} · Vence dia {card.dueDay}</span></div><span className="badge">{card.status}</span></article>)}{!loading && !cards.length && <div className="panel empty-state"><CreditCard size={30} /><div><strong>Nenhum cartão cadastrado</strong><p>Os cartões cadastrados no backend aparecerão aqui.</p></div></div>}</div><section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">FATURAS</span><h2>Próximos vencimentos</h2></div></div>{invoices.slice(0, 8).map(invoice => <div className="account-row" key={invoice.id}><i /><span><strong>{invoice.referenceMonth}</strong><small>{invoice.status} · vence {invoice.dueDate}</small></span><b>{money(invoice.totalAmount)}</b></div>)}{!loading && !invoices.length && <div className="empty-inline">Nenhuma fatura encontrada.</div>}</section></>}
+    {isCategories && <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">CATEGORIAS</span><h2>Despesas</h2></div></div>{categories.map(category => <div className="account-row" key={category.id}><i /><span><strong>{category.name}</strong><small>{category.parentId ? 'Subcategoria' : 'Categoria principal'}</small></span><b>{category.kind}</b></div>)}{!loading && !categories.length && <div className="empty-inline">Nenhuma categoria de despesa encontrada.</div>}</section>}
+    {isBudgets && <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">ORÇAMENTO</span><h2>Limites do período</h2></div></div>{budgets.map(budget => <div className="account-row" key={budget.id}><i /><span><strong>{budget.period}</strong><small>{budget.periodStart} · categoria {budget.categoryId}</small></span><b>{money(budget.limitAmount)}</b></div>)}{!loading && !budgets.length && <div className="empty-inline">Nenhum orçamento cadastrado neste período.</div>}</section>}
+    {!isCards && !isCategories && !isBudgets && <><div className="feature-grid">{config.items.map((item, index) => <NavLink className="feature-card" to={config.itemRoutes[index] ?? config.actionTo} key={item}><div className="feature-icon"><config.icon size={18} /></div><div><strong>{item}</strong><span>Componente preparado para dados reais e auditoria.</span></div><ChevronRight size={16} /></NavLink>)}</div><section className="panel empty-state"><config.icon size={30} /><div><strong>Área pronta para integração</strong><p>As operações continuam autorizadas no backend financeiro.</p></div></section></>}
+  </main>
 }
 function App() { return <Shell><Routes><Route path="/" element={<Dashboard />} />{Object.entries(pageConfig).map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}<Route path="*" element={<FinancePage config={pageConfig['/configuracoes']} />} /></Routes></Shell> }
 export default App

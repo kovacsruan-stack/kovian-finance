@@ -27,6 +27,42 @@ export type FinanceGoal = {
   active: boolean
 }
 
+export type FinanceCard = {
+  id: string
+  name: string
+  brand: string | null
+  lastFour: string | null
+  creditLimit: number
+  closingDay: number
+  dueDay: number
+  status: string
+}
+
+export type FinanceInvoice = {
+  id: string
+  cardId: string
+  referenceMonth: string
+  dueDate: string
+  status: string
+  totalAmount: number
+  paidAmount: number
+}
+
+export type FinanceCategory = {
+  id: string
+  name: string
+  kind: 'INCOME' | 'EXPENSE'
+  parentId: string | null
+}
+
+export type FinanceBudget = {
+  id: string
+  categoryId: string
+  period: 'MONTHLY' | 'WEEKLY' | 'YEARLY'
+  periodStart: string
+  limitAmount: number
+}
+
 export type ReconciliationRun = {
   id: string
   accountId: string
@@ -102,4 +138,20 @@ export function getTransactions(from: string, to: string) {
 
 export function getReconciliationHistory() {
   return get<ReconciliationRun[]>('/reconciliation')
+}
+
+export function getCards(ownerId: string) {
+  return get<FinanceCard[]>(`/cards?ownerId=${encodeURIComponent(ownerId)}`)
+}
+
+export function getInvoices(ownerId: string) {
+  return get<FinanceInvoice[]>(`/cards/invoices?ownerId=${encodeURIComponent(ownerId)}`)
+}
+
+export function getCategories(ownerId: string, kind: FinanceCategory['kind']) {
+  return get<FinanceCategory[]>(`/categories?ownerId=${encodeURIComponent(ownerId)}&kind=${kind}`)
+}
+
+export function getBudgets(ownerId: string, from: string, to: string) {
+  return get<FinanceBudget[]>(`/budgets?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`)
 }
