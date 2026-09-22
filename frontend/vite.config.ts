@@ -8,12 +8,12 @@ export default defineConfig(({ mode }) => {
     base: '/app/',
     plugins: [react()],
     server: {
-      host: '127.0.0.1',
+      host: '0.0.0.0',
       port: 5174,
       strictPort: true,
       proxy: { '/api': { target: apiProxyTarget, changeOrigin: true } },
     },
-    preview: { host: '127.0.0.1', port: 4174, strictPort: true },
+    preview: { host: '0.0.0.0', port: 4174, strictPort: true },
     build: {
       outDir: '../src/main/resources/static/app',
       emptyOutDir: false,
