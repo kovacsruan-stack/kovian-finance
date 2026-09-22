@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, ChevronRight, CreditCard, FileText, Menu, MoreHorizontal, Plus, Receipt, Settings2, ShieldCheck, Target, Wallet, X } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, ChevronRight, CreditCard, FileText, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Target, Wallet, X } from 'lucide-react'
 import { getAccounts, getGoals, getOwnerId, getTransactions, type FinanceAccount, type FinanceGoal, type FinanceTransaction } from './lib/api'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
@@ -19,13 +19,18 @@ const items: Item[] = [
 ]
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
+  const [palette, setPalette] = useState(false)
+  const [query, setQuery] = useState('')
   const { t } = useTranslation()
+  const commands = items.map(item => ({ ...item, label: t(item.key) }))
+  const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
+  useEffect(() => { const onKey = (event: KeyboardEvent) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); setPalette(v => !v); setQuery('') } if (event.key === 'Escape') setPalette(false) }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey) }, [])
   return <div className="app-shell">{open && <button className="scrim" aria-label="Fechar menu" onClick={() => setOpen(false)} />}
     <aside className={open ? 'drawer drawer-open' : 'drawer'}><div className="brand"><div className="brand-mark">K</div><div><strong>KOVIAN</strong><span>Finance</span></div><button className="icon-button mobile-only" onClick={() => setOpen(false)}><X size={18} /></button></div>
       <nav className="nav-groups">{items.map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}</nav>
       <div className="runtime-card"><ShieldCheck size={16} /><div><strong>Dados protegidos</strong><span>Backend como fonte de verdade</span></div></div>
     </aside>
-    <div className="content"><header className="topbar"><div className="top-left"><button className="icon-button mobile-only" onClick={() => setOpen(true)}><Menu size={19} /></button><div><small>KOVIAN ECOSYSTEM</small><strong>Finance</strong></div></div><div className="top-actions"><LanguageSwitcher /><span className="status-dot"><i /> Online</span><div className="avatar">RK</div></div></header>{children}
+    <div className="content"><header className="topbar"><div className="top-left"><button className="icon-button mobile-only" onClick={() => setOpen(true)}><Menu size={19} /></button><div><small>KOVIAN ECOSYSTEM</small><strong>Finance</strong></div></div><div className="top-actions"><button className="search-box" aria-label="Buscar" onClick={() => setPalette(true)}><Search size={15} /><span>Buscar...</span><kbd>⌘K</kbd></button><LanguageSwitcher /><span className="status-dot"><i /> Online</span><div className="avatar" aria-label="KOVIAN">K</div></div></header>{palette && <div className="palette-overlay" role="dialog" aria-modal="true" aria-label="Buscar" onMouseDown={e => { if (e.target === e.currentTarget) setPalette(false) }}><div className="palette"><div className="palette-input"><Search size={17} /><input autoFocus value={query} onChange={e => setQuery(e.target.value)} placeholder="Buscar no KOVIAN Finance..." /></div><div className="palette-list">{filtered.map(item => { const Icon = item.icon; return <NavLink key={item.to} to={item.to} className="palette-item" onClick={() => setPalette(false)}><Icon size={17} /><span>{item.label}</span><ChevronRight size={15} /></NavLink> })}{!filtered.length && <div className="palette-empty">Nenhum resultado encontrado.</div>}</div><small className="palette-hint">Esc · fechar · Ctrl/⌘ K</small></div></div>}{children}
       <nav className="bottom-nav">{items.slice(0, 4).map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}<button onClick={() => setOpen(true)}><MoreHorizontal size={18} /><span>Mais</span></button></nav>
     </div>
   </div>
