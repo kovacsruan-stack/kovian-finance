@@ -62,6 +62,8 @@ export type FinanceBudget = {
   periodStart: string
   limitAmount: number
 }
+export type FinanceRecurring = { id: string; accountId: string; categoryId: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate: string | null; active: boolean }
+export type FinanceAnalytics = { from: string; to: string; income: number; expense: number; cashFlow: number; savingsRate: number; netWorth: number; assets: number; liabilities: number; metrics: Array<{ key: string; label: string; value: number; unit: string }> }
 
 export type ReconciliationRun = {
   id: string
@@ -185,3 +187,11 @@ export function createBudget(input: { ownerId: string; categoryId: string; perio
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
   return post<FinanceGoal>('/goals', input)
 }
+
+export function getRecurring() { return get<FinanceRecurring[]>('/recurring') }
+export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input) }
+export function pauseRecurring(id: string) { return post<void>(`/recurring/${id}/pause`, {}) }
+export function resumeRecurring(id: string) { return post<void>(`/recurring/${id}/resume`, {}) }
+export function getAnalytics(from: string, to: string, ownerId: string) { return get<FinanceAnalytics>(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${from}&to=${to}`) }
+export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${from}&to=${to}`) }
+
