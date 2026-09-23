@@ -144,6 +144,7 @@ function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   const [saving, setSaving] = useState(false)
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
   const [accountId, setAccountId] = useState('')
@@ -169,19 +170,20 @@ function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   const [cardId, setCardId] = useState('')
   const [installments, setInstallments] = useState('1')
   const [invoicePaymentId, setInvoicePaymentId] = useState('')
-  const resetForm = () => { setName(''); setDescription(''); setAmount(''); setOpeningBalance('0'); setFormError(null); setTargetDate(''); setLastFour(''); setCreditLimit(''); setClosingDay('10'); setDueDay('20'); setInstallments('1'); setParentCategoryId(''); setFrequency('MONTHLY'); setNextOccurrence(new Date().toISOString().slice(0, 10)); setEndDate(''); setInvoicePaymentId('') }
+  const resetForm = () => { setName(''); setDescription(''); setAmount(''); setOpeningBalance('0'); setFormError(null); setTargetDate(''); setLastFour(''); setCreditLimit(''); setClosingDay('10'); setDueDay('20'); setInstallments('1'); setParentCategoryId(''); setAccountId(''); setCategoryId(''); setTransactionType('EXPENSE'); setCurrency('BRL'); setCategoryKind('EXPENSE'); setCategoryFilter('EXPENSE'); setPeriod('MONTHLY'); setCardId(''); setInvoicePaymentId(''); setFrequency('MONTHLY'); setNextOccurrence(new Date().toISOString().slice(0, 10)); setEndDate('') }
   useEffect(() => {
     if (!ownerId) return
     setLoading(true)
+    setLoadError(null)
     const now = new Date(); const from = new Date(now.getFullYear(), now.getMonth(), 1); const to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1)
     const fromIso = from.toISOString(); const toIso = to.toISOString(); const monthEndIso = monthEnd.toISOString(); const fromDate = from.toISOString().slice(0, 10); const toDate = to.toISOString().slice(0, 10)
     const load = config.actionTo === '/contas' ? getAccounts(ownerId).then(setAccounts) : config.actionTo === '/transacoes' ? Promise.all([getAccounts(ownerId), getCategories(ownerId, 'EXPENSE'), getCategories(ownerId, 'INCOME'), getTransactions(fromIso, toIso)]).then(([a, e, i, tr]) => { setAccounts(a); setCategories([...e, ...i]); setTransactions(tr) }) : config.actionTo === '/metas' ? getGoals(ownerId).then(setGoals) : config.actionTo === '/cartoes' ? Promise.all([getCards(ownerId), getInvoices(ownerId), getAccounts(ownerId)]).then(([c, i, a]) => { setCards(c); setInvoices(i); setAccounts(a) }) : config.actionTo === '/categorias' ? Promise.all([getCategories(ownerId, 'EXPENSE'), getCategories(ownerId, 'INCOME')]).then(([e, i]) => setCategories([...e, ...i])) : config.actionTo === '/orcamentos' ? Promise.all([getBudgets(ownerId, new Date(now.getFullYear(), 0, 1).toISOString(), new Date(now.getFullYear() + 1, 0, 1).toISOString()), getCategories(ownerId, 'EXPENSE')]).then(async ([allBudgets, c]) => { const currentBudgets = allBudgets.filter(b => periodStartFor(b.period, now).toISOString().slice(0, 10) === new Date(b.periodStart).toISOString().slice(0, 10)); const bounds = currentBudgets.map(periodBounds); const transactionFrom = bounds.length ? new Date(Math.min(...bounds.map(b => b.from.getTime()))) : from; const transactionTo = bounds.length ? new Date(Math.max(...bounds.map(b => b.to.getTime()))) : monthEnd; const tr = await getTransactions(transactionFrom.toISOString(), transactionTo.toISOString()); setBudgets(currentBudgets); setCategories(c); setTransactions(tr) }) : config.actionTo === '/recorrentes' ? Promise.all([getRecurring(), getAccounts(ownerId), getCategories(ownerId, 'EXPENSE'), getCategories(ownerId, 'INCOME')]).then(([r, a, e, i]) => { setRecurring(r); setAccounts(a); setCategories([...e, ...i]) }) : config.actionTo === '/relatorios' ? Promise.all([getAnalytics(fromDate, toDate, ownerId), getCategoryAnalytics(fromDate, toDate, ownerId)]).then(([a, c]) => { setAnalytics(a); setCategoryAnalytics(c) }) : Promise.resolve()
-    void load.catch(() => undefined).finally(() => setLoading(false))
+    void load.catch(error => setLoadError(error instanceof Error ? error.message : t('financeLoadError'))).finally(() => setLoading(false))
   }, [ownerId, config.actionTo, refreshVersion])
   const isAccounts = config.actionTo === '/contas'; const isTransactions = config.actionTo === '/transacoes'; const isGoals = config.actionTo === '/metas'; const isCards = config.actionTo === '/cartoes'; const isCategories = config.actionTo === '/categorias'; const isBudgets = config.actionTo === '/orcamentos'; const isRecurring = config.actionTo === '/recorrentes'; const isReports = config.actionTo === '/relatorios'; const isSettings = config.actionTo === '/configuracoes'
   const saveMutation = useFinanceMutation(async (task: () => Promise<unknown>) => task())
-  const save = async (task: () => Promise<unknown>) => { setSaving(true); setFormError(null); try { await saveMutation.mutateAsync(task); setModal(null); resetForm(); setRefreshVersion(refreshVersion + 1) } catch (e) { setFormError(e instanceof Error ? e.message.replace('FINANCE_API_', t('apiErrorPrefix')) : t('saveError')) } finally { setSaving(false) } }
+  const save = async (task: () => Promise<unknown>) => { setSaving(true); setFormError(null); try { await saveMutation.mutateAsync(task); setModal(null); resetForm(); setRefreshVersion(version => version + 1) } catch (e) { setFormError(e instanceof Error ? e.message.replace('FINANCE_API_', t('apiErrorPrefix')) : t('saveError')) } finally { setSaving(false) } }
   const selectedCategories = categories.filter(c => c.kind === transactionType)
   const categoryName = (id: string | null) => categories.find(c => c.id === id)?.name ?? t('noCategory')
   const accountName = (id: string) => accounts.find(a => a.id === id)?.name ?? 'Conta'
