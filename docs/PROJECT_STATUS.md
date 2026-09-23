@@ -558,3 +558,18 @@ The implementation pass also confirmed there are no remaining TODO/TBD placehold
 **Current implementation scope estimate: 93%**
 
 This is an engineering-scope estimate, not a test/build/release percentage. Remaining work is concentrated in integrated QA/E2E coverage, broader application-shell decomposition, deeper planner parity/UX, observability and final production verification.
+
+## 2026-09-23 — Import/export and validation completion pass
+
+- Import history now exposes governed row-level error details through the existing backend import-error contract.
+- Import history refresh is now actionable and generated CSV object URLs are released safely after download initiation.
+- Multipart API failures now preserve backend error code, message, status and request correlation consistently with JSON requests.
+- Mutation responses for core financial creates are now runtime-validated with the same Zod contract boundary used for reads.
+- Dashboard, debt, liability and balance-sheet response contracts have stricter monetary bounds.
+- Added regression coverage for malformed mutation responses, multipart failures and negative balance-sheet/debt values.
+- Latest known implementation checkpoint: `b3ade11674c62ec4409b251e2def650966878357`.
+- CI/build remains intentionally unclaimed until an observed successful verification run.
+
+**Current implementation scope estimate: 94%**
+
+This remains a scope estimate for engineering implementation. The remaining 6% is primarily integrated frontend/backend QA, broader E2E coverage, final UX parity polish, observability/release verification and production homologation.
