@@ -82,7 +82,9 @@ public class SnapshotController {
 
         Optional<FinancialSnapshot> existing = snapshots.findByOwnerIdAndSnapshotDate(ownerId, date);
         if (existing.isPresent()) {
-            return existing.get();
+            FinancialSnapshot snapshot = existing.get();
+            snapshot.refresh(income, expense, totalAssets, totalLiabilities);
+            return snapshot;
         }
 
         return snapshots.save(new FinancialSnapshot(
