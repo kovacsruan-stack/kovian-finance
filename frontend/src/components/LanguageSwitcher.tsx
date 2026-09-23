@@ -8,18 +8,19 @@ export default function LanguageSwitcher() {
   const { i18n, t } = useTranslation()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'pt-BR'
   useEffect(() => { document.documentElement.lang = language }, [language])
   useEffect(() => {
     if (!open) return
     const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false) }
-    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') { setOpen(false); triggerRef.current?.focus() } }
     document.addEventListener('mousedown', close)
     document.addEventListener('keydown', onKeyDown)
     return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', onKeyDown) }
   }, [open])
   return <div ref={ref} className="relative">
-    <button type="button" onClick={() => setOpen(v => !v)} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label={t('buttons.changeLanguage','Change language')} aria-expanded={open} aria-haspopup="menu">
+    <button ref={triggerRef} type="button" onClick={() => setOpen(v => !v)} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label={t('buttons.changeLanguage','Change language')} aria-expanded={open} aria-haspopup="menu">
       <Globe2 className="h-3.5 w-3.5" aria-hidden="true" /><span>{language === 'en' ? 'EN' : 'PT'}</span><ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
     </button>
     {open && <div className="absolute right-0 top-[calc(100%+6px)] z-[100] w-40 rounded-xl border border-border bg-card p-1 shadow-lg" role="menu">
