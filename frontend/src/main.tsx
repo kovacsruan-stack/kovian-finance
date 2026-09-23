@@ -7,12 +7,8 @@ import { queryClient } from './lib/queryClient'
 import './i18n/config'
 import './index.css'
 
-if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-  window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' })
-  })
-}
+if ('serviceWorker' in navigator && window.location.protocol === 'https:') window.addEventListener('load', () => { void navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' }) })
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter><App /></BrowserRouter></QueryClientProvider></StrictMode>,
+  <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter basename="/app"><App /></BrowserRouter></QueryClientProvider></StrictMode>,
 )
