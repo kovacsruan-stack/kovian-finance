@@ -4,6 +4,7 @@ import com.kovian.finance.card.repository.CreditCardInvoiceRepository;
 import com.kovian.finance.debt.repository.DebtRepository;
 import com.kovian.finance.goal.repository.FinancialGoalRepository;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
+import com.kovian.finance.recurring.domain.RecurringTransaction;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
 import org.junit.jupiter.api.Test;
 
@@ -70,4 +71,37 @@ class FinancialDueRulesTest {
         verify(transactions, never()).findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(
                 eq(owner), any(), any());
     }
+    @Test
+    void shouldCreateWarningForOverdueRecurringTransaction() {
+        UUID owner = UUID.randomUUID();
+        RecurringTransaction overdue = mock(RecurringTransaction.class);
+        when(overdue.getId()).thenReturn(UUID.randomUUID());
+        when(overdue.getNextOccurrence()).thenReturn(LocalDate.of(2026, 9, 15));
+
+        RecurringTransactionRepository recurring = mock(RecurringTransactionRepository.class);
+        when(recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceLessThanEqual(eq(owner), eq(LocalDate.of(2026, 9, 19))))
+                .thenReturn(java.util.List.of(overdue));
+
+        NotificationService notifications = mock(NotificationService.class);
+        FinancialDueRules rules = new FinancialDueRules(
+                mock(CreditCardInvoiceRepository.class),
+                mock(DebtRepository.class),
+                recurring,
+                mock(FinancialGoalRepository.class),
+                notifications,
+                mock(FinancialTransactionRepository.class));
+
+        rules.evaluate(LocalDate.of(2026, 9, 20), owner);
+
+        verify(notifications).createForOwner(
+                eq(owner),
+                eq("RECURRING_OVERDUE"),
+                eq("WARNING"),
+                anyString(),
+                anyString(),
+                eq("RecurringTransaction"),
+                eq(overdue.getId()),
+                startsWith("recurring-overdue:"));
+    }
+
 }
