@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: da2431b7422dcb568b0be7696fc196406d2c8ebf
+Latest known commit: 9dfc45f4993948494e871fa6bcaae97b1b85248f
 
 ## Purpose
 
@@ -473,3 +473,14 @@ The KOVIAN commercial-builder model is now explicitly persisted across the ecosy
 - Hardened forecast ownership by deriving the authenticated owner server-side and rejecting mismatched optional owner identifiers.
 - Current work remains in **Phase A: Personal Finance Planner parity**. KOVI Intelligence UI is intentionally not being activated as a substitute for missing planner parity.
 - No CI/build success is claimed until an actual successful verification run is captured.
+
+
+## 2026-09-23 — Planner parity continuation: forecast security + net worth
+
+- Forecast ownership is now derived from the authenticated principal; optional request owner identifiers are compatibility-only and must match the authenticated owner.
+- Added unit coverage for forecast owner isolation, omitted-owner behavior and invalid horizons.
+- Hardened asset and liability endpoints to derive owner scope from CurrentUser and reject cross-owner identifiers.
+- Added typed frontend asset/liability contracts, runtime validation and API accessors.
+- Added a backend-controlled Net Worth planner view consolidating assets, liabilities and calculated net worth.
+- Added navigation, routing and PT-BR/EN localization for the Net Worth view.
+- Work remains independent of GitHub Actions, Work and Codex execution. CI/build is not used as a prerequisite for continued implementation and no successful CI/build result is claimed.
