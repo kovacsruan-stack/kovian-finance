@@ -19,3 +19,15 @@ test('@a11y entry controls have accessible names', async ({ page }) => {
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth+1)
   expect(overflow).toBe(false)
 })
+
+
+test('theme control changes document theme when available', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const button = page.locator('header button[aria-label*="modo" i], header button[aria-label*="mode" i], header button[aria-label*="light" i], header button[aria-label*="dark" i]').first()
+  if (await button.count()) {
+    const before = await page.locator('html').getAttribute('class')
+    await button.click()
+    const after = await page.locator('html').getAttribute('class')
+    expect(after).not.toBe(before)
+  }
+})
