@@ -119,6 +119,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     signal: init?.signal ?? AbortSignal.timeout(15000),
     headers: {
       Accept: 'application/json',
+      'Cache-Control': 'no-store',
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
       'X-Request-ID': requestId,
