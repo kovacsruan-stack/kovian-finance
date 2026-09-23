@@ -2,9 +2,9 @@ spring:
   application:
     name: kovian-finance
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/kovian_finance}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD:}
+    url: ${SPRING_DATASOURCE_URL:${DATABASE_URL:jdbc:postgresql://localhost:5432/kovian_finance}}
+    username: ${SPRING_DATASOURCE_USERNAME:${DATABASE_USERNAME:postgres}}
+    password: ${SPRING_DATASOURCE_PASSWORD:${DATABASE_PASSWORD:}}
   jpa:
     open-in-view: false
     hibernate:
@@ -13,7 +13,7 @@ spring:
     enabled: true
   data:
     redis:
-      url: ${REDIS_URL:redis://localhost:6379}
+      url: ${SPRING_DATA_REDIS_URL:${REDIS_URL:redis://localhost:6379}}
   servlet:
     multipart:
       max-file-size: 5MB
@@ -34,6 +34,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 server:
+  port: ${PORT:${SERVER_PORT:8082}}
   compression:
     enabled: true
     min-response-size: 2KB
