@@ -27,7 +27,7 @@ const resources = {
 void i18n.use(LanguageDetector).use(initReactI18next).init({
   resources, fallbackLng: 'pt-BR', supportedLngs: ['pt-BR', 'en'], load: 'currentOnly',
   defaultNS: 'common', ns: ['common'],
-  detection: { order: ['localStorage', 'navigator'], caches: ['localStorage'], lookupLocalStorage: 'kovian-language' },
+  detection: { order: ['localStorage', 'navigator'], caches: ['localStorage'], lookupLocalStorage: 'kovian.finance.ui.language' },
   interpolation: { escapeValue: false }, react: { useSuspense: false },
 })
 export default i18n
