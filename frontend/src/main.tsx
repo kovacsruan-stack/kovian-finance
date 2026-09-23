@@ -9,7 +9,7 @@ import './index.css'
 
 if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
   window.addEventListener('load', () => {
-    void navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    void navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' })
   })
 }
 
