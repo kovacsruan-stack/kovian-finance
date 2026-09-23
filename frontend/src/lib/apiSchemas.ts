@@ -25,3 +25,12 @@ export const financeAssetSchema=z.object({id:z.string(),ownerId:z.string(),name:
 export const financeLiabilitySchema=z.object({id:z.string(),ownerId:z.string(),name:z.string(),liabilityType:z.string(),amount:amount,active:z.boolean()})
 export const financeAssetListSchema=z.array(financeAssetSchema)
 export const financeLiabilityListSchema=z.array(financeLiabilitySchema)
+
+
+export const financeDebtSchema = z.object({
+  id: z.string().uuid(),
+  ownerId: z.string().uuid(),
+  outstandingAmount: z.number().finite(),
+  status: z.string(),
+})
+export const financeDebtListSchema = z.array(financeDebtSchema)
