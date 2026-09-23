@@ -3,7 +3,7 @@ export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, Fina
 import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
 
-import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
+import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financePurchaseSchema, financePurchaseListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
 
 let fallbackRequestId = 0
 
