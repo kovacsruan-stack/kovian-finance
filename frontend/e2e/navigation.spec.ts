@@ -28,3 +28,13 @@ test('Finance ecosystem links are safe on local shell', async ({ page }) => {
     expect(href).toMatch(/^https?:\\/\\/|^\\/)
   }
 })
+
+
+test('Finance command palette restores focus to its trigger', async ({ page }) => {
+  await page.goto('/')
+  const trigger = page.getByRole('button', { name: /search|pesquisar/i }).first()
+  await trigger.click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(trigger).toBeFocused()
+})
