@@ -9,6 +9,7 @@ export default function LanguageSwitcher() {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'pt-BR'
+  useEffect(() => { document.documentElement.lang = language }, [language])
   useEffect(() => {
     if (!open) return
     const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false) }
