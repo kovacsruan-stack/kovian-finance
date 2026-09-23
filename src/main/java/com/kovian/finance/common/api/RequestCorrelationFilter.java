@@ -12,6 +12,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 @Order(Ordered.HIGHEST_PRECEDENCE + 20)
 public class RequestCorrelationFilter implements Filter {
     public static final String HEADER_NAME = "X-Request-ID";
+    public static final String MDC_KEY = "requestId";
     private static final Pattern SAFE_REQUEST_ID = Pattern.compile("[A-Za-z0-9._:-]{1,128}");
 
     @Override
@@ -29,7 +31,12 @@ public class RequestCorrelationFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestId = safeRequestId(httpRequest.getHeader(HEADER_NAME));
         httpResponse.setHeader(HEADER_NAME, requestId);
-        chain.doFilter(request, response);
+        MDC.put(MDC_KEY, requestId);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            MDC.remove(MDC_KEY);
+        }
     }
 
     private String safeRequestId(String candidate) {
