@@ -12,6 +12,6 @@ public record KoviFinanceContextContract(
  boolean readOnly
 ) {
  public static KoviFinanceContextContract current(UUID ownerId,String endpoint){
-  return new KoviFinanceContextContract(ownerId,Instant.now(),"kovian-finance","1.3",endpoint,true);
+  return new KoviFinanceContextContract(ownerId,Instant.now(),"kovian-finance","1.4",endpoint,true);
  }
 }
