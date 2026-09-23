@@ -113,12 +113,15 @@ export function getOwnerId(): string | null {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const accessToken = token()
   if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
+  const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
   const response = await fetch(baseUrl + path, {
     ...init,
+    signal: init?.signal ?? AbortSignal.timeout(15000),
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
+      'X-Request-ID': requestId,
       ...(init?.headers ?? {}),
     },
   })
