@@ -122,7 +122,7 @@ function Modal({ title, children, onClose }: { title: string; children: ReactNod
 }
 
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="field"><span>{label}</span>{children}</label> }
-const pageTranslationKeys: Record<string, [string, string]> = { '/contas':['pageAccountsTitle','pageAccountsDesc'], '/transacoes':['pageTransactionsTitle','pageTransactionsDesc'], '/metas':['pageGoalsTitle','pageGoalsDesc'], '/relatorios':['pageReportsTitle','pageReportsDesc'], '/cartoes':['pageCardsTitle','pageCardsDesc'], '/orcamentos':['pageBudgetsTitle','pageBudgetsDesc'], '/recorrentes':['pageRecurringTitle','pageRecurringDesc'], '/categorias':['pageCategoriesTitle','pageCategoriesDesc'], '/configuracoes':['pageSettingsTitle','pageSettingsDesc'] }
+const pageTranslationKeys: Record<string, [string, string]> = { '/contas':['pages.accounts.title','pages.accounts.desc'], '/transacoes':['pages.transactions.title','pages.transactions.desc'], '/metas':['pages.goals.title','pages.goals.desc'], '/relatorios':['pages.reports.title','pages.reports.desc'], '/cartoes':['pages.cards.title','pages.cards.desc'], '/orcamentos':['pages.budgets.title','pages.budgets.desc'], '/recorrentes':['pages.recurring.title','pages.recurring.desc'], '/categorias':['pages.categories.title','pages.categories.desc'], '/configuracoes':['pages.settings.title','pages.settings.desc'] }
 function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   const { t } = useTranslation()
   const ownerId = getOwnerId()
