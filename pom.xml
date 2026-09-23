@@ -26,4 +26,29 @@
     <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-junit-jupiter</artifactId><scope>test</scope></dependency>
   </dependencies>
   <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+  <profiles>
+    <profile>
+      <id>security-scan</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.owasp</groupId>
+            <artifactId>dependency-check-maven</artifactId>
+            <version>13.0.0</version>
+            <configuration>
+              <failBuildOnCVSS>9</failBuildOnCVSS>
+              <failOnError>false</failOnError>
+              <format>HTML,JSON,SARIF</format>
+              <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+              <nvdValidForHours>24</nvdValidForHours>
+              <outputDirectory>${project.build.directory}/dependency-check</outputDirectory>
+            </configuration>
+            <executions>
+              <execution><goals><goal>check</goal></goals></execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
