@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: 0f487c5d4cbd29667dbbb92535064020c29ad97c
+Latest known commit: b779ca1fd35428ee2ad9f3529855e53dea747e45
 
 ## Purpose
 
@@ -490,3 +490,19 @@ The KOVIAN commercial-builder model is now explicitly persisted across the ecosy
 - Additional hardening: analytics, KOVI insights and debt endpoints now enforce authenticated owner scope; corresponding regression tests were added.
 
 - Corrected KOVI Insights frontend contract against the actual backend FinancialInsight record (type/title/explanation/severity/generatedAt).
+
+
+## 2026-09-23 — Financial integrity continuation
+
+- AI finance context date validation now returns explicit HTTP 400 for missing, reversed or oversized windows instead of leaking generic argument errors.
+- Debt responses now have typed frontend contracts and runtime validation; Net Worth now includes outstanding active debt obligations in the consolidated calculation.
+- CSV export formula neutralization was corrected so numeric negative values remain numeric while formula-like string values are neutralized.
+- Financial snapshot rebuild now refreshes an existing owner/date snapshot instead of returning stale values; regression coverage was added.
+- Asset and liability create endpoints now reject malformed balance-sheet requests with explicit HTTP 400 responses.
+- Invalid debt installment payments now return HTTP 400 instead of an unhandled generic exception.
+- Work continues directly on main without GitHub Actions, Work or Codex as execution dependencies.
+- CI/build remains unverified and is not represented as passed.
+
+**Current implementation scope estimate: 88%**
+
+This remains a scope estimate for engineering implementation, not a test/build/release percentage.
