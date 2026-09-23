@@ -20,3 +20,8 @@ export const financeCategoryListSchema=z.array(financeCategorySchema)
 export const financeBudgetListSchema=z.array(financeBudgetSchema)
 export const financeRecurringListSchema=z.array(financeRecurringSchema)
 export const reconciliationRunListSchema=z.array(reconciliationRunSchema)
+
+export const financeAssetSchema=z.object({id:z.string(),ownerId:z.string(),name:z.string(),assetType:z.string(),acquisitionValue:amount,currentValue:amount,liquidity:z.string(),active:z.boolean()})
+export const financeLiabilitySchema=z.object({id:z.string(),ownerId:z.string(),name:z.string(),liabilityType:z.string(),amount:amount,active:z.boolean()})
+export const financeAssetListSchema=z.array(financeAssetSchema)
+export const financeLiabilityListSchema=z.array(financeLiabilitySchema)
