@@ -177,7 +177,7 @@ export function createRecurring(input: { accountId: string; categoryId?: string 
 export function pauseRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/pause`, {}) }
 export function resumeRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/resume`, {}) }
 export function getAnalytics(from: string, to: string, ownerId: string) { return get(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeAnalyticsSchema) }
-export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, z.record(z.string(), amount)) }
+export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, z.record(z.string(), z.number().finite())) }
 
 export function getForecastCashFlow(ownerId: string, from: string, days: number) { return get(`/forecast/cash-flow?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&days=${days}`, cashFlowForecastListSchema) }
 
