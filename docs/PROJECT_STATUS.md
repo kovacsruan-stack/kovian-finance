@@ -4,10 +4,10 @@
 
 # KOVIAN Finance — Project Status & Continuation Handoff
 
-Updated: 2026-09-20
+Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: f0755dfab69f73654c2ac4b39856cfda8caa21f0
+Latest known commit: da2431b7422dcb568b0be7696fc196406d2c8ebf
 
 ## Purpose
 
@@ -446,3 +446,18 @@ Testing and final validation remain deferred by implementation strategy and are 
 ## 2026-09-21 ecosystem architecture persistence checkpoint
 
 The KOVIAN commercial-builder model is now explicitly persisted across the ecosystem. Finance remains the financial source of truth and KOVI remains the governed generative/engineering layer. Finance-side contracts, financial invariants and production gates remain authoritative; KOVI project/DevTask records are orchestration evidence, not replacements for Finance domain state.
+
+
+## 2026-09-23 Personal Finance Planner Foundation Migration
+
+- Approved architecture specification: `docs/superpowers/specs/2026-09-23-personal-finance-planner-foundation-design.md`.
+- Approved native implementation plan: `docs/superpowers/plans/2026-09-23-personal-finance-planner-foundation.md`.
+- Added upstream attribution and module mapping for `oofangoo/personal-finance-planner`.
+- Extracted frontend finance domain types into `frontend/src/lib/financeTypes.ts`.
+- Added Zod runtime response schemas in `frontend/src/lib/apiSchemas.ts`.
+- Hardened typed API response validation for accounts, transactions, goals, cards, invoices, categories, budgets, recurring data, reconciliation and analytics.
+- Added bounded dashboard analytics query support to the TanStack Query layer.
+- Isolated UI-only browser preferences under the `kovian.finance.ui.` namespace.
+- Extracted reusable Modal and Field UI primitives from the application shell.
+- Added tests for invalid API payloads and UI preference isolation.
+- GitHub Actions runs triggered by the migration commits were observed failing/cancelled; no successful CI/build result is claimed yet. The failure logs were not retrievable through the connected GitHub log endpoint, so no speculative fix is recorded.
