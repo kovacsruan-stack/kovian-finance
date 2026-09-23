@@ -30,7 +30,7 @@ const navGroups = [
 ]
 const localAppUrl=(port:number,configured:string)=>{if(configured.trim())return configured;const host=window.location.hostname;if(['localhost','127.0.0.1'].includes(host)||host.startsWith('192.168.'))return window.location.protocol+'//'+host+':'+port+'/';return ''}
 const fitnessUrl=localAppUrl(5173,'')
-const koviUrl=window.location.protocol+'//'+window.location.hostname+':3003/app/'
+const koviUrl=import.meta.env.VITE_KOVI_AI_URL?.trim() || (['localhost','127.0.0.1'].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.') ? window.location.protocol+'//'+window.location.hostname+':3003/app/' : '')
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [palette, setPalette] = useState(false)
