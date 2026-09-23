@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: b779ca1fd35428ee2ad9f3529855e53dea747e45
+Latest known commit: d9f8f803f9659e21b61ba692bb450bd01bbc7db3
 
 ## Purpose
 
@@ -506,3 +506,14 @@ The KOVIAN commercial-builder model is now explicitly persisted across the ecosy
 **Current implementation scope estimate: 88%**
 
 This remains a scope estimate for engineering implementation, not a test/build/release percentage.
+
+
+## 2026-09-23 — API contract completion pass
+
+- Added runtime schemas for import batches, import errors and debts, and wired them into the typed frontend API layer.
+- Centralized CSV serialization and added formula-neutralization tests while preserving numeric negative values.
+- Import error responses are now structured DTOs that expose row number, error code and safe error message rather than leaking persistence objects.
+- Balance-sheet asset/liability domain objects now expose the fields required by the validated frontend contract; this closes a response-shape mismatch in the Net Worth screen.
+- Net Worth now accounts for outstanding debt obligations in addition to registered liabilities.
+- Snapshot rebuild semantics and debt/asset/liability validation were hardened with explicit API behavior.
+- Current implementation scope estimate: 89%.
