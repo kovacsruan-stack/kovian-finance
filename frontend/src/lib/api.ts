@@ -77,6 +77,20 @@ export type ReconciliationRun = {
 
 const baseUrl = (import.meta.env.VITE_API_BASE_URL?.trim() || '/api/v1').replace(/\/$/, '')
 
+export class FinanceApiError extends Error {
+  readonly status: number
+  readonly requestId: string
+  readonly code: string
+
+  constructor(status: number, requestId: string, code = 'FINANCE_API_ERROR') {
+    super(`${code}_${status}`)
+    this.name = 'FinanceApiError'
+    this.status = status
+    this.requestId = requestId
+    this.code = code
+  }
+}
+
 function token(): string | null {
   try {
     return localStorage.getItem('access_token')
@@ -126,7 +140,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   })
-  if (!response.ok) throw new Error(`FINANCE_API_${response.status}`)
+  if (!response.ok) {
+    let code = 'FINANCE_API_ERROR'
+    try {
+      const payload = await response.clone().json() as { code?: unknown; error?: unknown }
+      const candidate = payload.code ?? payload.error
+      if (typeof candidate === 'string' && candidate.trim()) code = candidate.trim().slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
+    } catch {
+      // Preserve the status-only error when the backend response is not JSON.
+    }
+    throw new FinanceApiError(response.status, requestId, code)
+  }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
 }
