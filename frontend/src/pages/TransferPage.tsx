@@ -3,6 +3,7 @@ import { ArrowRightLeft, CheckCircle2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createTransfer, getAccounts, getOwnerId } from '../lib/api'
+import { useFinanceMutation } from '../lib/queries'
 
 const money = (value:number, currency='BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style:'currency', currency })
 
@@ -18,6 +19,7 @@ export default function TransferPage() {
   const [error,setError]=useState<string|null>(null)
   const [success,setSuccess]=useState(false)
   const [idempotencyKey,setIdempotencyKey]=useState<string|null>(null)
+  const transferMutation = useFinanceMutation(async ({ fromAccountId, toAccountId, amount, description, idempotencyKey }: { fromAccountId: string; toAccountId: string; amount: number; description: string; idempotencyKey: string }) => createTransfer({ fromAccountId, toAccountId, amount, description }, idempotencyKey))
 
   const activeAccounts=(accounts.data??[]).filter(account=>account.status==='ACTIVE')
   const from=activeAccounts.find(account=>account.id===fromAccountId)
@@ -33,7 +35,7 @@ export default function TransferPage() {
     setSaving(true)
     const key=idempotencyKey || (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`)
     setIdempotencyKey(key)
-    try { await createTransfer({fromAccountId,toAccountId,amount:value,description:description.trim()}, key); setAmount(''); setDescription(''); setSuccess(true); setIdempotencyKey(null); await accounts.refetch() }
+    try { await transferMutation.mutateAsync({fromAccountId,toAccountId,amount:value,description:description.trim(),idempotencyKey:key}); setAmount(''); setDescription(''); setSuccess(true); setIdempotencyKey(null) }
     catch(e){ setError(e instanceof Error ? e.message.replace('FINANCE_API_',t('apiErrorPrefix')) : t('saveError')) }
     finally { setSaving(false) }
   }
