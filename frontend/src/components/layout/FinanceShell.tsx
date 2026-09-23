@@ -15,6 +15,7 @@ const items: Item[] = [
   { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'planejamento' },
   { to: '/previsao', key: 'forecast', icon: CalendarClock, group: 'planejamento' },
   { to: '/patrimonio', key: 'netWorth', icon: Wallet, group: 'planejamento' },
+  { to: '/inteligencia', key: 'insights', icon: Sparkles, group: 'planejamento' },
 ]
 const moreItems: Item[] = [
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
