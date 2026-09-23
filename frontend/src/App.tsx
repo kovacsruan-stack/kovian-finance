@@ -9,7 +9,6 @@ import { useFinanceDashboard, useFinanceMutation } from './lib/queries'
 
 const getLocale = () => typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(getLocale(), { style: 'currency', currency })
-const formatDate = (value: string | Date) => new Date(value).toLocaleDateString(getLocale())
 type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'planejamento' | 'organizacao' | 'sistema' }
 const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
