@@ -102,8 +102,25 @@ async function postMultipart<T>(path: string, body: FormData): Promise<T> {
   const accessToken = token()
   if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
   const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${++fallbackRequestId}`
-  const response = await fetch(baseUrl + path, { method: 'POST', body, signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}`, 'X-Request-ID': requestId } })
-  if (!response.ok) throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId)
+  let response: Response
+  try {
+    response = await fetch(baseUrl + path, { method: 'POST', body, signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}`, 'X-Request-ID': requestId } })
+  } catch (error) {
+    const cause = error as { name?: string; message?: string }
+    const timedOut = cause?.name === 'TimeoutError'
+    throw new FinanceApiError(0, requestId, timedOut ? 'TIMEOUT' : 'NETWORK_ERROR', timedOut ? 'Finance API request timed out.' : cause?.message || 'Finance API request failed.')
+  }
+  if (!response.ok) {
+    let code = 'FINANCE_API_ERROR'
+    let message: string | undefined
+    try {
+      const payload = await response.json() as { code?: unknown; error?: unknown; message?: unknown }
+      const candidate = payload.code ?? payload.error
+      if (typeof candidate === 'string' && candidate.trim()) code = candidate.trim().slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
+      if (typeof payload.message === 'string' && payload.message.trim()) message = payload.message.trim().slice(0, 500)
+    } catch {}
+    throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId, code, message)
+  }
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
 
