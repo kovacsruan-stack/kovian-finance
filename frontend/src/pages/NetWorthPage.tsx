@@ -8,7 +8,7 @@ const money=(value:number)=>value.toLocaleString(document.documentElement.lang||
 export default function NetWorthPage(){
   const {t}=useTranslation()
   const ownerId=getOwnerId()
-  const assets=useQuery({queryKey:['finance','assets',ownerId],queryFn:()=>getAssets(ownerId!),enabled:Boolean(ownerId),staleTime:60_000})
+  const assets=useQuery({queryKey:['finance','assets',ownerId],queryFn:()=>getAssets(ownerId!),enabled:Boolean(ownerId),staleTime:60_000,retry:2})
   const liabilities=useQuery({queryKey:['finance','liabilities',ownerId],queryFn:()=>getLiabilities(ownerId!),enabled:Boolean(ownerId),staleTime:60_000})
   const debts=useQuery({queryKey:['finance','debts',ownerId],queryFn:()=>getDebts(ownerId!),enabled:Boolean(ownerId),staleTime:60_000})
   const snapshots=useQuery({queryKey:['finance','snapshots',ownerId],queryFn:getFinancialSnapshots,enabled:Boolean(ownerId),staleTime:60_000})
@@ -18,7 +18,7 @@ export default function NetWorthPage(){
   const totalObligations=liabilityTotal+debtTotal
   const netWorth=assetTotal-totalObligations
   const loading=assets.isLoading||liabilities.isLoading||debts.isLoading
-  const snapshotHistory=snapshots.data??[]
+  const snapshotHistory=(snapshots.data??[]).slice().sort((a,b)=>b.snapshotDate.localeCompare(a.snapshotDate))
   return <main className="page">
     <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('netWorthTitle')}</h1><p>{t('netWorthDesc')}</p></div></section>
     {!ownerId&&<div className="notice">{t('loginToLoadData')}</div>}
