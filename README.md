@@ -35,3 +35,21 @@ Canonical local QA:
     npm run qa:chromium
 
 The frontend smoke suite covers shell rendering, browser errors, bilingual switching and primary navigation.
+
+## Validation
+
+Backend:
+
+    ./mvnw test
+
+Frontend:
+
+    cd frontend
+    npm ci
+    npm run lint
+    npm run build
+    npm run test
+    npm run test:e2e
+    npm run qa:chromium
+
+For user-facing changes, local browser QA is mandatory when a local environment exists. Validate the real affected flow locally, including navigation, language controls, responsive layouts, loading/empty/error states and critical financial workflows. Automated checks do not replace real browser QA.
