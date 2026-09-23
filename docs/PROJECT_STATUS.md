@@ -701,3 +701,21 @@ The remaining implementation is small and concentrated in integrated production 
 **Current implementation scope estimate: 98%**
 
 The remaining work is concentrated in production infrastructure/homologation: provide a PostgreSQL service/connection, provide Redis or explicitly choose a supported cache fallback, redeploy the API, verify health/Flyway, obtain a READY Vercel deployment and execute integrated smoke checks.
+
+
+## 2026-09-23 — Final continuation checkpoint
+
+- Hardened Spring runtime configuration with standard Railway/Spring datasource and Redis variable precedence and injected PORT support.
+- Hardened the typed frontend API boundary so malformed successful JSON responses become structured FinanceApiError instances instead of leaking parser failures.
+- Added regression coverage for malformed successful JSON.
+- Added baseline Vercel security response headers.
+- Fixed PWA service-worker scope to derive from the actual deployed base path instead of assuming /app/.
+- Made the web manifest start URL, scope and icon path relative to the manifest location so both /app/ hosting and root Vercel hosting resolve correctly.
+- Added the production runbook covering Railway services, variable contracts, verification order and release gates.
+- Local Opera QA confirms the Finance shell renders the Reports route with navigation and language controls without a visible runtime error in the current local environment.
+- Railway still skips new deployments because the current service has no deployable snapshot for the new commits; the last real deployment failure remains the missing/invalid JDBC database configuration.
+- Vercel's connected status reports the provider build-rate-limit gate; no new READY deployment is claimed.
+
+**Current implementation scope estimate: 98%**
+
+The remaining work is release/homologation rather than broad feature implementation: provision PostgreSQL/Redis or an explicitly approved equivalent runtime, wire production variables, obtain successful Railway and Vercel deployments, run integrated smoke/E2E checks and close the release checklist.
