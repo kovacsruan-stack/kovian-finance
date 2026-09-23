@@ -31,7 +31,7 @@ export default function ControlPlane() {
     try {
       setRuns(await getReconciliationHistory())
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não foi possível carregar a reconciliação.')
+      setError(cause instanceof Error ? cause.message : t('reconciliationLoadError'))
     } finally {
       setLoading(false)
     }
@@ -55,11 +55,11 @@ export default function ControlPlane() {
     </div>
 
     <div className="feature-grid">
-      <Card icon={LockKeyhole} title="{t('currentPeriod')}" value="{t('currentMonth')}"
+      <Card icon={LockKeyhole} title={t('currentPeriod')} value={t('currentMonth')}
         detail={runs[0] ? '{t('lastRun')+' '}' + runs[0].status.toLowerCase() : '{t('noRunRecorded')}'} />
-      <Card icon={RefreshCw} title="{t('reconciliation')}" value={loading ? '...' : String(exceptionCount)}
+      <Card icon={RefreshCw} title={t('reconciliation')} value={loading ? '...' : String(exceptionCount)}
         detail={loading ? '{t('loading')}' : runs.length + ' {t('runsRecorded')}'} />
-      <Card icon={Download} title="{t('exports')}" value="{t('controlled')}" detail="{t('exportDetail')}" />
+      <Card icon={Download} title="{t('exports')}" value={t('controlled')} detail={t('exportDetail')} />
     </div>
 
     <div className="tabs">
@@ -98,7 +98,7 @@ export default function ControlPlane() {
     </div>}
 
     {tab === 'exports' && <div className="control-card">
-      <div className="row"><FileCheck2/><div><b>{t('exports')} financeiras</b><span>{t('exportDetail')} controlados pelo backend.</span></div>
+      <div className="row"><FileCheck2/><div><b>{t('financialExports')}</b><span>{t('exportBackend')}</span></div>
         <button className="secondary" type="button" disabled><Download size={15}/>{t('availableBackend')}</button>
       </div>
       <p className="muted">{t('exportSourceOfTruth')}</p>
