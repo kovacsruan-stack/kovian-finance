@@ -333,7 +333,7 @@ git commit -m "feat: complete finance localization and preferences"
 ### Task 10: Expand responsive, accessibility and browser E2E coverage
 
 **Files:**
-- Modify: existing Playwright configuration and test files under `frontend/`
+- Modify: `frontend/playwright.config.ts` and existing Playwright fixtures/configuration under `frontend/`
 - Create: `frontend/e2e/finance-planner.spec.ts`
 - Create: `frontend/e2e/import-export.spec.ts`
 - Create: `frontend/e2e/kovi-intelligence.spec.ts`
@@ -354,17 +354,17 @@ cd frontend && npm run qa:chromium
 Expected: PASS with no uncaught console errors on critical flows.
 - [ ] **Step 7: Commit.**
 ```bash
-git add frontend/e2e frontend/playwright.config.* frontend/package.json
+git add frontend/e2e frontend/playwright.config.ts frontend/package.json
 git commit -m "test: cover finance planner critical flows"
 ```
 
 ### Task 11: Backend hardening for planner-facing aggregates and authorization
 
 **Files:**
-- Modify: existing backend controllers/services for analytics, forecast, recurring, card, goal, importer and AI only where required by the planner contracts
-- Create: typed response DTOs for missing aggregate/planner endpoints under the existing domain packages
-- Test: corresponding controller/service integration tests
-- Test: Testcontainers PostgreSQL integration coverage for owner isolation and aggregate correctness
+- Modify: `src/main/java/com/kovian/finance/analytics/*`, `src/main/java/com/kovian/finance/forecast/*`, `src/main/java/com/kovian/finance/recurring/*`, `src/main/java/com/kovian/finance/card/*`, `src/main/java/com/kovian/finance/goal/*`, `src/main/java/com/kovian/finance/importer/*`, and `src/main/java/com/kovian/finance/ai/*` only where the planner contracts require changes
+- Create: typed response DTOs inside the affected domain packages for missing aggregate/planner endpoints
+- Test: `src/test/java/com/kovian/finance/security/*`, `src/test/java/com/kovian/finance/ai/*`, and affected domain integration tests
+- Test: `src/test/java/com/kovian/finance/integration/*` for Testcontainers PostgreSQL owner-isolation and aggregate correctness
 
 **Interfaces:**
 - Planner-facing endpoints return bounded DTOs and aggregates.
@@ -383,7 +383,7 @@ git commit -m "test: cover finance planner critical flows"
 Expected: PASS, including integration tests.
 - [ ] **Step 7: Commit.**
 ```bash
-git add backend src pom.xml 2>/dev/null || git add .
+git add src/main/java/com/kovian/finance src/test/java/com/kovian/finance pom.xml
 git commit -m "hardening: secure planner-facing finance APIs"
 ```
 
@@ -396,7 +396,7 @@ git commit -m "hardening: secure planner-facing finance APIs"
 - Modify: `docs/PRODUCTION_READINESS.md`
 - Modify: `docs/ONLINE_QA_STANDARD.md`
 - Modify: `README.md`
-- Test: repository CI workflows under `.github/workflows/`
+- Test: `.github/workflows/ci.yml`, `.github/workflows/frontend-qa.yml`, and `.github/workflows/pwa.yml`
 
 **Interfaces:**
 - Documentation describes the final architecture, upstream foundation attribution, planner modules, KOVI boundary, persistence rules and QA gates.
