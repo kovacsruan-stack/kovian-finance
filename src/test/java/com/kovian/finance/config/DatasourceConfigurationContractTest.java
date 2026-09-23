@@ -23,4 +23,14 @@ class DatasourceConfigurationContractTest {
         assertTrue(yaml.contains("idle-timeout"));
         assertTrue(yaml.contains("max-lifetime"));
     }
+    @Test
+    void isolatesProductionPersistenceInFinanceSchema() throws Exception {
+        String yaml = Files.readString(Path.of("src/main/resources/application-prod.yml"));
+
+        assertTrue(yaml.contains("default_schema: ${DB_SCHEMA:finance}"));
+        assertTrue(yaml.contains("default-schema: ${DB_SCHEMA:finance}"));
+        assertTrue(yaml.contains("schemas: ${DB_SCHEMA:finance}"));
+        assertTrue(yaml.contains("create-schemas: true"));
+    }
+
 }
