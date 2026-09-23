@@ -18,14 +18,12 @@ class FinancialDueRulesTest {
     @Test
     void shouldCreateCashFlowRiskWhenThirtyDayExpensesExceedIncome() {
         UUID owner = UUID.randomUUID();
-        FinancialTransaction tx = mock(FinancialTransaction.class);
-        when(tx.getStatus()).thenReturn(TransactionStatus.POSTED);
-        when(tx.getTransactionType()).thenReturn(TransactionType.EXPENSE);
-        when(tx.getAmount()).thenReturn(new BigDecimal("100.00"));
 
         FinancialTransactionRepository transactions = mock(FinancialTransactionRepository.class);
-        when(transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(eq(owner), any(), any()))
-                .thenReturn(List.of(tx));
+        when(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(eq(owner), any(), any()))
+                .thenReturn(java.math.BigDecimal.ZERO);
+        when(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(eq(owner), any(), any()))
+                .thenReturn(new java.math.BigDecimal("100.00"));
 
         CreditCardInvoiceRepository invoices = mock(CreditCardInvoiceRepository.class);
         DebtRepository debts = mock(DebtRepository.class);
@@ -47,5 +45,29 @@ class FinancialDueRulesTest {
                 eq("FinancialTransaction"),
                 eq(owner),
                 startsWith("cash-risk:"));
+    }
+
+    @Test
+    void shouldUsePostedAggregatesInsteadOfLoadingThirtyDaysOfTransactions() {
+        UUID owner = UUID.randomUUID();
+
+        FinancialTransactionRepository transactions = mock(FinancialTransactionRepository.class);
+        when(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(eq(owner), any(), any()))
+                .thenReturn(new java.math.BigDecimal("200.00"));
+        when(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(eq(owner), any(), any()))
+                .thenReturn(new java.math.BigDecimal("150.00"));
+
+        FinancialDueRules rules = new FinancialDueRules(
+                mock(CreditCardInvoiceRepository.class),
+                mock(DebtRepository.class),
+                mock(RecurringTransactionRepository.class),
+                mock(FinancialGoalRepository.class),
+                mock(NotificationService.class),
+                transactions);
+
+        rules.evaluate(LocalDate.of(2026, 9, 20), owner);
+
+        verify(transactions, never()).findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(
+                eq(owner), any(), any());
     }
 }
