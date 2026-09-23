@@ -12,8 +12,10 @@ export default function LanguageSwitcher() {
   useEffect(() => {
     if (!open) return
     const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false) }
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
     document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
+    document.addEventListener('keydown', onKeyDown)
+    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('keydown', onKeyDown) }
   }, [open])
   return <div ref={ref} className="relative">
     <button type="button" onClick={() => setOpen(v => !v)} className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:bg-muted hover:text-foreground" aria-label={t('buttons.changeLanguage','Change language')} aria-expanded={open} aria-haspopup="menu">
