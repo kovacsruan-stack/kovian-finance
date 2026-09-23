@@ -461,3 +461,15 @@ The KOVIAN commercial-builder model is now explicitly persisted across the ecosy
 - Extracted reusable Modal and Field UI primitives from the application shell.
 - Added tests for invalid API payloads and UI preference isolation.
 - GitHub Actions runs triggered by the migration commits were observed failing/cancelled; no successful CI/build result is claimed yet. The failure logs were not retrievable through the connected GitHub log endpoint, so no speculative fix is recorded.
+
+
+## 2026-09-23 — Planner parity execution continued
+
+- Re-sequenced the migration so the **Personal Finance Planner 100% parity gate precedes activation of KOVIAN-only differentiators**.
+- Extracted the main finance application shell into `frontend/src/components/layout/FinanceShell.tsx`.
+- Added planner import/export route and governed CSV import API integration.
+- Added bounded CSV transaction export with spreadsheet-formula neutralization.
+- Added localized planner import/export UI and localized forecast view.
+- Hardened forecast ownership by deriving the authenticated owner server-side and rejecting mismatched optional owner identifiers.
+- Current work remains in **Phase A: Personal Finance Planner parity**. KOVI Intelligence UI is intentionally not being activated as a substitute for missing planner parity.
+- No CI/build success is claimed until an actual successful verification run is captured.
