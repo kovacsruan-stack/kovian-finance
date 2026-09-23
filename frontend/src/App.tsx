@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FileText, FolderTree, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Sparkles, Target, Wallet, X } from 'lucide-react'
 import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getOwnerId, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from './lib/api'
@@ -74,7 +74,53 @@ const pageConfig: Record<string, { title: string; desc: string; icon: typeof Wal
   '/categorias': { title: 'Categorias', desc: 'Organize receitas e despesas por categorias, subcategorias e tags.', icon: FolderTree, items: ['Despesas', 'Receitas', 'Tags e subcategorias'], actionTo: '/categorias', itemRoutes: ['/categorias','/categorias','/categorias'] },
   '/configuracoes': { title: 'Configurações', desc: 'Preferências da conta e controles avançados do produto.', icon: Settings2, items: ['Perfil', 'Segurança', 'Preferências'], actionTo: '/configuracoes', itemRoutes: ['/configuracoes','/configuracoes','/configuracoes'] },
 }
-function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) { useEffect(() => { const onKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') onClose() }; window.addEventListener('keydown', onKeyDown); return () => window.removeEventListener('keydown', onKeyDown) }, [onClose]); return <div className="modal-overlay" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) onClose() }}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="finance-modal-title"><div className="modal-head"><div><span className="eyebrow">KOVIAN FINANCE</span><h2 id="finance-modal-title">{title}</h2></div><button type="button" className="icon-button" onClick={onClose} aria-label="Fechar modal"><X size={18} /></button></div>{children}</section></div> }
+function Modal({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
+  const dialogRef = useRef<HTMLElement>(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null
+    const dialog = dialogRef.current
+    if (!dialog) return
+
+    const focusable = () => Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(element => element.offsetParent !== null)
+    const initial = focusable()[0]
+    initial?.focus()
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeRef.current()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      if (!items.length) {
+        event.preventDefault()
+        return
+      }
+      const first = items[0]
+      const last = items[items.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      previousFocus?.focus()
+    }
+  }, [])
+
+  return <div className="modal-overlay" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) closeRef.current() }}><section ref={dialogRef} className="modal" role="dialog" aria-modal="true" aria-labelledby="finance-modal-title"><div className="modal-head"><div><span className="eyebrow">KOVIAN FINANCE</span><h2 id="finance-modal-title">{title}</h2></div><button type="button" className="icon-button" onClick={() => closeRef.current()} aria-label="Fechar modal"><X size={18} /></button></div>{children}</section></div>
+}
+
 function Field({ label, children }: { label: string; children: ReactNode }) { return <label className="field"><span>{label}</span>{children}</label> }
 const pageTranslationKeys: Record<string, [string, string]> = { '/contas':['pageAccountsTitle','pageAccountsDesc'], '/transacoes':['pageTransactionsTitle','pageTransactionsDesc'], '/metas':['pageGoalsTitle','pageGoalsDesc'], '/relatorios':['pageReportsTitle','pageReportsDesc'], '/cartoes':['pageCardsTitle','pageCardsDesc'], '/orcamentos':['pageBudgetsTitle','pageBudgetsDesc'], '/recorrentes':['pageRecurringTitle','pageRecurringDesc'], '/categorias':['pageCategoriesTitle','pageCategoriesDesc'], '/configuracoes':['pageSettingsTitle','pageSettingsDesc'] }
 function FinancePage({ config }: { config: typeof pageConfig[string] }) {
