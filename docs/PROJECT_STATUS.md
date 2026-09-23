@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: d121c01bd4eacccf32e09fa1c4eef3184c9c87e4
+Latest known commit: 23c50d38fe2e5ceaec56267576105bcfdb391ea0
 
 ## Purpose
 
@@ -486,3 +486,5 @@ The KOVIAN commercial-builder model is now explicitly persisted across the ecosy
 - Work remains independent of GitHub Actions, Work and Codex execution. CI/build is not used as a prerequisite for continued implementation and no successful CI/build result is claimed.
 
 - Continued without GitHub Actions, Work or Codex as execution dependencies: dashboard analytics authority, KOVI Insights UI/API, net worth validation, forecast localization and owner-isolation tests were implemented directly.
+
+- Additional hardening: analytics, KOVI insights and debt endpoints now enforce authenticated owner scope; corresponding regression tests were added.
