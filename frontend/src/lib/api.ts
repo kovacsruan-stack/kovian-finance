@@ -97,6 +97,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 async function get<T>(path: string, schema?: { parse: (value: unknown) => T }): Promise<T> { const value = await request<unknown>(path); return schema ? schema.parse(value) : value as T }
 
+async function postMultipart<T>(path: string, body: FormData): Promise<T> {
+  const accessToken = token()
+  if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
+  const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${++fallbackRequestId}`
+  const response = await fetch(baseUrl + path, { method: 'POST', body, signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', Authorization: `Bearer ${accessToken}`, 'X-Request-ID': requestId } })
+  if (!response.ok) throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId)
+  return response.status === 204 ? undefined as T : response.json() as Promise<T>
+}
+
 async function post<T>(path: string, body: unknown): Promise<T> {
   return request<T>(path, { method: 'POST', body: JSON.stringify(body) })
 }
@@ -169,3 +178,24 @@ export function getAnalytics(from: string, to: string, ownerId: string) { return
 export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`) }
 
 export function getForecastCashFlow(ownerId: string, from: string, days: number) { return get(`/forecast/cash-flow?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&days=${days}`, cashFlowForecastListSchema) }
+
+
+export type FinanceImport = {
+  id: string
+  accountId: string
+  filename: string
+  status: string
+  totalRows: number
+  importedRows: number
+  duplicateRows: number
+  failedRows: number
+}
+
+export function importCsv(accountId: string, file: File) {
+  const form = new FormData()
+  form.append('accountId', accountId)
+  form.append('file', file)
+  return postMultipart<FinanceImport>('/imports/csv', form)
+}
+export function getImportHistory() { return get<FinanceImport[]>('/imports') }
+export function getImportErrors(id: string) { return get<Array<{ rowNumber?: number; message?: string }>>(`/imports/${encodeURIComponent(id)}/errors`) }
