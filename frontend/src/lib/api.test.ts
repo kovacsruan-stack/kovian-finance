@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { FinanceApiError, createAccount, getAccounts, getOwnerId } from './api'
+import { FinanceApiError, createAccount, getAccounts, getOwnerId, importCsv } from './api'
 
 describe('finance api', () => {
   beforeEach(() => {
@@ -75,6 +75,18 @@ describe('finance api', () => {
     localStorage.setItem('access_token', 'header.e30.signature')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'not-a-number', status: 'ACTIVE' }]), { status: 200 })))
     await expect(getAccounts('owner-123')).rejects.toThrow()
+  })
+  it('preserves structured multipart import errors', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'IMPORT_TOO_LARGE', message: 'File exceeds limit.' }), {
+      status: 413,
+      headers: { 'content-type': 'application/json', 'X-Request-ID': 'import-request-7' },
+    })))
+    const file = new File(['csv'], 'data.csv', { type: 'text/csv' })
+    const error = await importCsv('account-123', file).catch(value => value as FinanceApiError)
+    expect(error).toBeInstanceOf(FinanceApiError)
+    expect(error.code).toBe('IMPORT_TOO_LARGE')
+    expect(error.requestId).toBe('import-request-7')
   })
   it('fails closed on malformed mutation responses', async () => {
     localStorage.setItem('access_token', 'header.e30.signature')
