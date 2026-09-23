@@ -63,8 +63,7 @@ class SnapshotControllerTest {
         var liabilities = mock(FinancialLiabilityRepository.class);
         var debts = mock(DebtRepository.class);
         var transactions = mock(FinancialTransactionRepository.class);
-        when(transactions.findByOwnerIdAndOccurredAtBetweenOrderOrderByOccurredAtDesc(any(), any(), any())).thenReturn(List.of());
-        when(transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(eq(owner), any(), any())).thenReturn(List.of());
+                when(transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(eq(owner), any(), any())).thenReturn(List.of());
         when(assets.findByOwnerIdAndActiveTrue(owner)).thenReturn(List.of());
         when(liabilities.findByOwnerIdAndActiveTrue(owner)).thenReturn(List.of());
         when(debts.findByOwnerIdOrderByName(owner)).thenReturn(List.of());
