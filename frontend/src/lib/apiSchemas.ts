@@ -51,3 +51,5 @@ export const financeNotificationListSchema=z.array(financeNotificationSchema)
 
 export const financeSnapshotSchema=z.object({id:z.string().uuid(),snapshotDate:z.string(),totalIncome:amount,totalExpense:amount,netCashFlow:amount,totalAssets:nonNegativeAmount,totalLiabilities:nonNegativeAmount,netWorth:amount})
 export const financeSnapshotListSchema=z.array(financeSnapshotSchema)
+
+export const financeTransferSchema=z.object({id:z.string().uuid(),fromAccountId:z.string().uuid(),toAccountId:z.string().uuid(),amount:positiveAmount,description:z.string(),status:z.string(),createdAt:z.string(),replayed:z.boolean()})
