@@ -160,7 +160,7 @@ export function getInvoices(ownerId: string) {
 }
 
 export function getCategories(ownerId: string, kind: FinanceCategory['kind']) {
-  return get<FinanceCategory[]>(`/categories?ownerId=${encodeURIComponent(ownerId)}&kind=${kind}`)
+  return get<FinanceCategory[]>(`/categories?ownerId=${encodeURIComponent(ownerId)}&kind=${encodeURIComponent(kind)}`)
 }
 
 export function getBudgets(ownerId: string, from: string, to: string) {
@@ -171,7 +171,7 @@ export function createTransaction(input: { accountId: string; categoryId: string
   return post<FinanceTransaction>('/transactions', input)
 }
 
-export function cancelTransaction(id: string) { return post<void>(`/transactions/${id}/cancel`, {}) }
+export function cancelTransaction(id: string) { return post<void>(`/transactions/${encodeURIComponent(id)}/cancel`, {}) }
 
 export function createAccount(input: { ownerId: string; name: string; accountType: string; currency: string; openingBalance: number }) {
   return post<FinanceAccount>('/accounts', input)
@@ -187,9 +187,9 @@ export function createBudget(input: { ownerId: string; categoryId: string; perio
 
 export function createCard(input: { ownerId: string; name: string; brand?: string; lastFour?: string; creditLimit: number; closingDay: number; dueDay: number }) { return post<FinanceCard>('/cards', input) }
 export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input) }
-export function getInvoicePurchases(id: string) { return get<FinancePurchase[]>(`/cards/invoices/${id}/purchases`) }
-export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${id}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
-export function payInvoice(id: string, ownerId: string, accountId: string) { return post<void>(`/cards/invoices/${id}/pay?ownerId=${encodeURIComponent(ownerId)}&accountId=${encodeURIComponent(accountId)}`, {}) }
+export function getInvoicePurchases(id: string) { return get<FinancePurchase[]>(`/cards/invoices/${encodeURIComponent(id)}/purchases`) }
+export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
+export function payInvoice(id: string, ownerId: string, accountId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/pay?ownerId=${encodeURIComponent(ownerId)}&accountId=${encodeURIComponent(accountId)}`, {}) }
 
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
   return post<FinanceGoal>('/goals', input)
@@ -197,8 +197,7 @@ export function createGoal(input: { ownerId: string; name: string; targetAmount:
 
 export function getRecurring() { return get<FinanceRecurring[]>('/recurring') }
 export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input) }
-export function pauseRecurring(id: string) { return post<void>(`/recurring/${id}/pause`, {}) }
-export function resumeRecurring(id: string) { return post<void>(`/recurring/${id}/resume`, {}) }
-export function getAnalytics(from: string, to: string, ownerId: string) { return get<FinanceAnalytics>(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${from}&to=${to}`) }
-export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${from}&to=${to}`) }
-
+export function pauseRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/pause`, {}) }
+export function resumeRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/resume`, {}) }
+export function getAnalytics(from: string, to: string, ownerId: string) { return get<FinanceAnalytics>(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`) }
+export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`) }
