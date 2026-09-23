@@ -1,5 +1,5 @@
 package com.kovian.finance.forecast.api;
-import com.kovian.finance.forecast.domain.*; import com.kovian.finance.transaction.domain.*; import com.kovian.finance.transaction.repository.*; import com.kovian.finance.account.repository.*; import com.kovian.finance.security.CurrentUser; import com.kovian.finance.security.CurrentUser; import org.springframework.web.bind.annotation.*; import org.springframework.web.server.ResponseStatusException; import org.springframework.http.HttpStatus; import java.math.*; import java.time.*; import java.util.*;
+import com.kovian.finance.forecast.domain.*; import com.kovian.finance.transaction.domain.*; import com.kovian.finance.transaction.repository.*; import com.kovian.finance.account.repository.*; import com.kovian.finance.security.CurrentUser; import org.springframework.web.bind.annotation.*; import org.springframework.web.server.ResponseStatusException; import org.springframework.http.HttpStatus; import java.math.*; import java.time.*; import java.util.*;
 @RestController @RequestMapping("/api/v1/forecast") public class ForecastController {
  final FinancialTransactionRepository transactions; final FinancialAccountRepository accounts;
  ForecastController(FinancialTransactionRepository t,FinancialAccountRepository a){transactions=t;accounts=a;}
