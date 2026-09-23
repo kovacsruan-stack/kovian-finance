@@ -538,3 +538,6 @@ This remains a scope estimate for engineering implementation, not a test/build/r
 - Added a governed Notifications screen with unread count and owner-scoped mark-as-read actions.
 - Added routing, navigation and PT-BR/EN localization for financial notifications.
 - Added contract regression tests for valid and malformed notification payloads.
+
+
+The implementation pass also confirmed there are no remaining TODO/TBD placeholders in the repository search used for this checkpoint. CI/build is still not claimed as verified.
