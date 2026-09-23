@@ -14,3 +14,5 @@ export type FinanceAsset = { id: string; ownerId: string; name: string; assetTyp
 export type FinanceLiability = { id: string; ownerId: string; name: string; liabilityType: string; amount: number; active: boolean }
 
 export type FinanceDebt = { id: string; ownerId: string; name: string; debtType: string; principalAmount: number; outstandingAmount: number; annualInterestRate: number | null; startDate: string; endDate: string | null; totalInstallments: number; status: 'ACTIVE' | 'PAID' | string }
+
+export type FinanceSnapshot = { id: string; snapshotDate: string; totalIncome: number; totalExpense: number; netCashFlow: number; totalAssets: number; totalLiabilities: number; netWorth: number }
