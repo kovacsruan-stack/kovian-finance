@@ -6,6 +6,12 @@ test('Finance local Chromium smoke', async ({ page }) => {
   page.on('console', message => {
     if (message.type() === 'error') runtimeErrors.push(`console: ${message.text()}`)
   })
+  page.on('response', response => {
+    if (response.status() >= 500) runtimeErrors.push(`http ${response.status()}: ${response.url()}`)
+  })
+  page.on('requestfailed', request => {
+    runtimeErrors.push(`requestfailed: ${request.url()} — ${request.failure()?.errorText ?? 'unknown'}`)
+  })
 
   const response = await page.goto('/')
   expect(response?.ok()).toBeTruthy()
