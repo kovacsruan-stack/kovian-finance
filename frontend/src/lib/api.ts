@@ -2,7 +2,7 @@ export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, Fina
 import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
 
-import { financeDebtListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
+import { financeImportSchema, financeImportListSchema, financeDebtListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
 
 let fallbackRequestId = 0
 
@@ -195,9 +195,9 @@ export function importCsv(accountId: string, file: File) {
   const form = new FormData()
   form.append('accountId', accountId)
   form.append('file', file)
-  return postMultipart<FinanceImport>('/imports/csv', form)
+  return postMultipart<FinanceImport>('/imports/csv', form).then(value => financeImportSchema.parse(value))
 }
-export function getImportHistory() { return get<FinanceImport[]>('/imports') }
+export function getImportHistory() { return get('/imports', financeImportListSchema) }
 export function getImportErrors(id: string) { return get<Array<{ rowNumber?: number; message?: string }>>(`/imports/${encodeURIComponent(id)}/errors`) }
 
 export function getAssets(ownerId: string) { return get(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
