@@ -17,6 +17,7 @@ const items: Item[] = [
   { to: '/patrimonio', key: 'netWorth', icon: Wallet, group: 'planejamento' },
   { to: '/inteligencia', key: 'insights', icon: Sparkles, group: 'planejamento' },
   { to: '/dividas', key: 'debts', icon: CreditCard, group: 'planejamento' },
+  { to: '/notificacoes', key: 'notifications', icon: Bell, group: 'sistema' },
 ]
 const moreItems: Item[] = [
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
