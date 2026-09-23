@@ -640,3 +640,18 @@ This remains a scope estimate for engineering implementation. The remaining 6% i
 **Current implementation scope estimate: 96%**
 
 O restante está concentrado em QA integrado/E2E, decomposição final do App.tsx, paridade/ajustes finos de UX, observabilidade e homologação final de produção.
+
+
+## 2026-09-23 — QA surface expansion and frontend hardening
+
+- Expandido o smoke E2E para todas as rotas financeiras principais e novas superfícies de previsão, patrimônio, inteligência, dívidas, notificações, importação/exportação e transferências.
+- Adicionada verificação E2E dos títulos das novas páginas, reduzindo o risco de rota registrada mas renderização incorreta.
+- Endurecida a apresentação da previsão: horizonte limitado ao conjunto suportado pelo backend, retry controlado e rejeição visual de dados numéricos inválidos.
+- Estabilizado o carregamento de patrimônio com retry e histórico ordenado por data mais recente.
+- KOVI Intelligence passou a priorizar visualmente insights por severidade e, em empate, por data de geração.
+- Nenhuma dependência de GitHub Actions/Codex/Work foi adicionada.
+- CI/build continua não aprovado sem execução verificável bem-sucedida.
+
+**Current implementation scope estimate: 97%**
+
+Restante principal: execução/homologação E2E integrada, validação real de build/testes no ambiente de execução, decomposição final do App.tsx, observabilidade e release readiness.
