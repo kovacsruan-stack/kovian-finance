@@ -10,6 +10,17 @@ const resources = {
     dashboardTitle: 'Seu centro de comando inteligente.', dashboardDesc: 'Orquestre projetos, agentes e automações sem começar por configurações técnicas.',
     status: 'Status do KOVI', ready: 'Operação pronta para continuar', chatTitle: 'Conversar com KOVI',
     financeOverview: 'Visão geral', accounts: 'Contas', transactions: 'Transações', goals: 'Metas e orçamento', financeHeroTitle: 'Seu dinheiro, em um só lugar.', financeHeroDesc: 'Acompanhe saldo, movimentações e metas com clareza.', newTransaction: 'Nova transação', consolidatedBalance: 'Saldo consolidado BRL', activeAccounts: '{{count}} conta(s) ativa(s)', income90Days: 'Receitas · 90 dias', expense90Days: 'Despesas · 90 dias', activeGoals: 'Metas ativas', loginToLoadData: 'Faça login para carregar seus dados financeiros.', financeLoadError: 'Não foi possível carregar os dados financeiros.', loading: 'Carregando...', connectedAccounts: 'Contas conectadas', viewAll: 'Ver todas', noAccounts: 'Nenhuma conta cadastrada.', quickAccess: 'ACESSO RÁPIDO', organize: 'Organizar', manageBalances: 'Gerencie seus saldos.', trackTransactions: 'Acompanhe entradas e saídas.', trackGoals: 'Acompanhe seus objetivos.', analyzePeriods: 'Analise períodos.',
+    pages: {
+      accounts: { title: 'Contas', desc: 'Organize contas bancárias, carteiras e saldos em um único lugar.', items: { bank: 'Contas bancárias', wallets: 'Carteiras', balances: 'Saldos consolidados' } },
+      transactions: { title: 'Transações', desc: 'Acompanhe entradas, saídas e transferências com rastreabilidade.', items: { incomeExpense: 'Entradas e despesas', filters: 'Filtros por período', categories: 'Categorias e status' } },
+      goals: { title: 'Metas e orçamento', desc: 'Defina objetivos e acompanhe o progresso ao longo do tempo.', items: { emergency: 'Reserva de emergência', custom: 'Objetivos personalizados', monthly: 'Orçamento mensal' } },
+      reports: { title: 'Relatórios', desc: 'Transforme seus dados financeiros em visão clara para decisão.', items: { cashflow: 'Fluxo de caixa', period: 'Resumo por período', categories: 'Categorias' } },
+      cards: { title: 'Cartões', desc: 'Acompanhe limites, faturas, vencimentos e compras parceladas.', items: { cards: 'Meus cartões', invoices: 'Faturas abertas', installments: 'Compras parceladas' } },
+      budgets: { title: 'Orçamentos', desc: 'Defina limites por categoria e acompanhe o consumo do mês.', items: { monthly: 'Orçamento mensal', limits: 'Limites por categoria', alerts: 'Alertas de gastos' } },
+      recurring: { title: 'Recorrentes', desc: 'Organize contas, receitas e compromissos que se repetem.', items: { expenses: 'Contas recorrentes', income: 'Receitas recorrentes', due: 'Próximos vencimentos' } },
+      categories: { title: 'Categorias', desc: 'Organize receitas e despesas por categorias, subcategorias e tags.', items: { expenses: 'Despesas', income: 'Receitas', tags: 'Tags e subcategorias' } },
+      settings: { title: 'Configurações', desc: 'Preferências da conta e controles avançados do produto.', items: { profile: 'Perfil', security: 'Segurança', preferences: 'Preferências' } }
+    },
     reports: 'Relatórios', subscriptions: 'Assinaturas', cards: 'Cartões', budgets: 'Orçamentos', recurring: 'Recorrentes', categories: 'Categorias', financeIntegrations: 'Integrações', financeSettings: 'Configurações', more: 'Mais', group_principal: 'Principal', group_planejamento: 'Planejamento', group_organizacao: 'Organização', group_sistema: 'Sistema'
   }},
   en: { common: {
@@ -19,6 +30,17 @@ const resources = {
     dashboardTitle: 'Your intelligent command center.', dashboardDesc: 'Orchestrate projects, agents and automations without starting with technical configuration.',
     status: 'KOVI status', ready: 'Operation ready to continue', chatTitle: 'Chat with KOVI',
     financeOverview: 'Overview', accounts: 'Accounts', transactions: 'Transactions', goals: 'Goals & budget', financeHeroTitle: 'Your money, in one place.', financeHeroDesc: 'Track balances, transactions and goals with clarity.', newTransaction: 'New transaction', consolidatedBalance: 'Consolidated BRL balance', activeAccounts: '{{count}} active account(s)', income90Days: 'Income · 90 days', expense90Days: 'Expenses · 90 days', activeGoals: 'Active goals', loginToLoadData: 'Sign in to load your financial data.', financeLoadError: 'Unable to load financial data.', loading: 'Loading...', connectedAccounts: 'Connected accounts', viewAll: 'View all', noAccounts: 'No accounts registered.', quickAccess: 'QUICK ACCESS', organize: 'Organize', manageBalances: 'Manage your balances.', trackTransactions: 'Track income and expenses.', trackGoals: 'Track your goals.', analyzePeriods: 'Analyze your periods.',
+    pages: {
+      accounts: { title: 'Accounts', desc: 'Organize bank accounts, wallets and balances in one place.', items: { bank: 'Bank accounts', wallets: 'Wallets', balances: 'Consolidated balances' } },
+      transactions: { title: 'Transactions', desc: 'Track income, expenses and transfers with traceability.', items: { incomeExpense: 'Income and expenses', filters: 'Period filters', categories: 'Categories and status' } },
+      goals: { title: 'Goals & budget', desc: 'Set objectives and track progress over time.', items: { emergency: 'Emergency fund', custom: 'Custom goals', monthly: 'Monthly budget' } },
+      reports: { title: 'Reports', desc: 'Turn your financial data into a clear view for decision-making.', items: { cashflow: 'Cash flow', period: 'Period summary', categories: 'Categories' } },
+      cards: { title: 'Cards', desc: 'Track limits, invoices, due dates and installment purchases.', items: { cards: 'My cards', invoices: 'Open invoices', installments: 'Installment purchases' } },
+      budgets: { title: 'Budgets', desc: 'Set category limits and track monthly spending.', items: { monthly: 'Monthly budget', limits: 'Category limits', alerts: 'Spending alerts' } },
+      recurring: { title: 'Recurring', desc: 'Organize recurring bills, income and commitments.', items: { expenses: 'Recurring bills', income: 'Recurring income', due: 'Upcoming due dates' } },
+      categories: { title: 'Categories', desc: 'Organize income and expenses with categories, subcategories and tags.', items: { expenses: 'Expenses', income: 'Income', tags: 'Tags and subcategories' } },
+      settings: { title: 'Settings', desc: 'Account preferences and advanced product controls.', items: { profile: 'Profile', security: 'Security', preferences: 'Preferences' } }
+    },
     reports: 'Reports', subscriptions: 'Subscriptions', cards: 'Cards', budgets: 'Budgets', recurring: 'Recurring', categories: 'Categories', financeIntegrations: 'Integrations', financeSettings: 'Settings', more: 'More', group_principal: 'Main', group_planejamento: 'Planning', group_organizacao: 'Organization', group_sistema: 'System'
   }},
 }
