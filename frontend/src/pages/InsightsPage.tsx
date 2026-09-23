@@ -11,6 +11,6 @@ export default function InsightsPage(){
  {!ownerId&&<div className="notice">{t('loginToLoadData')}</div>}{q.isError&&<div className="notice">{t('insightsError')}</div>}
  <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('analysis')}</span><h2>{t('recentInsights')}</h2></div><BrainCircuit size={18}/></div>
  {q.isLoading&&<div className="empty-inline">{t('loading')}</div>}
- {q.data?.map(x=><article className="feature-card" key={x.code+'-'+x.periodStart}><div className="feature-icon">{icon(x.severity)}</div><div><strong>{x.title}</strong><span>{x.description}</span>{x.amount!==null&&<small>{x.amount.toLocaleString(document.documentElement.lang||'pt-BR',{style:'currency',currency:'BRL'})}</small>}</div></article>)}
+ {q.data?.map(x=><article className="feature-card" key={x.type+'-'+x.generatedAt}><div className="feature-icon">{icon(x.severity)}</div><div><strong>{x.title}</strong><span>{x.explanation}</span><small>{new Date(x.generatedAt).toLocaleString(document.documentElement.lang||'pt-BR')}</small></div></article>)}
  {!q.isLoading&&!q.data?.length&&<div className="empty-inline">{t('noInsights')}</div>}</section></main>
 }
