@@ -10,7 +10,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "qa:local": "playwright test qa-local/playwright.config.ts",
+    "qa:smoke": "playwright test qa-local/playwright.config.ts --project=desktop",
+    "qa:mobile": "playwright test qa-local/playwright.config.ts --project=mobile",
+    "qa:a11y": "playwright test qa-local/playwright.config.ts --grep=@a11y"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.2",
