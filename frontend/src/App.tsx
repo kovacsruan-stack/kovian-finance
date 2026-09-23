@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
-import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FileText, FolderTree, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Target, Wallet, X } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FileText, FolderTree, Menu, MoreHorizontal, Plus, Receipt, Search, Settings2, ShieldCheck, Sparkles, Target, Wallet, X } from 'lucide-react'
 import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getOwnerId, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from './lib/api'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { budgetPercent, budgetRemaining, budgetSpent, categoryTree } from './lib/budgetUtils'
@@ -28,8 +28,8 @@ const navGroups = [
   { key: 'sistema', items: items.filter(item => item.group === 'sistema') },
 ]
 const localAppUrl=(port:number,configured:string)=>{if(configured.trim())return configured;const host=window.location.hostname;if(['localhost','127.0.0.1'].includes(host)||host.startsWith('192.168.'))return window.location.protocol+'//'+host+':'+port+'/';return ''}
-const fitnessUrl=localAppUrl(5173,import.meta.env.VITE_KOVIAN_FITNESS_URL??'')
-const koviUrl=(import.meta.env.VITE_KOVI_AI_URL??'').trim()||(window.location.protocol+'//'+window.location.hostname+':3003/app/')
+const fitnessUrl=localAppUrl(5173,'')
+const koviUrl=window.location.protocol+'//'+window.location.hostname+':3003/app/'
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const [palette, setPalette] = useState(false)
