@@ -42,3 +42,6 @@ export const financeImportListSchema = z.array(financeImportSchema)
 
 export const financeImportErrorSchema = z.object({ rowNumber: z.number().int().nonnegative(), errorCode: z.string(), message: z.string() })
 export const financeImportErrorListSchema = z.array(financeImportErrorSchema)
+
+export const financeNotificationSchema=z.object({id:z.string().uuid(),type:z.string(),severity:z.string(),title:z.string(),message:z.string(),entityType:z.string().nullable(),entityId:z.string().uuid().nullable(),readAt:z.string().nullable(),createdAt:z.string()})
+export const financeNotificationListSchema=z.array(financeNotificationSchema)
