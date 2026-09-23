@@ -3,9 +3,11 @@ import { CalendarRange, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { getForecastCashFlow, getOwnerId } from '../lib/api'
 import type { CashFlowForecast } from '../lib/forecastTypes'
+import { useTranslation } from 'react-i18next'
 
-const money = (value:number) => value.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})
+const money = (value:number) => value.toLocaleString(document.documentElement.lang || 'pt-BR',{style:'currency',currency:'BRL'})
 export default function ForecastPage() {
+  const { t } = useTranslation()
   const ownerId=getOwnerId()
   const [days,setDays]=useState(90)
   const from=useMemo(()=>new Date().toISOString().slice(0,10),[])
@@ -15,10 +17,10 @@ export default function ForecastPage() {
   const income=data.reduce((s,x)=>s+x.income,0)
   const expense=data.reduce((s,x)=>s+x.expense,0)
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>Previsão de fluxo de caixa</h1><p>Projete entradas, saídas e saldo futuro a partir do histórico financeiro controlado pelo backend.</p></div><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value))} aria-label="Horizonte"><option value={30}>30 dias</option><option value={90}>90 dias</option><option value={180}>180 dias</option><option value={365}>365 dias</option></select></label></section>
-    {!ownerId && <div className="notice">Faça login para carregar a previsão.</div>}
-    {query.isError && <div className="notice">Não foi possível carregar a previsão.</div>}
-    <div className="stat-grid"><article className="stat-card"><TrendingUp size={17}/><span>Receita projetada</span><strong>{money(income)}</strong></article><article className="stat-card"><TrendingDown size={17}/><span>Despesa projetada</span><strong>{money(expense)}</strong></article><article className="stat-card"><Wallet size={17}/><span>Saldo no fim do horizonte</span><strong>{money(ending)}</strong></article></div>
-    <section className="panel"><div className="section-title"><div><span className="eyebrow">PROJEÇÃO</span><h2>Fluxo diário</h2></div></div>{query.isLoading?<div className="empty-inline">Carregando...</div>:!data.length?<div className="empty-inline">Nenhuma projeção disponível.</div>:<div className="table-wrap"><table><thead><tr><th>Data</th><th>Receita</th><th>Despesa</th><th>Fluxo líquido</th><th>Saldo projetado</th></tr></thead><tbody>{data.map(row=><tr key={row.date}><td>{new Date(row.date+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>{money(row.income)}</td><td>{money(row.expense)}</td><td>{money(row.netCashFlow)}</td><td>{money(row.projectedBalance)}</td></tr>)}</tbody></table></div>}</section>
+    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value))} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount',{count:30})}</option><option value={90}>{t('daysCount',{count:90})}</option><option value={180}>{t('daysCount',{count:180})}</option><option value={365}>{t('daysCount',{count:365})}</option></select></label></section>
+    {!ownerId && <div className="notice">{t('loginToLoadData')}</div>}
+    {query.isError && <div className="notice">{t('forecastError')}</div>}
+    <div className="stat-grid"><article className="stat-card"><TrendingUp size={17}/><span>{t('projectedIncome')}</span><strong>{money(income)}</strong></article><article className="stat-card"><TrendingDown size={17}/><span>{t('projectedExpense')}</span><strong>{money(expense)}</strong></article><article className="stat-card"><Wallet size={17}/><span>{t('projectedEndingBalance')}</span><strong>{money(ending)}</strong></article></div>
+    <section className="panel"><div className="section-title"><div><span className="eyebrow">{t('projection')}</span><h2>{t('dailyCashFlow')}</h2></div></div>{query.isLoading?<div className="empty-inline">{t('loading')}</div>:!data.length?<div className="empty-inline">{t('noForecast')}</div>:<div className="table-wrap"><table><thead><tr><th>{t('date')}</th><th>{t('income')}</th><th>{t('expense')}</th><th>{t('netFlow')}</th><th>{t('projectedBalance')}</th></tr></thead><tbody>{data.map(row=><tr key={row.date}><td>{new Date(row.date+'T00:00:00').toLocaleDateString(document.documentElement.lang || 'pt-BR')}</td><td>{money(row.income)}</td><td>{money(row.expense)}</td><td>{money(row.netCashFlow)}</td><td>{money(row.projectedBalance)}</td></tr>)}</tbody></table></div>}</section>
   </main>
 }
