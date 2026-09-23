@@ -7,7 +7,7 @@ import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds
 import { useTranslation } from 'react-i18next'
 import { useFinanceDashboard, useFinanceMutation } from './lib/queries'
 
-const money = (value: number, currency = 'BRL') => value.toLocaleString('pt-BR', { style: 'currency', currency })
+const money = (value: number, currency = 'BRL') => { const locale = typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'; return value.toLocaleString(locale, { style: 'currency', currency }) }
 type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'planejamento' | 'organizacao' | 'sistema' }
 const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
