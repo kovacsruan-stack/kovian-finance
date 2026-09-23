@@ -16,3 +16,5 @@ export type FinanceLiability = { id: string; ownerId: string; name: string; liab
 export type FinanceDebt = { id: string; ownerId: string; name: string; debtType: string; principalAmount: number; outstandingAmount: number; annualInterestRate: number | null; startDate: string; endDate: string | null; totalInstallments: number; status: 'ACTIVE' | 'PAID' | string }
 
 export type FinanceSnapshot = { id: string; snapshotDate: string; totalIncome: number; totalExpense: number; netCashFlow: number; totalAssets: number; totalLiabilities: number; netWorth: number }
+
+export type FinanceTransfer = { id: string; fromAccountId: string; toAccountId: string; amount: number; description: string; status: string; createdAt: string; replayed: boolean }
