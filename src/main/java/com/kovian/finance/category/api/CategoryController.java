@@ -20,6 +20,10 @@ public class CategoryController {
     ResponseEntity<CategoryResponse> create(@Valid @RequestBody CreateCategoryRequest r) {
         UUID ownerId = CurrentUser.ownerId();
         if (r.ownerId() != null && !ownerId.equals(r.ownerId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner scope violation");
+        if (r.parentId() != null) {
+            repository.findByIdAndOwnerId(r.parentId(), ownerId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent category not found"));
+        }
         if (repository.existsByOwnerIdAndNameIgnoreCaseAndKind(ownerId, r.name(), r.kind())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Category already exists");
         var c = repository.save(new TransactionCategory(ownerId, r.name(), r.kind(), r.parentId()));
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(c));
