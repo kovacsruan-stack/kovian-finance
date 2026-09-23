@@ -25,7 +25,14 @@ Accounts, transactions, categories, budgets, goals, recurring transactions, cred
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Delivery gate
+User-facing changes require automated validation plus real local browser QA for applicable flows. Keep domain ownership explicit and preserve the KOVI integration boundary.
+
+Canonical local QA:
+
+    cd frontend
+    npm run qa:chromium
+
+The smoke suite covers shell rendering, browser errors, bilingual switching, primary navigation, critical routes, keyboard interaction and mobile overflow. See the shared [KOVIAN Local QA Standard](https://github.com/kovacsruan-stack/kovi-ai/blob/main/docs/LOCAL_QA_STANDARD.md).
 
 User-facing changes require automated validation plus real local browser QA for applicable flows. Keep domain ownership explicit and preserve the KOVI integration boundary.
 
