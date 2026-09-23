@@ -71,4 +71,9 @@ describe('finance api', () => {
     expect(error.requestId).toBe('server-request-42')
     expect(error.message).toBe('Invalid amount.')
   })
+  it('fails closed when a successful account payload violates the API contract', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'not-a-number', status: 'ACTIVE' }]), { status: 200 })))
+    await expect(getAccounts('owner-123')).rejects.toThrow()
+  })
 })
