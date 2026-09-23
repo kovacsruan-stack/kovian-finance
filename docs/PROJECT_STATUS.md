@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: 6ab02ddd3f022b9289bffff6899ba4b5072e856b
+Latest known commit: 3c23d018737f2d1ce523c301ab000f9716ec0727
 
 ## Purpose
 
@@ -530,3 +530,11 @@ This remains a scope estimate for engineering implementation, not a test/build/r
 - Added a governed frontend debt view with owner-scoped backend data, outstanding balance aggregation, active debt count and localized states.
 - Enriched the debt API contract with safe read fields for planning clients while keeping mutations behind authenticated backend authorization.
 - Added navigation and routing for the debt planning surface.
+
+
+## 2026-09-23 — Operational notifications surface
+
+- Added typed notification contracts and runtime validation in the frontend API layer.
+- Added a governed Notifications screen with unread count and owner-scoped mark-as-read actions.
+- Added routing, navigation and PT-BR/EN localization for financial notifications.
+- Added contract regression tests for valid and malformed notification payloads.
