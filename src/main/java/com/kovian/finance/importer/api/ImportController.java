@@ -7,7 +7,7 @@ import com.kovian.finance.importer.application.CsvImportService; import com.kovi
   var b=service.importCsv(accountId,file.getOriginalFilename(),file.getBytes());return to(b);
  }
  @GetMapping public List<ImportResponse> list(){return batches.findTop50ByOwnerIdOrderByCreatedAtDesc(CurrentUser.ownerId()).stream().map(this::to).toList();}
- @GetMapping("/{id}/errors") public List<?> errors(@PathVariable UUID id){var b=batches.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND));return this.errors.findByBatchIdOrderByRowNumber(b.getId());}
+ @GetMapping("/{id}/errors") public List<ImportErrorResponse> errors(@PathVariable UUID id){var b=batches.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new org.springframework.web.server.ResponseStatusException(HttpStatus.NOT_FOUND));return this.errors.findByBatchIdOrderByRowNumber(b.getId()).stream().map(e->new ImportErrorResponse(e.getRowNumber(),e.getErrorCode(),e.getErrorMessage())).toList();}
  private ImportResponse to(com.kovian.finance.importer.domain.ImportBatch b){return new ImportResponse(b.getId(),b.getAccountId(),b.getFilename(),b.getStatus(),b.getTotalRows(),b.getImportedRows(),b.getDuplicateRows(),b.getFailedRows());}
- record ImportResponse(UUID id,UUID accountId,String filename,String status,int totalRows,int importedRows,int duplicateRows,int failedRows){}
+ record ImportResponse(UUID id,UUID accountId,String filename,String status,int totalRows,int importedRows,int duplicateRows,int failedRows){} record ImportErrorResponse(int rowNumber,String errorCode,String message){}
 }
