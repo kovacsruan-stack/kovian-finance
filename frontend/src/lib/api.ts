@@ -2,7 +2,7 @@ export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, Fina
 import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
 
-import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeDebtListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
+import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
 
 let fallbackRequestId = 0
 
@@ -207,3 +207,6 @@ const financeInsightSchema=z.object({type:z.string(),title:z.string(),explanatio
 export function getFinancialInsights(ownerId:string,from:string,to:string){return get(`/ai/finance/insights?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,z.array(financeInsightSchema))}
 
 export function getDebts(ownerId: string) { return get(`/debts?ownerId=${encodeURIComponent(ownerId)}`, financeDebtListSchema) }
+
+export function getNotifications(unreadOnly = false) { return get(`/notifications?unreadOnly=${unreadOnly}`, financeNotificationListSchema) }
+export function markNotificationRead(id: string) { return post<void>(`/notifications/${encodeURIComponent(id)}/read`, {}) }
