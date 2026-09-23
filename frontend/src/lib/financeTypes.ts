@@ -12,3 +12,5 @@ export type ReconciliationRun = { id: string; accountId: string; expectedBalance
 
 export type FinanceAsset = { id: string; ownerId: string; name: string; assetType: string; acquisitionValue: number; currentValue: number; liquidity: string; active: boolean }
 export type FinanceLiability = { id: string; ownerId: string; name: string; liabilityType: string; amount: number; active: boolean }
+
+export type FinanceDebt = { id: string; ownerId: string; outstandingAmount: number; status: 'ACTIVE' | 'PAID' | string }
