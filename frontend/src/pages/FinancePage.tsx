@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FileText, FolderTree, Plus, Receipt, ShieldCheck, Settings2, Sparkles, Target, Wallet } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FolderTree, Plus, Receipt, ShieldCheck, Settings2, Sparkles, Target, Wallet } from 'lucide-react'
 import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getOwnerId, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds, periodStartFor } from '../lib/budgetUtils'
