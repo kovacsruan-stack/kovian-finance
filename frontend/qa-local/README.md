@@ -1,0 +1,1 @@
+# Local QA\n\nPlaywright + Chromium para smoke, console/network e gates basicos de acessibilidade.\n\nURL padrao: http://127.0.0.1:5174/app/\n\nUse `QA_BASE_URL` para apontar para outro ambiente. Use `QA_START_SERVER=true npm run qa:local` para iniciar o Vite localmente.\n
