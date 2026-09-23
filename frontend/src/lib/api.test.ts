@@ -28,4 +28,31 @@ describe('finance api', () => {
     expect(error).toBeInstanceOf(FinanceApiError)
     expect(error.requestId).toBeTruthy()
   })
+
+  it('adds no-store and request correlation headers', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await getAccounts('owner-123')
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    const headers = new Headers(init.headers)
+    expect(headers.get('Cache-Control')).toBe('no-store')
+    expect(headers.get('X-Request-ID')).toBeTruthy()
+  })
+
+  it('normalizes network failures into a structured api error', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('socket closed')))
+
+    await expect(getAccounts('owner-123')).rejects.toMatchObject({
+      status: 0,
+      code: 'NETWORK_ERROR',
+      message: 'socket closed',
+    })
+  })
 })
