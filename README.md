@@ -24,3 +24,7 @@ Manage personal finances, planning, goals, cash flow, assets, liabilities and fi
 Accounts, transactions, categories, budgets, goals, recurring transactions, credit cards, debts, assets/liabilities, financial snapshots, forecasting, AI insights and KOVIAN Fitness integration.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Delivery gate
+
+User-facing changes require automated validation plus real local browser QA for applicable flows. Keep domain ownership explicit and preserve the KOVI integration boundary.
