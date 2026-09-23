@@ -21,8 +21,11 @@ public class CategoryController {
         UUID ownerId = CurrentUser.ownerId();
         if (r.ownerId() != null && !ownerId.equals(r.ownerId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner scope violation");
         if (r.parentId() != null) {
-            repository.findByIdAndOwnerId(r.parentId(), ownerId)
+            var parent = repository.findByIdAndOwnerId(r.parentId(), ownerId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Parent category not found"));
+            if (parent.getKind() != r.kind()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent category kind must match child category kind");
+            }
         }
         if (repository.existsByOwnerIdAndNameIgnoreCaseAndKind(ownerId, r.name(), r.kind())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Category already exists");
         var c = repository.save(new TransactionCategory(ownerId, r.name(), r.kind(), r.parentId()));
