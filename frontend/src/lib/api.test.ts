@@ -24,7 +24,7 @@ describe('finance api', () => {
       status: 423,
       code: 'ACCOUNT_LOCKED',
     })
-    const error = await getAccounts('owner-123').catch(value => value as FinanceApiError)
+    const error = await getAccounts('owner-123').catch(value => value as FinanceApiError) as FinanceApiError
     expect(error).toBeInstanceOf(FinanceApiError)
     expect(error.requestId).toBeTruthy()
   })
