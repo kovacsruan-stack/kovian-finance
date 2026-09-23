@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { FinanceApiError, getAccounts, getOwnerId } from './api'
+import { FinanceApiError, createAccount, getAccounts, getOwnerId } from './api'
 
 describe('finance api', () => {
   beforeEach(() => {
@@ -75,5 +75,10 @@ describe('finance api', () => {
     localStorage.setItem('access_token', 'header.e30.signature')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'not-a-number', status: 'ACTIVE' }]), { status: 200 })))
     await expect(getAccounts('owner-123')).rejects.toThrow()
+  })
+  it('fails closed on malformed mutation responses', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'invalid', status: 'ACTIVE' }), { status: 200 })))
+    await expect(createAccount({ ownerId: 'owner-123', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', openingBalance: 0 })).rejects.toThrow()
   })
 })
