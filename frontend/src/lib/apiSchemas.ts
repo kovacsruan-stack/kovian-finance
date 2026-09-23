@@ -41,5 +41,5 @@ export const financeImportSchema = z.object({
 })
 export const financeImportListSchema = z.array(financeImportSchema)
 
-export const financeImportErrorSchema = z.object({ rowNumber: z.number().int().nonnegative().optional(), message: z.string().optional() })
+export const financeImportErrorSchema = z.object({ rowNumber: z.number().int().nonnegative(), errorCode: z.string(), message: z.string() })
 export const financeImportErrorListSchema = z.array(financeImportErrorSchema)
