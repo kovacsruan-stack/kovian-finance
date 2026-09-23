@@ -4,8 +4,9 @@ import react from '@vitejs/plugin-react'
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '')
   const apiProxyTarget = env.VITE_API_PROXY_TARGET || 'http://localhost:8082'
+  const appBasePath = env.VITE_APP_BASE_PATH || '/app/'
   return {
-    base: '/app/',
+    base: appBasePath.endsWith('/') ? appBasePath : `${appBasePath}/`,
     plugins: [react()],
     server: {
       host: '0.0.0.0',

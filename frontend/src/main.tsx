@@ -7,7 +7,6 @@ import { queryClient } from './lib/queryClient'
 import './i18n/config'
 import './index.css'
 
-
 class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null }
   static getDerivedStateFromError(error: Error) { return { error } }
@@ -19,8 +18,12 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error
   }
 }
 
-if ('serviceWorker' in navigator && window.location.protocol === 'https:') window.addEventListener('load', () => { void navigator.serviceWorker.register('/app/sw.js', { scope: '/app/' }) })
+const basePath = import.meta.env.BASE_URL
+const routerBaseName = basePath === '/' ? '/' : basePath.replace(/\/$/, '')
+if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+  window.addEventListener('load', () => { void navigator.serviceWorker.register(`${basePath}sw.js`, { scope: basePath }) })
+}
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter basename="/app"><AppErrorBoundary><App /></AppErrorBoundary></BrowserRouter></QueryClientProvider></StrictMode>,
+  <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter basename={routerBaseName}><AppErrorBoundary><App /></AppErrorBoundary></BrowserRouter></QueryClientProvider></StrictMode>,
 )
