@@ -6,7 +6,8 @@ import { useTranslation } from 'react-i18next'
 
 function safeCsvCell(value: unknown) {
   const text = String(value ?? '').replace(/"/g, '""')
-  return /^[=+\-@]/.test(text) ? `'${text}` : `"${text}"`
+  if (typeof value !== 'number' && /^[=+\-@]/.test(text)) return `"'"${text}"`
+  return `"${text}"`
 }
 function download(name: string, content: string, type: string) {
   const blob = new Blob([content], { type })
