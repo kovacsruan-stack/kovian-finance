@@ -20,7 +20,7 @@ export default function NetWorthPage(){
   return <main className="page">
     <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('netWorthTitle')}</h1><p>{t('netWorthDesc')}</p></div></section>
     {!ownerId&&<div className="notice">{t('loginToLoadData')}</div>}
-    {(assets.isError||liabilities.isError)&&<div className="notice">{t('netWorthError')}</div>}
+    {(assets.isError||liabilities.isError||debts.isError)&&<div className="notice">{t('netWorthError')}</div>}
     <div className="stat-grid">
       <article className="stat-card"><TrendingUp size={17}/><span>{t('assets')}</span><strong>{loading?'—':money(assetTotal)}</strong></article>
       <article className="stat-card"><TrendingDown size={17}/><span>{t('liabilities')}</span><strong>{loading?'—':money(liabilityTotal)}</strong></article>
