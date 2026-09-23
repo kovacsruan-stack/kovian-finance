@@ -1,14 +1,27 @@
 import { test, expect } from '@playwright/test'
 
-test('local shell renders without a blank screen', async ({ page }) => {
-  const pageErrors: string[] = []
-  page.on('pageerror', error => pageErrors.push(error.message))
+const routes = ['/', '/transacoes', '/contas', '/cartoes', '/orcamentos', '/metas', '/relatorios', '/recorrentes', '/categorias', '/configuracoes']
+
+for (const route of routes) {
+  test(`route ${route} renders an application main`, async ({ page }) => {
+    const pageErrors: string[] = []
+    page.on('pageerror', error => pageErrors.push(error.message))
+    await page.goto(route)
+    await expect(page.locator('#root')).not.toBeEmpty()
+    await expect(page.locator('main')).toBeVisible()
+    await expect(page.locator('body')).not.toContainText(/GROUPS\.|skipToContent|professionalArea/)
+    expect(pageErrors).toEqual([])
+  })
+}
+
+test('search palette opens and closes with Escape', async ({ page }) => {
   await page.goto('/')
-  await expect(page.locator('#root')).not.toBeEmpty()
-  await expect(page.locator('main')).toBeVisible()
-  await expect(page.locator('body')).toContainText(/finance|finan|dashboard|conta/i)
-  await expect(page.locator('body')).not.toContainText(/GROUPS\\.|skipToContent|professionalArea/)
-  expect(pageErrors).toEqual([])
+  const search = page.getByRole('button', { name: /search|pesquisar/i })
+  await expect(search).toBeVisible()
+  await search.click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog')).toHaveCount(0)
 })
 
 test('language switcher changes between PT and EN', async ({ page }) => {
