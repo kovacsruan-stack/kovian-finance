@@ -1,3 +1,4 @@
+import { z } from 'zod'
 export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, FinanceDebt, ReconciliationRun } from './financeTypes'
 import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
@@ -106,8 +107,9 @@ async function postMultipart<T>(path: string, body: FormData): Promise<T> {
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
-  return request<T>(path, { method: 'POST', body: JSON.stringify(body) })
+async function post<T>(path: string, body: unknown, schema?: { parse: (value: unknown) => T }): Promise<T> {
+  const value = await request<unknown>(path, { method: 'POST', body: JSON.stringify(body) })
+  return schema ? schema.parse(value) : value as T
 }
 
 export function getAccounts(ownerId: string) {
@@ -143,39 +145,39 @@ export function getBudgets(ownerId: string, from: string, to: string) {
 }
 
 export function createTransaction(input: { accountId: string; categoryId: string; description: string; amount: number; type: 'INCOME' | 'EXPENSE'; occurredAt: string; externalId?: string }) {
-  return post<FinanceTransaction>('/transactions', input)
+  return post<FinanceTransaction>('/transactions', input, financeTransactionSchema)
 }
 
 export function cancelTransaction(id: string) { return post<void>(`/transactions/${encodeURIComponent(id)}/cancel`, {}) }
 
 export function createAccount(input: { ownerId: string; name: string; accountType: string; currency: string; openingBalance: number }) {
-  return post<FinanceAccount>('/accounts', input)
+  return post<FinanceAccount>('/accounts', input, financeAccountSchema)
 }
 
 export function createCategory(input: { ownerId: string; name: string; kind: FinanceCategory['kind']; parentId?: string | null }) {
-  return post<FinanceCategory>('/categories', input)
+  return post<FinanceCategory>('/categories', input, financeCategorySchema)
 }
 
 export function createBudget(input: { ownerId: string; categoryId: string; period: FinanceBudget['period']; periodStart: string; limitAmount: number }) {
-  return post<FinanceBudget>('/budgets', input)
+  return post<FinanceBudget>('/budgets', input, financeBudgetSchema)
 }
 
-export function createCard(input: { ownerId: string; name: string; brand?: string; lastFour?: string; creditLimit: number; closingDay: number; dueDay: number }) { return post<FinanceCard>('/cards', input) }
-export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input) }
-export function getInvoicePurchases(id: string) { return get<FinancePurchase[]>(`/cards/invoices/${encodeURIComponent(id)}/purchases`) }
+export function createCard(input: { ownerId: string; name: string; brand?: string; lastFour?: string; creditLimit: number; closingDay: number; dueDay: number }) { return post<FinanceCard>('/cards', input, financeCardSchema) }
+export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input, financePurchaseSchema) }
+export function getInvoicePurchases(id: string) { return get(`/cards/invoices/${encodeURIComponent(id)}/purchases`, financePurchaseListSchema) }
 export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
 export function payInvoice(id: string, ownerId: string, accountId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/pay?ownerId=${encodeURIComponent(ownerId)}&accountId=${encodeURIComponent(accountId)}`, {}) }
 
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
-  return post<FinanceGoal>('/goals', input)
+  return post<FinanceGoal>('/goals', input, financeGoalSchema)
 }
 
 export function getRecurring() { return get('/recurring', financeRecurringListSchema) }
-export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input) }
+export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input, financeRecurringSchema) }
 export function pauseRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/pause`, {}) }
 export function resumeRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/resume`, {}) }
 export function getAnalytics(from: string, to: string, ownerId: string) { return get(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeAnalyticsSchema) }
-export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`) }
+export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, z.record(z.string(), amount)) }
 
 export function getForecastCashFlow(ownerId: string, from: string, days: number) { return get(`/forecast/cash-flow?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&days=${days}`, cashFlowForecastListSchema) }
 
