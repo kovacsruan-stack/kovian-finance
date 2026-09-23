@@ -34,6 +34,11 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 server:
+  compression:
+    enabled: true
+    min-response-size: 2KB
+    mime-types: application/json,application/javascript,text/html,text/plain,text/css,image/svg+xml
+  shutdown: graceful
   error:
     include-message: never
     include-stacktrace: never
