@@ -33,3 +33,10 @@ html,body,#root{background:var(--bg)}
 .budget-progress span{background:linear-gradient(90deg,#19b8c5,#4dd4df)}
 .language-switcher option{background:#101d27}
 @media(max-width:900px){.app-shell,.content{width:100%;max-width:100%;min-width:0}.topbar{width:100%;min-width:0}.content{margin-left:0}} @media(max-width:560px){.topbar{padding:0 12px}.top-left small{display:none}.top-left strong{font-size:14px}.top-actions{gap:6px}.top-actions .status-dot,.top-actions .avatar{display:none}.language-switcher{height:38px;padding:0 7px}.page{width:100%;max-width:100%;padding:18px 14px 92px}.page-header{margin-bottom:14px}.page-header h1{font-size:24px}.hero-card{padding:18px}.hero-card strong{font-size:27px}.stat-grid{gap:8px}.stat-card{padding:12px}.dashboard-grid{gap:8px}.panel{padding:13px}.bottom-nav{width:100%;max-width:100%}}
+
+
+/* Accessibility and motion baseline */
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+::selection{background:color-mix(in srgb,var(--primary) 28%,transparent);color:var(--text)}
+*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
