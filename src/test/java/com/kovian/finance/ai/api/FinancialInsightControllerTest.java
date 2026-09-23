@@ -8,4 +8,5 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 class FinancialInsightControllerTest {
  @Test void insights_rejectsDifferentOwner(){var owner=UUID.randomUUID();var c=new FinancialInsightController(mock(FinancialTransactionRepository.class));try(MockedStatic<CurrentUser> u=mockStatic(CurrentUser.class)){u.when(CurrentUser::ownerId).thenReturn(owner);assertThrows(org.springframework.web.server.ResponseStatusException.class,()->c.insights(UUID.randomUUID(),java.time.LocalDate.now().minusDays(1),java.time.LocalDate.now()));}}
+ @Test void insights_rejectsOversizedWindow(){var owner=UUID.randomUUID();var c=new FinancialInsightController(mock(FinancialTransactionRepository.class));try(MockedStatic<CurrentUser> u=mockStatic(CurrentUser.class)){u.when(CurrentUser::ownerId).thenReturn(owner);assertThrows(org.springframework.web.server.ResponseStatusException.class,()->c.insights(null,java.time.LocalDate.of(2026,1,1),java.time.LocalDate.of(2027,1,2)));}}
 }
