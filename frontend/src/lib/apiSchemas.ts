@@ -28,10 +28,9 @@ export const financeLiabilityListSchema=z.array(financeLiabilitySchema)
 
 
 export const financeDebtSchema = z.object({
-  id: z.string().uuid(),
-  ownerId: z.string().uuid(),
-  outstandingAmount: z.number().finite(),
-  status: z.string(),
+  id: z.string().uuid(), ownerId: z.string().uuid(), name: z.string(), debtType: z.string(),
+  principalAmount: z.number().finite(), outstandingAmount: z.number().finite(), annualInterestRate: z.number().finite().nullable(),
+  startDate: z.string(), endDate: z.string().nullable(), totalInstallments: z.number().int().positive(), status: z.string(),
 })
 export const financeDebtListSchema = z.array(financeDebtSchema)
 
