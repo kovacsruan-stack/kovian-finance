@@ -10,6 +10,7 @@ export default function LanguageSwitcher() {
   const ref = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const language = i18n.resolvedLanguage === 'en' ? 'en' : 'pt-BR'
+  useEffect(() => { document.documentElement.lang = language }, [language])
   useEffect(() => {
     if (!open) return
     const close = (event: MouseEvent) => { if (!ref.current?.contains(event.target as Node)) setOpen(false) }
@@ -23,7 +24,7 @@ export default function LanguageSwitcher() {
       <Globe2 className="h-3.5 w-3.5" aria-hidden="true" /><span>{language === 'en' ? 'EN' : 'PT'}</span><ChevronDown className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
     </button>
     {open && <div className="absolute right-0 top-[calc(100%+6px)] z-[100] w-40 rounded-xl border border-border bg-card p-1 shadow-lg" role="menu">
-      {languages.map(item => <button key={item.code} type="button" role="menuitem" onClick={() => { void i18n.changeLanguage(item.code); setOpen(false) }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors ${item.code === language ? 'bg-primary/10 text-primary font-semibold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}><span>{item.label}</span>{item.code === language && <Check className="h-3.5 w-3.5" aria-hidden="true" />}</button>)}
+      {languages.map(item => <button key={item.code} type="button" role="menuitem" onClick={() => { void i18n.changeLanguage(item.code); document.documentElement.lang = item.code; setOpen(false) }} className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors ${item.code === language ? 'bg-primary/10 text-primary font-semibold' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}><span>{item.label}</span>{item.code === language && <Check className="h-3.5 w-3.5" aria-hidden="true" />}</button>)}
     </div>}
   </div>
 }
