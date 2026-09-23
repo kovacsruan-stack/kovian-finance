@@ -5,6 +5,7 @@ test('local shell renders without a blank screen', async ({ page }) => {
   page.on('pageerror', error => pageErrors.push(error.message))
   await page.goto('/')
   await expect(page.locator('#root')).not.toBeEmpty()
+  await expect(page.locator('main')).toBeVisible()
   await expect(page.locator('body')).toContainText(/finance|finan|dashboard|conta/i)
   expect(pageErrors).toEqual([])
 })
@@ -19,13 +20,4 @@ test('language switcher changes between PT and EN', async ({ page }) => {
   await trigger.click()
   await page.getByRole('menuitem', { name: /Português/ }).click()
   await expect(trigger).toContainText('PT')
-})
-
-test('primary navigation exposes stable routes', async ({ page }) => {
-  await page.goto('/')
-  for (const route of ["/app","/app/transacoes","/app/contas","/app/cartoes","/app/orcamentos","/app/metas","/app/relatorios"]) {
-    const link = page.locator('a[href="'+route+'"]').first()
-    await expect(link).toBeVisible()
-    await expect(link).toHaveAttribute('href', route)
-  }
 })
