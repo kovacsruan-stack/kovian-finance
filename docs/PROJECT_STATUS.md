@@ -655,3 +655,18 @@ O restante está concentrado em QA integrado/E2E, decomposição final do App.ts
 **Current implementation scope estimate: 97%**
 
 Restante principal: execução/homologação E2E integrada, validação real de build/testes no ambiente de execução, decomposição final do App.tsx, observabilidade e release readiness.
+
+
+## 2026-09-23 — Application shell decomposition and request correlation
+
+- Decomposed the legacy finance planner page out of `frontend/src/App.tsx` into `frontend/src/pages/FinancePage.tsx`, preserving the existing planner route configuration and behavior while reducing the application entrypoint to routing/composition responsibilities.
+- Added a frontend routing-contract regression test covering the nine legacy planner routes and their localization mappings.
+- Corrected the extracted page's icon import boundary while moving the existing planner implementation, including the previously referenced Sparkles icon.
+- Added a backend request-correlation filter that safely accepts bounded `X-Request-ID` values or generates a UUID when the incoming value is absent/unsafe, and always propagates the correlation id in the response.
+- Added backend regression coverage for safe request-id preservation and unsafe-header replacement.
+- No GitHub Actions, Work or Codex dependency was introduced.
+- Build/test execution remains unverified from this session because the connected workstation is offline and no local execution environment is available; no passing build/test result is claimed.
+
+**Current implementation scope estimate: 98%**
+
+Remaining work is concentrated in integrated execution/homologation, deeper UX parity polish, additional shell decomposition where it materially reduces coupling, observability validation in a live runtime, and final production/release readiness.
