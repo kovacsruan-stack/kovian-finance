@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const baseURL = process.env.KOVIAN_FINANCE_QA_BASE_URL || 'http://127.0.0.1:5174/app/'
-const localDevUrl = process.env.KOVIAN_FINANCE_QA_BASE_URL || 'http://127.0.0.1:5174/app/'
+const baseURL = process.env.KOVIAN_FINANCE_QA_BASE_URL || 'http://127.0.0.1:5177/app/'
+const localDevUrl = process.env.KOVIAN_FINANCE_QA_BASE_URL || 'http://127.0.0.1:5177/app/'
 
 export default defineConfig({
   testDir: './e2e',
@@ -23,7 +23,7 @@ export default defineConfig({
     { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
   ],
   webServer: process.env.PLAYWRIGHT_SKIP_WEBSERVER ? undefined : {
-    command: `npm run dev -- --host 127.0.0.1 --port ${new URL(localDevUrl).port || '5174'}`,
+    command: 'npm run dev -- --host 127.0.0.1 --port 5177',
     url: localDevUrl,
     reuseExistingServer: true,
     timeout: 120000,
