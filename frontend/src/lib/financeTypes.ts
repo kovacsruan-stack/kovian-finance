@@ -9,3 +9,6 @@ export type FinanceBudget = { id: string; categoryId: string; period: 'MONTHLY' 
 export type FinanceRecurring = { id: string; accountId: string; categoryId: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate: string | null; active: boolean }
 export type FinanceAnalytics = { from: string; to: string; income: number; expense: number; cashFlow: number; savingsRate: number; netWorth: number; assets: number; liabilities: number; metrics: Array<{ key: string; label: string; value: number; unit: string }> }
 export type ReconciliationRun = { id: string; accountId: string; expectedBalance: number; actualBalance: number; difference: number; status: string }
+
+export type FinanceAsset = { id: string; ownerId: string; name: string; assetType: string; acquisitionValue: number; currentValue: number; liquidity: string; active: boolean }
+export type FinanceLiability = { id: string; ownerId: string; name: string; liabilityType: string; amount: number; active: boolean }
