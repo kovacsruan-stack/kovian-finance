@@ -25,14 +25,14 @@ export const financeRecurringListSchema=z.array(financeRecurringSchema)
 export const reconciliationRunListSchema=z.array(reconciliationRunSchema)
 
 export const financeAssetSchema=z.object({id:z.string(),ownerId:z.string(),name:z.string(),assetType:z.string(),acquisitionValue:nonNegativeAmount,currentValue:nonNegativeAmount,liquidity:z.string(),active:z.boolean()})
-export const financeLiabilitySchema=z.object({id:z.string(),ownerId:z.string(),name:z.string(),liabilityType:z.string(),amount:amount,active:z.boolean()})
+export const financeLiabilitySchema=z.object({id:z.string(),ownerId:z.string(),name:z.string(),liabilityType:z.string(),amount:nonNegativeAmount,active:z.boolean()})
 export const financeAssetListSchema=z.array(financeAssetSchema)
 export const financeLiabilityListSchema=z.array(financeLiabilitySchema)
 
 
 export const financeDebtSchema = z.object({
   id: z.string().uuid(), ownerId: z.string().uuid(), name: z.string(), debtType: z.string(),
-  principalAmount: nonNegativeAmount, outstandingAmount: nonNegativeAmount, annualInterestRate: z.number().finite().nullable(),
+  principalAmount: nonNegativeAmount, outstandingAmount: nonNegativeAmount, annualInterestRate: nonNegativeAmount.nullable(),
   startDate: z.string(), endDate: z.string().nullable(), totalInstallments: z.number().int().positive(), status: z.string(),
 })
 export const financeDebtListSchema = z.array(financeDebtSchema)
