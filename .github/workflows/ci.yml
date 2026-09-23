@@ -61,10 +61,12 @@ jobs:
         run: mvn -B -ntp dependency:tree -DoutputType=text -Dverbose=false
       - name: Verify backend
         run: mvn -B -ntp clean verify
-      - name: Build frontend
+      - name: Verify frontend
         working-directory: frontend
         run: |
           npm ci
+          npm run lint
+          npm run test -- --run
           npm run build
 
   security:
