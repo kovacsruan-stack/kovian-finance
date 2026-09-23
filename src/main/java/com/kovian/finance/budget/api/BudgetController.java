@@ -28,8 +28,11 @@ public class BudgetController {
     ResponseEntity<BudgetResponse> create(@Valid @RequestBody CreateBudgetRequest r) {
         UUID ownerId = CurrentUser.ownerId();
         if (r.ownerId() != null && !ownerId.equals(r.ownerId())) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner scope violation");
-        categories.findByIdAndOwnerId(r.categoryId(), ownerId)
+        var category = categories.findByIdAndOwnerId(r.categoryId(), ownerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+        if (category.getKind() != com.kovian.finance.category.domain.CategoryKind.EXPENSE) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Budgets require an expense category");
+        }
         if (repository.existsByOwnerIdAndCategoryIdAndPeriodStart(ownerId, r.categoryId(), r.periodStart())) throw new ResponseStatusException(HttpStatus.CONFLICT, "Budget already exists");
         var b = repository.save(new Budget(ownerId, r.categoryId(), r.period(), r.periodStart(), r.limitAmount()));
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(b));
