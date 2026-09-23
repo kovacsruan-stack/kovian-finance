@@ -53,3 +53,9 @@ Frontend:
     npm run qa:chromium
 
 For user-facing changes, local browser QA is mandatory when a local environment exists. Validate the real affected flow locally, including navigation, language controls, responsive layouts, loading/empty/error states and critical financial workflows. Automated checks do not replace real browser QA.
+
+## Open-source planner foundation
+
+The planner UX foundation is based on the MIT-licensed `oofangoo/personal-finance-planner` project. KOVIAN Finance adapts its planning workflows while keeping Spring Boot/PostgreSQL as the authoritative financial system. See [docs/OPEN_SOURCE_FOUNDATION.md](docs/OPEN_SOURCE_FOUNDATION.md) and [docs/UPSTREAM_PERSONAL_FINANCE_PLANNER_MAPPING.md](docs/UPSTREAM_PERSONAL_FINANCE_PLANNER_MAPPING.md).
+
+Browser persistence is limited to UI preferences and transient workflow state; canonical financial records remain server-side.
