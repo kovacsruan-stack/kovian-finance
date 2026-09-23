@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -78,7 +79,7 @@ class SnapshotControllerTest {
             controller.rebuild(date);
         }
         verify(snapshots, never()).save(any());
-        assert existing.getNetWorth().compareTo(java.math.BigDecimal.ZERO) == 0;
+        assertEquals(0, existing.getNetWorth().compareTo(java.math.BigDecimal.ZERO));
     }
 
     @Test
