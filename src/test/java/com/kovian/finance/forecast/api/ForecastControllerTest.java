@@ -58,4 +58,5 @@ class ForecastControllerTest {
                 () -> controller.cashFlow(null, LocalDate.of(2026, 9, 23), 366));
         }
     }
+ @Test void cashFlow_rejectsMissingStartDate(){UUID owner=UUID.randomUUID();var c=new ForecastController(mock(FinancialTransactionRepository.class),mock(FinancialAccountRepository.class));try(MockedStatic<CurrentUser> u=mockStatic(CurrentUser.class)){u.when(CurrentUser::ownerId).thenReturn(owner);assertThrows(org.springframework.web.server.ResponseStatusException.class,()->c.cashFlow(null,null,30));}}
 }
