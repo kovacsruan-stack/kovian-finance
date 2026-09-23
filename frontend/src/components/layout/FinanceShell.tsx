@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { BarChart3, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, Target, Wallet, X, Receipt } from 'lucide-react'
+import { BarChart3, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -19,6 +19,7 @@ const moreItems: Item[] = [
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
   { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
   { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
+  { to: '/import-export', key: 'importExport', icon: FileText, group: 'sistema' },
 ]
 const navGroups = [
   { key: 'principal', items: items.filter(item => item.group === 'principal') },
