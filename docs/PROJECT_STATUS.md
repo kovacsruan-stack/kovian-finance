@@ -687,3 +687,17 @@ Remaining work is concentrated in integrated execution/homologation, deeper UX p
 **Current implementation scope estimate: 98%**
 
 The remaining implementation is small and concentrated in integrated production homologation: provision/wire PostgreSQL + Redis in the runtime environment, apply production secrets, obtain a successful Vercel build/deployment, execute end-to-end smoke checks against the real API and close the release checklist. This percentage is an engineering-scope estimate, not a build/test/release percentage.
+
+
+## 2026-09-23 — Runtime configuration hardening
+
+- Spring datasource configuration now gives explicit `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME` and `SPRING_DATASOURCE_PASSWORD` precedence while retaining the existing KOVIAN `DATABASE_*` compatibility variables.
+- Redis configuration now accepts the standard `SPRING_DATA_REDIS_URL` variable before the existing `REDIS_URL` fallback.
+- Server port now honors Railway's injected `PORT` before `SERVER_PORT`, while preserving the local 8082 default.
+- Railway runtime audit confirms the Maven/Docker build succeeds; the current production blocker is infrastructure, not compilation: the project is at the HOBBY 5-service limit and has no PostgreSQL/Redis service available for KOVIAN Finance.
+- The Railway Finance deployment still fails at datasource initialization because the configured database URL is not a valid JDBC URL for the current environment.
+- No destructive service deletion or unrelated project reuse was performed to bypass the infrastructure limit.
+
+**Current implementation scope estimate: 98%**
+
+The remaining work is concentrated in production infrastructure/homologation: provide a PostgreSQL service/connection, provide Redis or explicitly choose a supported cache fallback, redeploy the API, verify health/Flyway, obtain a READY Vercel deployment and execute integrated smoke checks.
