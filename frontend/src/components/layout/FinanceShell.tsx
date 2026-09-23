@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -8,6 +8,7 @@ type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' |
 const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
   { to: '/transacoes', key: 'transactions', icon: Receipt, group: 'principal' },
+  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft, group: 'principal' },
   { to: '/contas', key: 'accounts', icon: Wallet, group: 'principal' },
   { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'principal' },
   { to: '/orcamentos', key: 'budgets', icon: Target, group: 'planejamento' },
