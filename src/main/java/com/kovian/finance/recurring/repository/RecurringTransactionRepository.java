@@ -5,6 +5,6 @@ import java.time.LocalDate; import java.util.*;
 public interface RecurringTransactionRepository extends JpaRepository<RecurringTransaction,UUID> {
  List<RecurringTransaction> findByOwnerIdOrderByNextOccurrence(UUID ownerId);
  List<RecurringTransaction> findByOwnerIdAndActiveTrueAndNextOccurrenceBetweenOrderByNextOccurrence(UUID ownerId,LocalDate from,LocalDate to);
- List<RecurringTransaction> findByActiveTrueAndNextOccurrenceLessThanEqual(LocalDate date);
+ List<RecurringTransaction> findByOwnerIdAndActiveTrueAndNextOccurrenceLessThanEqual(UUID ownerId, LocalDate date);
  Optional<RecurringTransaction> findByIdAndOwnerId(UUID id, UUID ownerId);
 }
