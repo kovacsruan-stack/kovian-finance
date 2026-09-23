@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import Shell from './components/layout/FinanceShell'
 import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FileText, FolderTree, Plus, Receipt, ShieldCheck, Settings2, Target, Wallet } from 'lucide-react'
