@@ -4,9 +4,15 @@ Run the Finance frontend/API locally, then:
 
 ```powershell
 cd frontend
-npm run test:e2e
+npm run qa:chromium
 ```
 
-Override the browser target with `KOVIAN_FINANCE_QA_BASE_URL` when needed.
+The suite can start/reuse the Vite frontend automatically.
 
-The smoke suite starts with shell rendering, uncaught browser errors, and PT-BR/EN switching before deeper domain flows are exercised.
+Coverage includes:
+- shell and all primary finance routes;
+- search palette and Escape handling;
+- PT-BR/EN switching;
+- uncaught browser errors;
+- untranslated-key regressions;
+- mobile horizontal overflow.
