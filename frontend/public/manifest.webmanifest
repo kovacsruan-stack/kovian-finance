@@ -3,11 +3,11 @@
   "short_name":"Finance",
   "description":"Gestão financeira do ecossistema KOVIAN.",
   "lang":"pt-BR",
-  "start_url":"/app/",
-  "scope":"/app/",
+  "start_url":"./",
+  "scope":"./",
   "display":"standalone",
   "orientation":"portrait-primary",
   "background_color":"#07110f",
   "theme_color":"#07110f",
-  "icons":[{"src":"/app/kovian-finance-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons":[{"src":"./kovian-finance-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
 }
