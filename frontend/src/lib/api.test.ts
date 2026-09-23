@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
-import { FinanceApiError, createAccount, getAccounts, getOwnerId, importCsv } from './api'
+import { FinanceApiError, createAccount, createTransfer, getAccounts, getOwnerId, importCsv } from './api'
 
 describe('finance api', () => {
   beforeEach(() => {
@@ -93,4 +93,31 @@ describe('finance api', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'invalid', status: 'ACTIVE' }), { status: 200 })))
     await expect(createAccount({ ownerId: 'owner-123', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', openingBalance: 0 })).rejects.toThrow()
   })
+  it('sends an idempotency key for transfers and validates the response', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      id: '11111111-1111-1111-1111-111111111111',
+      fromAccountId: '22222222-2222-2222-2222-222222222222',
+      toAccountId: '33333333-3333-3333-3333-333333333333',
+      amount: 100,
+      description: 'Reserva mensal',
+      status: 'POSTED',
+      createdAt: '2026-09-23T12:00:00Z',
+      replayed: false,
+    }), { status: 201, headers: { 'content-type': 'application/json' } }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await createTransfer({
+      fromAccountId: '22222222-2222-2222-2222-222222222222',
+      toAccountId: '33333333-3333-3333-3333-333333333333',
+      amount: 100,
+      description: 'Reserva mensal',
+    }, 'transfer-key-1')
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    const headers = new Headers(init.headers)
+    expect(headers.get('Idempotency-Key')).toBe('transfer-key-1')
+    expect(headers.get('X-Request-ID')).toBeTruthy()
+  })
+
 })
