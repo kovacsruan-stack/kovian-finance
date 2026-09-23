@@ -34,3 +34,9 @@ export const financeDebtSchema = z.object({
   status: z.string(),
 })
 export const financeDebtListSchema = z.array(financeDebtSchema)
+
+export const financeImportSchema = z.object({
+  id: z.string().uuid(), accountId: z.string().uuid(), filename: z.string(), status: z.string(),
+  totalRows: z.number().int().nonnegative(), importedRows: z.number().int().nonnegative(), duplicateRows: z.number().int().nonnegative(), failedRows: z.number().int().nonnegative(),
+})
+export const financeImportListSchema = z.array(financeImportSchema)
