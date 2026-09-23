@@ -14,6 +14,14 @@ test('Finance local Chromium smoke', async ({ page }) => {
   await expect(page.locator('body')).not.toContainText('Cannot read properties')
   await expect(page.locator('body')).not.toContainText('Missing refresh token')
   expect(runtimeErrors, 'No uncaught browser runtime errors should occur during smoke QA').toEqual([])
+  await page.getByRole('button', { name: /change language/i }).click()
+  await expect(page.getByRole('menuitem', { name: 'English' })).toBeVisible()
+  await page.getByRole('menuitem', { name: 'English' }).click()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await page.getByRole('button', { name: /change language/i }).click()
+  await page.getByRole('menuitem', { name: 'Português' }).click()
+  await expect(page.locator('html')).toHaveAttribute('lang', 'pt-BR')
+
   await expect(page.getByText(/KOVIAN|Finance/i).first()).toBeVisible()
   await expect(page.locator('body')).not.toContainText('404')
 
