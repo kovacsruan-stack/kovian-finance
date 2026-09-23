@@ -202,3 +202,6 @@ export function getImportErrors(id: string) { return get<Array<{ rowNumber?: num
 
 export function getAssets(ownerId: string) { return get(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
 export function getLiabilities(ownerId: string) { return get(`/liabilities?ownerId=${encodeURIComponent(ownerId)}`, financeLiabilityListSchema) }
+export type FinanceInsight = { code: string; severity: string; title: string; description: string; amount: number | null; periodStart: string; periodEnd: string }
+const financeInsightSchema=z.object({code:z.string(),severity:z.string(),title:z.string(),description:z.string(),amount:z.number().finite().nullable(),periodStart:z.string(),periodEnd:z.string()})
+export function getFinancialInsights(ownerId:string,from:string,to:string){return get(`/ai/finance/insights?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,z.array(financeInsightSchema))}
