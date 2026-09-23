@@ -573,3 +573,18 @@ This is an engineering-scope estimate, not a test/build/release percentage. Rema
 **Current implementation scope estimate: 94%**
 
 This remains a scope estimate for engineering implementation. The remaining 6% is primarily integrated frontend/backend QA, broader E2E coverage, final UX parity polish, observability/release verification and production homologation.
+
+
+## 2026-09-23 — Planner parity continuation: snapshots and transfers
+
+- Added a safe financial snapshot response DTO instead of exposing the persistence entity directly.
+- Snapshot rebuild/list endpoints remain authenticated and owner-scoped; snapshot history is now consumable as a stable frontend contract.
+- Fixed the snapshot regression test to use the actual transaction repository method name.
+- Added typed/Zod-validated snapshot contracts and a frontend snapshot history section to Net Worth.
+- Added the missing core account-transfer user flow backed by the existing idempotent ledger transfer service.
+- Added typed/Zod-validated transfer contracts, automatic idempotency keys and localized transfer UI/navigation.
+- Hardened the global API exception handler so validation, malformed JSON and constraint failures return structured 400 responses.
+- Added frontend regression coverage for snapshot and transfer response contracts.
+- Current latest implementation commit: `78f3be7470bb4701e3ba9cf113e4c7c6dfeb4ed7`.
+- CI/build remains unverified; no successful workflow or local build is claimed.
+- Scope estimate: 91%.
