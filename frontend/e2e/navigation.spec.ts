@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const routes = ['/contas', '/transacoes', '/cartoes', '/orcamentos', '/metas', '/relatorios', '/recorrentes', '/categorias', '/configuracoes']
+const routes = ['/contas', '/transacoes', '/transferencias', '/cartoes', '/orcamentos', '/metas', '/relatorios', '/recorrentes', '/categorias', '/configuracoes', '/previsao', '/patrimonio', '/inteligencia', '/dividas', '/notificacoes', '/import-export']
 
 test('Finance core routes render without a 404 page', async ({ page }) => {
   for (const route of routes) {
@@ -37,4 +37,20 @@ test('Finance command palette restores focus to its trigger', async ({ page }) =
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(trigger).toBeFocused()
+})
+
+
+test('Finance expanded routes expose their page heading', async ({ page }) => {
+  const routesWithExpectedText: Array<[string, RegExp]> = [
+    ['/transferencias', /transfer/i],
+    ['/previsao', /previs/i],
+    ['/patrimonio', /patrim|net worth/i],
+    ['/inteligencia', /intelig|intelligence/i],
+    ['/dividas', /d[ií]vid|debt/i],
+    ['/notificacoes', /notifica|notification/i],
+  ]
+  for (const [route, heading] of routesWithExpectedText) {
+    await page.goto(route)
+    await expect(page.locator('main h1')).toContainText(heading)
+  }
 })
