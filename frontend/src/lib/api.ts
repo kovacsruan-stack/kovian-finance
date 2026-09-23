@@ -93,7 +93,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId, code, message)
   }
   if (response.status === 204) return undefined as T
-  return response.json() as Promise<T>
+  try {
+    return await response.json() as T
+  } catch {
+    throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId, 'INVALID_RESPONSE', 'Finance API returned an invalid JSON response.')
+  }
 }
 
 async function get<T>(path: string, schema?: { parse: (value: unknown) => T }): Promise<T> { const value = await request<unknown>(path); return schema ? schema.parse(value) : value as T }
@@ -121,7 +125,12 @@ async function postMultipart<T>(path: string, body: FormData): Promise<T> {
     } catch {}
     throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId, code, message)
   }
-  return response.status === 204 ? undefined as T : response.json() as Promise<T>
+  if (response.status === 204) return undefined as T
+  try {
+    return await response.json() as T
+  } catch {
+    throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId, 'INVALID_RESPONSE', 'Finance API returned an invalid JSON response.')
+  }
 }
 
 async function post<T>(path: string, body: unknown, schema?: { parse: (value: unknown) => T }): Promise<T> {
