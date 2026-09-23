@@ -2,7 +2,7 @@
 
 ## Runtime topology
 
-Browser/PWA -> Vercel frontend -> /api/v1 rewrite -> Railway kovian-finance-api -> PostgreSQL + Redis.
+Browser/PWA -> Netlify frontend -> /api/v1 rewrite -> Railway kovian-finance-api -> PostgreSQL + Redis.
 
 The backend is the financial source of truth. Browser storage is limited to UI preferences and transient client state.
 
@@ -48,8 +48,8 @@ Never commit rendered credentials.
 4. /actuator/health returns healthy.
 5. Flyway completes all migrations.
 6. Authenticated API smoke checks pass for accounts, transactions, transfers, budgets, goals, cards, debts, assets/liabilities, snapshots, forecast and notifications.
-7. Vercel deployment is READY.
-8. Vercel /api/v1/* rewrite reaches the Railway API.
+7. Netlify production deployment is live and serving the expected frontend build.
+8. Netlify /api/v1/* rewrite reaches the Railway API.
 9. Playwright smoke/navigation checks pass against the deployed frontend.
 
 ## Current blocker
