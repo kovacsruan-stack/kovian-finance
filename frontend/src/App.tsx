@@ -29,7 +29,7 @@ const navGroups = [
   { key: 'planejamento', items: items.filter(item => item.group === 'planejamento') },
 ]
 const localAppUrl=(port:number,configured:string)=>{if(configured.trim())return configured;const host=window.location.hostname;if(['localhost','127.0.0.1'].includes(host)||host.startsWith('192.168.'))return window.location.protocol+'//'+host+':'+port+'/';return ''}
-const fitnessUrl=localAppUrl(5173,'')
+const fitnessUrl=localAppUrl(5173,import.meta.env.VITE_KOVIAN_FITNESS_URL || '')
 const koviUrl=localAppUrl(3003,import.meta.env.VITE_KOVI_APP_URL || '')
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
