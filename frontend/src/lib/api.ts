@@ -210,6 +210,8 @@ export type FinanceImport = {
   failedRows: number
 }
 
+export type FinanceImportError = { rowNumber: number; errorCode: string; message: string }
+
 export function importCsv(accountId: string, file: File) {
   const form = new FormData()
   form.append('accountId', accountId)
