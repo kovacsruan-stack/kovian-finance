@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getAccounts, getGoals, getTransactions, type FinanceTransaction } from './api'
 
@@ -8,13 +9,16 @@ export const financeQueryKeys = {
 }
 
 export function useFinanceDashboard(ownerId: string | null) {
-  const now = new Date()
-  const from = new Date(now); from.setDate(from.getDate() - 90)
-  const to = now.toISOString()
-  const fromIso = from.toISOString()
+  const dayKey = new Date().toISOString().slice(0, 10)
+  const { fromIso, toIso } = useMemo(() => {
+    const end = new Date(`${dayKey}T23:59:59.999Z`)
+    const start = new Date(end)
+    start.setUTCDate(start.getUTCDate() - 90)
+    return { fromIso: start.toISOString(), toIso: end.toISOString() }
+  }, [dayKey])
   const accounts = useQuery({ queryKey: ownerId ? financeQueryKeys.accounts(ownerId) : ['finance','accounts','anonymous'], queryFn: () => getAccounts(ownerId!), enabled: Boolean(ownerId), staleTime: 30_000 })
   const goals = useQuery({ queryKey: ownerId ? financeQueryKeys.goals(ownerId) : ['finance','goals','anonymous'], queryFn: () => getGoals(ownerId!), enabled: Boolean(ownerId), staleTime: 30_000 })
-  const transactions = useQuery({ queryKey: ownerId ? financeQueryKeys.transactions(ownerId, fromIso, to) : ['finance','transactions','anonymous'], queryFn: () => getTransactions(fromIso, to), enabled: Boolean(ownerId), staleTime: 15_000 })
+  const transactions = useQuery({ queryKey: ownerId ? financeQueryKeys.transactions(ownerId, fromIso, toIso) : ['finance','transactions','anonymous'], queryFn: () => getTransactions(fromIso, toIso), enabled: Boolean(ownerId), staleTime: 15_000 })
   return { accounts, goals, transactions, isLoading: accounts.isLoading || goals.isLoading || transactions.isLoading, isError: accounts.isError || goals.isError || transactions.isError }
 }
 
