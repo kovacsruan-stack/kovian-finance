@@ -7,6 +7,8 @@ import com.kovian.finance.security.CurrentUser;
 import com.kovian.finance.transaction.domain.*;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
 import org.springframework.http.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -20,15 +22,15 @@ public class CreditCardController {
     private final CreditCardRepository cards; private final CreditCardInvoiceRepository invoices; private final CreditCardPurchaseRepository purchases;
     private final FinancialAccountRepository accounts; private final FinancialTransactionRepository transactions;
     public CreditCardController(CreditCardRepository c, CreditCardInvoiceRepository i, CreditCardPurchaseRepository p, FinancialAccountRepository a, FinancialTransactionRepository t) { cards=c; invoices=i; purchases=p; accounts=a; transactions=t; }
-    record CardRequest(UUID ownerId,String name,String brand,String lastFour,BigDecimal creditLimit,int closingDay,int dueDay) {}
-    record PurchaseRequest(UUID ownerId,UUID cardId,String description,BigDecimal totalAmount,int installments,LocalDate purchasedAt) {}
+    record CardRequest(UUID ownerId,@NotBlank @Size(max=120) String name,@Size(max=60) String brand,@Pattern(regexp="\\d{4}") String lastFour,@NotNull @DecimalMin("0.00") BigDecimal creditLimit,@Min(1) @Max(31) int closingDay,@Min(1) @Max(31) int dueDay) {}
+    record PurchaseRequest(UUID ownerId,@NotNull UUID cardId,@NotBlank @Size(max=240) String description,@NotNull @DecimalMin("0.01") BigDecimal totalAmount,@Min(1) @Max(60) int installments,LocalDate purchasedAt) {}
 
-    @PostMapping @Transactional public CreditCard create(@RequestBody CardRequest r) {
+    @PostMapping @Transactional public CreditCard create(@Valid @RequestBody CardRequest r) {
         UUID ownerId = owner(); requireOwner(r.ownerId(), ownerId);
         return cards.save(new CreditCard(ownerId,r.name(),r.brand(),r.lastFour(),r.creditLimit(),r.closingDay(),r.dueDay()));
     }
     @GetMapping public List<CreditCard> list(@RequestParam(required=false) UUID ownerId) { UUID current=owner(); requireOwner(ownerId,current); return cards.findByOwnerIdOrderByName(current); }
-    @PostMapping("/purchases") @Transactional public CreditCardPurchase purchase(@RequestBody PurchaseRequest r) {
+    @PostMapping("/purchases") @Transactional public CreditCardPurchase purchase(@Valid @RequestBody PurchaseRequest r) {
         UUID ownerId=owner(); requireOwner(r.ownerId(),ownerId);
         var card=cards.findByIdAndOwnerId(r.cardId(),ownerId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Card not found"));
         if(card.getStatus()!=CreditCardStatus.ACTIVE||r.totalAmount()==null||r.totalAmount().signum()<=0||r.installments()<1) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid card purchase");
