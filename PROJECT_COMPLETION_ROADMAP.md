@@ -43,3 +43,11 @@ Testing/runtime validation remains separate.
 Implementation scope: **98%**
 
 KOVIAN OS compatibility is now persisted as a governed application boundary. Finance remains authoritative for financial data and mutations. Remaining work is concentrated in live frontend binding, connector completeness, production observability/DR and final validation.
+
+
+## 2026-09-23 production-hardening checkpoint
+
+- Added bounded Hikari datasource pool defaults and explicit connection/validation timeouts.
+- Added a datasource configuration contract test.
+- Railway runtime validation identified an invalid DATABASE_URL value containing unresolved PGHOST/PGPORT/PGDATABASE placeholders; the application correctly fails during Flyway initialization instead of silently falling back to an unsafe database.
+- Free-tier deployment remains the target; a real PostgreSQL connection is still required before production runtime validation can pass.
