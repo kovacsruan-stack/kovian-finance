@@ -14,5 +14,5 @@ if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
 }
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter><App /></BrowserRouter></QueryClientProvider></StrictMode>,
+  <StrictMode><QueryClientProvider client={queryClient}><BrowserRouter basename="/app"><App /></BrowserRouter></QueryClientProvider></StrictMode>,
 )
