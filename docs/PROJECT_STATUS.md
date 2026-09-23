@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: 78ca1263d9574e7c65f62df218a2e2cf034a1213
+Latest known commit: d121c01bd4eacccf32e09fa1c4eef3184c9c87e4
 
 ## Purpose
 
@@ -484,3 +484,5 @@ The KOVIAN commercial-builder model is now explicitly persisted across the ecosy
 - Added a backend-controlled Net Worth planner view consolidating assets, liabilities and calculated net worth.
 - Added navigation, routing and PT-BR/EN localization for the Net Worth view.
 - Work remains independent of GitHub Actions, Work and Codex execution. CI/build is not used as a prerequisite for continued implementation and no successful CI/build result is claimed.
+
+- Continued without GitHub Actions, Work or Codex as execution dependencies: dashboard analytics authority, KOVI Insights UI/API, net worth validation, forecast localization and owner-isolation tests were implemented directly.
