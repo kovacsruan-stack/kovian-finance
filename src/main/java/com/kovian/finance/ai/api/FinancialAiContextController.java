@@ -10,7 +10,7 @@ import java.math.BigDecimal;import java.time.*;import java.util.*;import java.ni
 
 @RestController
 @RequestMapping("/api/v1/ai/finance")
-public class FinancialAiContextController {
+public class FinancialAiContextController { private static final int MAX_CONTEXT_TRANSACTIONS = 2000;
  private final FinancialTransactionRepository transactions; private final String internalApiKey;
  FinancialAiContextController(FinancialTransactionRepository t,@Value("${kovian.kovi.internal-api-key:}")String key){transactions=t;internalApiKey=key;}
  @GetMapping("/capabilities")
@@ -18,10 +18,10 @@ public class FinancialAiContextController {
  @GetMapping("/context")
  public Map<String,Object> context(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key,@RequestParam UUID ownerId,@RequestParam LocalDate from,@RequestParam LocalDate to){
   authorize(key);validateRange(from,to);var start=from.atStartOfDay().atOffset(ZoneOffset.UTC);var end=to.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
-  var source=transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(ownerId,start,end);BigDecimal income=BigDecimal.ZERO,expense=BigDecimal.ZERO;var categories=new LinkedHashMap<String,BigDecimal>();var tx=new ArrayList<Map<String,Object>>();
-  for(var item:source){if(item.getStatus()==TransactionStatus.CANCELLED)continue;var amount=item.getAmount();if(item.getTransactionType()==TransactionType.INCOME)income=income.add(amount);if(item.getTransactionType()==TransactionType.EXPENSE){expense=expense.add(amount);var category=item.getCategory()==null?"Sem categoria":item.getCategory().getName();categories.merge(category,amount,BigDecimal::add);}tx.add(Map.of("id",item.getId().toString(),"description",item.getDescription(),"amount",amount,"type",item.getTransactionType().name(),"occurredAt",item.getOccurredAt().toString()));}
+  var source=transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(ownerId,start,end);BigDecimal income=BigDecimal.ZERO,expense=BigDecimal.ZERO;var categories=new LinkedHashMap<String,BigDecimal>();var tx=new ArrayList<Map<String,Object>>(); boolean truncated=false;
+  for(var item:source){if(item.getStatus()==TransactionStatus.CANCELLED)continue;var amount=item.getAmount();if(item.getTransactionType()==TransactionType.INCOME)income=income.add(amount);if(item.getTransactionType()==TransactionType.EXPENSE){expense=expense.add(amount);var category=item.getCategory()==null?"Sem categoria":item.getCategory().getName();categories.merge(category,amount,BigDecimal::add);}tx.add(Map.of("id",item.getId().toString(),"description",item.getDescription(),"amount",amount,"type",item.getTransactionType().name(),"occurredAt",item.getOccurredAt().toString())); if(tx.size()>=MAX_CONTEXT_TRANSACTIONS){truncated=true;break;}}
   var net=income.subtract(expense);var savingsRate=income.signum()==0?BigDecimal.ZERO:net.divide(income,4,java.math.RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-  return Map.of("source","kovian-finance","contractVersion","1.4","ownerId",ownerId.toString(),"window",Map.of("from",from.toString(),"to",to.toString()),"summary",Map.of("income",income,"expense",expense,"net",net,"savingsRate",savingsRate),"categories",categories,"transactions",tx);
+  return Map.of("source","kovian-finance","contractVersion","1.4","ownerId",ownerId.toString(),"window",Map.of("from",from.toString(),"to",to.toString()),"summary",Map.of("income",income,"expense",expense,"net",net,"savingsRate",savingsRate),"categories",categories,"transactions",tx,"transactionEvidenceTruncated",truncated);
  }
  @GetMapping("/context/summary")
  public Map<String,Object> summary(@RequestHeader(value="X-KOVI-INTERNAL-KEY",required=false)String key,@RequestParam UUID ownerId,@RequestParam LocalDate from,@RequestParam LocalDate to){authorize(key);validateRange(from,to);var full=context(key,ownerId,from,to);var result=new LinkedHashMap<String,Object>();result.put("source",full.get("source"));result.put("contractVersion","1.4");result.put("ownerId",full.get("ownerId"));result.put("window",full.get("window"));result.put("summary",full.get("summary"));result.put("categories",full.get("categories"));result.put("transactionCount",((List<?>)full.get("transactions")).size());return result;}
