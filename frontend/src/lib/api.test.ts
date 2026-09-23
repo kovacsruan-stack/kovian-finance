@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { FinanceApiError, createAccount, createTransfer, getAccounts, getOwnerId, importCsv } from './api'
+import { getDashboardWindow } from './queries'
 
 describe('finance api', () => {
   beforeEach(() => {
@@ -120,4 +121,10 @@ describe('finance api', () => {
     expect(headers.get('X-Request-ID')).toBeTruthy()
   })
 
+  it('builds the dashboard window from UTC boundaries', () => {
+    expect(getDashboardWindow('2026-09-23')).toEqual({
+      fromIso: '2026-06-25T23:59:59.999Z',
+      toIso: '2026-09-23T23:59:59.999Z',
+    })
+  })
 })
