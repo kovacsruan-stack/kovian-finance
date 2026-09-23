@@ -7,13 +7,12 @@ import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds
 import { useTranslation } from 'react-i18next'
 import Modal from '../components/ui/Modal'
 import Field from '../components/ui/Field'
-import { useFinanceMutation } from '../lib/queries'
+import { useFinanceDashboard, useFinanceMutation } from '../lib/queries'
 
 const getLocale = () => typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(getLocale(), { style: 'currency', currency })
-const money = (value: number, currency = 'BRL') => value.toLocaleString(getLocale(), { style: 'currency', currency })
-function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{title}</h1><p>{desc}</p></div>{action}</section> }
-function Dashboard() {
+export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{title}</h1><p>{desc}</p></div>{action}</section> }
+export function Dashboard() {
   const { t } = useTranslation()
   const ownerId = getOwnerId(); const dashboard = useFinanceDashboard(ownerId); const accounts = dashboard.accounts.data ?? []; const goals = dashboard.goals.data ?? []; const transactions = dashboard.transactions.data ?? []; const analytics = dashboard.analytics.data; const loading = dashboard.isLoading; const error = ownerId ? (dashboard.isError ? t('financeLoadError') : null) : t('loginToLoadData')
   const brlIds = new Set(accounts.filter(a => a.currency === 'BRL').map(a => a.id)); const brlTx = transactions.filter(t => brlIds.has(t.accountId)); const balance = accounts.filter(a => a.currency === 'BRL').reduce((s, a) => s + Number(a.currentBalance || 0), 0); const allAccountsBrl = accounts.length > 0 && accounts.every(account => account.currency === 'BRL'); const income = allAccountsBrl && analytics ? Number(analytics.income) : brlTx.filter(t => t.type === 'INCOME' && t.status !== 'CANCELLED').reduce((s, t) => s + Number(t.amount || 0), 0); const expense = allAccountsBrl && analytics ? Number(analytics.expense) : brlTx.filter(t => t.type === 'EXPENSE' && t.status !== 'CANCELLED').reduce((s, t) => s + Number(t.amount || 0), 0)
@@ -26,7 +25,7 @@ function Dashboard() {
   </main>
 }function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Target }) { return <article className="stat-card"><Icon size={17} /><span>{label}</span><strong>{value}</strong></article> }
 function Quick({ to, icon: Icon, title, text }: { to: string; icon: typeof Wallet; title: string; text: string }) { return <NavLink className="quick-card" to={to}><Icon size={18} /><div><strong>{title}</strong><span>{text}</span></div><ChevronRight size={15} /></NavLink> }
-const pageConfig: Record<string, { titleKey: string; descKey: string; icon: typeof Wallet; itemKeys: string[]; actionTo: string; itemRoutes: string[] }> = {
+export const pageConfig: Record<string, { titleKey: string; descKey: string; icon: typeof Wallet; itemKeys: string[]; actionTo: string; itemRoutes: string[] }> = {
   '/contas': { titleKey: 'pages.accounts.title', descKey: 'pages.accounts.desc', icon: Wallet, itemKeys: ['pages.accounts.items.bank','pages.accounts.items.wallets','pages.accounts.items.balances'], actionTo: '/contas', itemRoutes: ['/contas','/contas','/contas'] },
   '/transacoes': { titleKey: 'pages.transactions.title', descKey: 'pages.transactions.desc', icon: Receipt, itemKeys: ['pages.transactions.items.incomeExpense','pages.transactions.items.filters','pages.transactions.items.categories'], actionTo: '/transacoes', itemRoutes: ['/transacoes','/transacoes','/transacoes'] },
   '/metas': { titleKey: 'pages.goals.title', descKey: 'pages.goals.desc', icon: Target, itemKeys: ['pages.goals.items.emergency','pages.goals.items.custom','pages.goals.items.monthly'], actionTo: '/metas', itemRoutes: ['/metas','/metas','/metas'] },
@@ -37,8 +36,8 @@ const pageConfig: Record<string, { titleKey: string; descKey: string; icon: type
   '/categorias': { titleKey: 'pages.categories.title', descKey: 'pages.categories.desc', icon: FolderTree, itemKeys: ['pages.categories.items.expenses','pages.categories.items.income','pages.categories.items.tags'], actionTo: '/categorias', itemRoutes: ['/categorias','/categorias','/categorias'] },
   '/configuracoes': { titleKey: 'pages.settings.title', descKey: 'pages.settings.desc', icon: Settings2, itemKeys: ['pages.settings.items.profile','pages.settings.items.security','pages.settings.items.preferences'], actionTo: '/configuracoes', itemRoutes: ['/configuracoes','/configuracoes','/configuracoes'] },
 }
-const pageTranslationKeys: Record<string, [string, string]> = { '/contas':['pages.accounts.title','pages.accounts.desc'], '/transacoes':['pages.transactions.title','pages.transactions.desc'], '/metas':['pages.goals.title','pages.goals.desc'], '/relatorios':['pages.reports.title','pages.reports.desc'], '/cartoes':['pages.cards.title','pages.cards.desc'], '/orcamentos':['pages.budgets.title','pages.budgets.desc'], '/recorrentes':['pages.recurring.title','pages.recurring.desc'], '/categorias':['pages.categories.title','pages.categories.desc'], '/configuracoes':['pages.settings.title','pages.settings.desc'] }
-function FinancePage({ config }: { config: typeof pageConfig[string] }) {
+export const pageTranslationKeys: Record<string, [string, string]> = { '/contas':['pages.accounts.title','pages.accounts.desc'], '/transacoes':['pages.transactions.title','pages.transactions.desc'], '/metas':['pages.goals.title','pages.goals.desc'], '/relatorios':['pages.reports.title','pages.reports.desc'], '/cartoes':['pages.cards.title','pages.cards.desc'], '/orcamentos':['pages.budgets.title','pages.budgets.desc'], '/recorrentes':['pages.recurring.title','pages.recurring.desc'], '/categorias':['pages.categories.title','pages.categories.desc'], '/configuracoes':['pages.settings.title','pages.settings.desc'] }
+export function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   const { t } = useTranslation()
   const ownerId = getOwnerId()
   const [accounts, setAccounts] = useState<FinanceAccount[]>([])
