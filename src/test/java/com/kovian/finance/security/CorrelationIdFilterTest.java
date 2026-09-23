@@ -24,6 +24,7 @@ class CorrelationIdFilterTest {
         assertThat(response.getHeader("X-Correlation-Id")).isEqualTo("qa-request-123");
         assertThat(response.getHeader("X-Request-ID")).isEqualTo("qa-request-123");
         assertThat(response.getHeader("Cache-Control")).isEqualTo("no-store");
+        assertThat(response.getHeader("Pragma")).isEqualTo("no-cache");
         verify(chain).doFilter(request, response);
     }
 
