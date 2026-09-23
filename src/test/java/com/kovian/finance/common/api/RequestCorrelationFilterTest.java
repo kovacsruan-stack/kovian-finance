@@ -2,8 +2,11 @@ package com.kovian.finance.common.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
+
+import org.slf4j.MDC;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockFilterChain;
@@ -19,9 +22,10 @@ class RequestCorrelationFilterTest {
         request.addHeader(RequestCorrelationFilter.HEADER_NAME, "finance-req-42");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        filter.doFilter(request, response, new MockFilterChain());
+        filter.doFilter(request, response, (req, res) -> assertEquals("finance-req-42", MDC.get(RequestCorrelationFilter.MDC_KEY)));
 
         assertEquals("finance-req-42", response.getHeader(RequestCorrelationFilter.HEADER_NAME));
+        assertNull(MDC.get(RequestCorrelationFilter.MDC_KEY));
     }
 
     @Test
