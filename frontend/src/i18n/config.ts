@@ -4,7 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 
 const resources = {
   'pt-BR': { common: {
-    language:'Português', financeName:'Finance', fitness:'Fitness', koviAi:'KOVI AI', closeMenu:'Fechar menu', search:'Buscar', searchFinance:'Buscar no KOVIAN Finance...', noResults:'Nenhum resultado encontrado.', escToClose:'Esc para fechar', online:'Online', more:'Mais',
+    language:'Português', financeName:'Finance', fitness:'Fitness', koviAi:'KOVI AI', closeMenu:'Fechar menu', search:'Buscar', searchFinance:'Buscar no KOVIAN Finance...', noResults:'Nenhum resultado encontrado.', escToClose:'Esc para fechar', online:'Online',
     overview:'Visão geral', chat:'Conversar com KOVI', projects:'Projetos', development:'Desenvolvimento', research:'Pesquisa', automations:'Automações', integrations:'Integrações', settings:'Configurações',
     principal:'Principal', work:'Trabalho', system:'Sistema', newProject:'Novo projeto', dashboardTitle:'Seu centro de comando inteligente.', dashboardDesc:'Orquestre projetos, agentes e automações sem começar por configurações técnicas.', status:'Status do KOVI', ready:'Operação pronta para continuar', chatTitle:'Conversar com KOVI',
     financeOverview:'Visão geral', accounts:'Contas', transactions:'Transações', goals:'Metas e orçamento', reports:'Relatórios', subscriptions:'Assinaturas', cards:'Cartões', budgets:'Orçamentos', recurring:'Recorrentes', categories:'Categorias', financeIntegrations:'Integrações', financeSettings:'Configurações', more:'Mais',
