@@ -1,0 +1,30 @@
+schemaVersion: 1
+project: kovian-finance
+role: finance-domain
+owner: kovacsruan-stack/kovian-finance
+stack:
+  - Java 21
+  - Spring Boot 4
+  - PostgreSQL
+  - Redis
+  - React
+  - Playwright
+qualityGates:
+  - maven-tests
+  - frontend-lint
+  - frontend-build
+  - frontend-tests
+  - chromium-qa
+  - security-review
+qa:
+  - finance-api
+  - frontend-chromium
+  - mobile-chromium
+deployment: container-or-platform
+policies:
+  noSecretsInRepo: true
+  noUnboundedRetries: true
+  requireEvidenceBeforePromotion: true
+  requireBrowserQaForUi: true
+  preserveDomainOwnership: true
+  costGuard: true
