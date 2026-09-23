@@ -55,4 +55,20 @@ describe('finance api', () => {
       message: 'socket closed',
     })
   })
+
+  it('uses the backend request id and message when available', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      code: 'VALIDATION_ERROR',
+      message: 'Invalid amount.',
+    }), {
+      status: 400,
+      headers: { 'content-type': 'application/json', 'X-Request-ID': 'server-request-42' },
+    })))
+
+    const error = await getAccounts('owner-123').catch(value => value as FinanceApiError)
+    expect(error).toBeInstanceOf(FinanceApiError)
+    expect(error.requestId).toBe('server-request-42')
+    expect(error.message).toBe('Invalid amount.')
+  })
 })
