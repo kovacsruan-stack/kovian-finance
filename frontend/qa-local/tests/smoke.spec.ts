@@ -31,3 +31,11 @@ test('theme control changes document theme when available', async ({ page }) => 
     expect(after).not.toBe(before)
   }
 })
+
+
+test('skip navigation targets main content', async ({ page }) => {
+  await page.goto('/', { waitUntil: 'domcontentloaded' })
+  const skip = page.locator('a.skip-link').first()
+  await expect(skip).toHaveAttribute('href', '#main-content')
+  await expect(page.locator('#main-content')).toHaveAttribute('tabindex', '-1')
+})
