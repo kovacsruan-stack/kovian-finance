@@ -605,3 +605,14 @@ This remains a scope estimate for engineering implementation. The remaining 6% i
 - Snapshot history and transfer contracts are now covered by frontend runtime-schema regression tests.
 - Final implementation checkpoint for this continuation: latest main commit is tracked below after the final documentation commit.
 - Scope estimate: 92%.
+
+
+## 2026-09-23 — Esqueleto do projeto registrado no GitHub
+
+- Registrado o estado consolidado do esqueleto/arquitetura do KOVIAN Finance após a sequência de evolução da fundação do Personal Finance Planner.
+- A arquitetura permanece organizada em frontend/PWA → API tipada → serviços Spring Boot → PostgreSQL/Redis, com o backend como fonte de verdade financeira.
+- O esqueleto frontend inclui shell de aplicação, contratos TypeScript/Zod, preferências isoladas, dashboard, planejamento, patrimônio/snapshots, transferências, notificações, dívidas, previsão, importação/exportação e KOVI Intelligence.
+- O esqueleto backend mantém domínios financeiros separados, autorização por usuário, ledger, idempotência, auditoria, outbox, reconciliação e contratos controlados para inteligência.
+- A integração com o upstream oofangoo/personal-finance-planner permanece documentada como fundação de UX/aplicação, sem substituir a arquitetura de domínio e persistência do KOVIAN.
+- Este checkpoint registra a alteração estrutural no branch main; CI/build continua sem aprovação enquanto não houver evidência de verificação bem-sucedida.
+- Último commit observado antes deste registro: 6793b69cf342eb3820f4db7315ce79fb7f5fd935.
