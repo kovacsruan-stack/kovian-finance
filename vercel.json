@@ -1,0 +1,9 @@
+{
+  "installCommand": "cd frontend && npm install --no-audit --no-fund",
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "src/main/resources/static/app",
+  "rewrites": [
+    { "source": "/app", "destination": "/app/index.html" },
+    { "source": "/app/(.*)", "destination": "/app/index.html" }
+  ]
+}
