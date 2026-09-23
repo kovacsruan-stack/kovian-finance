@@ -56,9 +56,9 @@ export default function ControlPlane() {
 
     <div className="feature-grid">
       <Card icon={LockKeyhole} title={t('currentPeriod')} value={t('currentMonth')}
-        detail={runs[0] ? '{t('lastRun')+' '}' + runs[0].status.toLowerCase() : '{t('noRunRecorded')}'} />
+        detail={runs[0] ? `${t('lastRun')} ${runs[0].status.toLowerCase()}` : t('noRunRecorded')} />
       <Card icon={RefreshCw} title={t('reconciliation')} value={loading ? '...' : String(exceptionCount)}
-        detail={loading ? '{t('loading')}' : runs.length + ' {t('runsRecorded')}'} />
+        detail={loading ? t('loading') : `${runs.length} ${t('runsRecorded')}`} />
       <Card icon={Download} title={t('exports')} value={t('controlled')} detail={t('exportDetail')} />
     </div>
 
