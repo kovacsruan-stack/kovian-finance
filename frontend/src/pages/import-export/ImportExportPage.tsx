@@ -3,12 +3,9 @@ import { Download, FileUp, RefreshCw } from 'lucide-react'
 import { getAccounts, getImportHistory, importCsv, getTransactions, type FinanceAccount, type FinanceImport, type FinanceTransaction } from '../../lib/api'
 import { getOwnerId } from '../../lib/api'
 import { useTranslation } from 'react-i18next'
+import { buildCsv } from '../../lib/csv'
 
-function safeCsvCell(value: unknown) {
-  const text = String(value ?? '').replace(/"/g, '""')
-  if (typeof value !== 'number' && /^[=+\-@]/.test(text)) return `"'"${text}"`
-  return `"${text}"`
-}
+
 function download(name: string, content: string, type: string) {
   const blob = new Blob([content], { type })
   const url = URL.createObjectURL(blob)
