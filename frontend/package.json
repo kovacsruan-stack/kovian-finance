@@ -14,7 +14,8 @@
     "qa:local": "playwright test -c qa-local/playwright.config.ts",
     "qa:smoke": "playwright test -c qa-local/playwright.config.ts --project=desktop",
     "qa:mobile": "playwright test -c qa-local/playwright.config.ts --project=mobile",
-    "qa:a11y": "playwright test -c qa-local/playwright.config.ts --grep=@a11y"
+    "qa:a11y": "playwright test -c qa-local/playwright.config.ts --grep=@a11y",
+    "qa:report": "playwright show-report qa-local/reports/html"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.2",
