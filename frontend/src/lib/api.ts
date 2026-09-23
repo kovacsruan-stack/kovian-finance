@@ -234,4 +234,8 @@ export function markNotificationRead(id: string) { return post<void>(`/notificat
 
 export function getFinancialSnapshots() { return get('/snapshots', financeSnapshotListSchema) }
 
-export function createTransfer(input: { fromAccountId: string; toAccountId: string; amount: number; description: string }) { return post<FinanceTransfer>('/transfers', input, financeTransferSchema, ) }
+export async function createTransfer(input: { fromAccountId: string; toAccountId: string; amount: number; description: string }) {
+  const idempotencyKey = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  const value = await request<unknown>('/transfers', { method: 'POST', headers: { 'Idempotency-Key': idempotencyKey }, body: JSON.stringify(input) })
+  return financeTransferSchema.parse(value)
+}
