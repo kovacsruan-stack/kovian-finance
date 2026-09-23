@@ -4,7 +4,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 
 const resources = {
   'pt-BR': { common: {
-    language: 'Português', overview: 'Visão geral', chat: 'Conversar com KOVI', projects: 'Projetos',
+    language: 'Português', financeName:'Finance', fitness:'Fitness', koviAi:'KOVI AI', closeMenu:'Fechar menu', search:'Buscar', searchFinance:'Buscar no KOVIAN Finance...', noResults:'Nenhum resultado encontrado.', escToClose:'Esc para fechar', financeLoadError:'Não foi possível carregar os dados financeiros.', loginToLoadFinance:'Faça login para carregar seus dados financeiros.', newTransaction:'Nova transação', consolidatedBalance:'Saldo consolidado BRL', loading:'Carregando...', syncedAccounts:'{{count}} conta(s) sincronizada(s)', income90:'Receitas · 90 dias', expense90:'Despesas · 90 dias', activeGoals:'Metas ativas', connectedAccounts:'Contas conectadas', viewAll:'Ver todas', noAccounts:'Nenhuma conta cadastrada.', quickAccess:'ACESSO RÁPIDO', organize:'Organizar', manageBalances:'Gerencie saldos.', trackInOut:'Acompanhe entradas e saídas.', trackGoals:'Acompanhe objetivos.', analyzePeriods:'Analise períodos.', overview: 'Visão geral', chat: 'Conversar com KOVI', projects: 'Projetos',
     development: 'Desenvolvimento', research: 'Pesquisa', automations: 'Automações', integrations: 'Integrações', settings: 'Configurações',
     principal: 'Principal', work: 'Trabalho', system: 'Sistema', online: 'Online', newProject: 'Novo projeto',
     dashboardTitle: 'Seu centro de comando inteligente.', dashboardDesc: 'Orquestre projetos, agentes e automações sem começar por configurações técnicas.',
@@ -13,7 +13,7 @@ const resources = {
     reports: 'Relatórios', subscriptions: 'Assinaturas', cards: 'Cartões', budgets: 'Orçamentos', recurring: 'Recorrentes', categories: 'Categorias', financeIntegrations: 'Integrações', financeSettings: 'Configurações', more: 'Mais', group_principal: 'Principal', group_planejamento: 'Planejamento', group_organizacao: 'Organização', group_sistema: 'Sistema'
   }},
   en: { common: {
-    language: 'English', overview: 'Overview', chat: 'Chat with KOVI', projects: 'Projects',
+    language: 'English', financeName:'Finance', fitness:'Fitness', koviAi:'KOVI AI', closeMenu:'Close menu', search:'Search', searchFinance:'Search KOVIAN Finance...', noResults:'No results found.', escToClose:'Esc to close', financeLoadError:'Unable to load financial data.', loginToLoadFinance:'Sign in to load your financial data.', newTransaction:'New transaction', consolidatedBalance:'Consolidated BRL balance', loading:'Loading...', syncedAccounts:'{{count}} account(s) synchronized', income90:'Income · 90 days', expense90:'Expenses · 90 days', activeGoals:'Active goals', connectedAccounts:'Connected accounts', viewAll:'View all', noAccounts:'No accounts registered.', quickAccess:'QUICK ACCESS', organize:'Organize', manageBalances:'Manage balances.', trackInOut:'Track income and expenses.', trackGoals:'Track goals.', analyzePeriods:'Analyze periods.', overview: 'Overview', chat: 'Chat with KOVI', projects: 'Projects',
     development: 'Development', research: 'Research', automations: 'Automations', integrations: 'Integrations', settings: 'Settings',
     principal: 'Main', work: 'Work', system: 'System', online: 'Online', newProject: 'New project',
     dashboardTitle: 'Your intelligent command center.', dashboardDesc: 'Orchestrate projects, agents and automations without starting with technical configuration.',
