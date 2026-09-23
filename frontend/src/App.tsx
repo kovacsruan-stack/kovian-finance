@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import Modal from './components/ui/Modal'
 import Field from './components/ui/Field'
 import ForecastPage from './pages/ForecastPage'
+import ImportExportPage from './pages/import-export/ImportExportPage'
 import { useFinanceDashboard, useFinanceMutation } from './lib/queries'
 
 const getLocale = () => typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'
@@ -141,7 +142,7 @@ function FinancePage({ config }: { config: typeof pageConfig[string] }) {
     {modal === 'goal' && <Modal title={t('newGoal')} onClose={() => setModal(null)}><form className="form-grid" onSubmit={e => { e.preventDefault(); if (!ownerId || !name || Number(amount) <= 0) return setFormError(t('errorGoalRequired')); void save(() => createGoal({ ownerId, name, targetAmount: Number(amount), targetDate: targetDate ? new Date(`${targetDate}T23:59:59`).toISOString() : null })) }}><Field label={t('name')}><input value={name} onChange={e => setName(e.target.value)} placeholder={t('placeholderGoal')} /></Field><Field label={t('targetAmount')}><input type="number" min="0.01" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} /></Field><Field label={t('targetDate')}><input type="date" value={targetDate} onChange={e => setTargetDate(e.target.value)} /></Field>{formError && <div className="form-error">{formError}</div>}<button type="submit" className="primary form-submit" disabled={saving}>{saving ? t('saving') : t('createGoal')}</button></form></Modal>}
   </main>
 }
-function App() { const { t } = useTranslation(); return <Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/previsao" element={<ForecastPage />} />{Object.entries(pageConfig).map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}<Route path="*" element={<main className="page"><Header title={t('notFoundTitle')} desc={t('notFoundDesc')} action={<NavLink className="secondary" to="/">{t('backHome')}</NavLink>} /><section className="panel empty-state"><FileText size={30} /><div><strong>{t('notFoundRoute')}</strong><p>{t('notFoundHelp')}</p></div></section></main>} /></Routes></Shell> }
+function App() { const { t } = useTranslation(); return <Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/previsao" element={<ForecastPage />} /><Route path="/import-export" element={<ImportExportPage />} />{Object.entries(pageConfig).map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}<Route path="*" element={<main className="page"><Header title={t('notFoundTitle')} desc={t('notFoundDesc')} action={<NavLink className="secondary" to="/">{t('backHome')}</NavLink>} /><section className="panel empty-state"><FileText size={30} /><div><strong>{t('notFoundRoute')}</strong><p>{t('notFoundHelp')}</p></div></section></main>} /></Routes></Shell> }
 export default App
 
 
