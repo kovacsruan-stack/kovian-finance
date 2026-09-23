@@ -33,4 +33,17 @@ class LiabilityControllerTest {
             assertThrows(org.springframework.web.server.ResponseStatusException.class,()->controller.list(UUID.randomUUID()));
         }
     }
+    @Test
+    void update_rejectsNegativeAmount() {
+        UUID owner=UUID.randomUUID(); UUID liabilityId=UUID.randomUUID();
+        var repo=mock(FinancialLiabilityRepository.class);
+        var liability=mock(com.kovian.finance.liability.domain.FinancialLiability.class);
+        when(liability.getOwnerId()).thenReturn(owner);
+        when(repo.findById(liabilityId)).thenReturn(java.util.Optional.of(liability));
+        var controller=new LiabilityController(repo);
+        try(MockedStatic<CurrentUser> current=mockStatic(CurrentUser.class)){
+            current.when(CurrentUser::ownerId).thenReturn(owner);
+            assertThrows(org.springframework.web.server.ResponseStatusException.class,()->controller.update(liabilityId,null,new java.math.BigDecimal("-1")));
+        }
+    }
 }
