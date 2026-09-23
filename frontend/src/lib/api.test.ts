@@ -89,6 +89,14 @@ describe('finance api', () => {
     expect(error.code).toBe('IMPORT_TOO_LARGE')
     expect(error.requestId).toBe('import-request-7')
   })
+  it('normalizes malformed successful JSON into a structured response error', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{', { status: 200, headers: { 'content-type': 'application/json' } })))
+    const error = await getAccounts('owner-123').catch(value => value as FinanceApiError)
+    expect(error).toBeInstanceOf(FinanceApiError)
+    expect(error.code).toBe('INVALID_RESPONSE')
+    expect(error.status).toBe(200)
+  })
   it('fails closed on malformed mutation responses', async () => {
     localStorage.setItem('access_token', 'header.e30.signature')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'invalid', status: 'ACTIVE' }), { status: 200 })))
