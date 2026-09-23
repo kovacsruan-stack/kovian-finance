@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: ac88bdc6f55216793defbc9f33d7308ed2a295fa6
+Latest known commit: 6ab02ddd3f022b9289bffff6899ba4b5072e856b
 
 ## Purpose
 
@@ -523,3 +523,10 @@ This remains a scope estimate for engineering implementation, not a test/build/r
 
 - KOVI Finance context now caps transaction evidence at 2,000 records per bounded request while preserving aggregate calculations across the complete requested window.
 - The response explicitly reports when transaction evidence is truncated, keeping the internal intelligence contract bounded without silently changing aggregate totals.
+
+
+## 2026-09-23 — Debt planning surface
+
+- Added a governed frontend debt view with owner-scoped backend data, outstanding balance aggregation, active debt count and localized states.
+- Enriched the debt API contract with safe read fields for planning clients while keeping mutations behind authenticated backend authorization.
+- Added navigation and routing for the debt planning surface.
