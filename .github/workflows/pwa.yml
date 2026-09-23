@@ -7,11 +7,12 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: kovian-finance-pwa
+  group: kovian-finance-pwa-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
   pwa:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: frontend
@@ -26,6 +27,15 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install frontend
         run: npm ci
+      - name: Dependency audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      - name: Lint frontend
+        run: npm run lint
+      - name: Type check frontend
+        run: npx tsc --noEmit
+      - name: Test frontend
+        run: npm test -- --run
       - name: Build frontend
         run: npm run build
       - name: Verify PWA assets
