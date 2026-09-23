@@ -627,3 +627,16 @@ This remains a scope estimate for engineering implementation. The remaining 6% i
 - Mantida a separação de responsabilidades: KOVI interno somente leitura, backend financeiro como fonte de verdade e escopo do proprietário autenticado nas superfícies financeiras.
 - CI/build continua não aprovado sem evidência verificável de execução bem-sucedida.
 - Escopo de implementação estimado: 95%.
+
+
+## 2026-09-23 — Transfer UX/cache invalidation and query regression coverage
+
+- A transferência entre contas agora invalida as queries financeiras após sucesso, mantendo dashboard, contas e demais superfícies sincronizadas sem depender de um refetch local isolado.
+- Preservada a mesma chave de idempotência durante uma tentativa lógica de transferência, evitando duplicidade em retries de rede.
+- Adicionada cobertura frontend para o contrato de transferência, incluindo Idempotency-Key, correlação X-Request-ID e validação runtime da resposta.
+- Adicionada cobertura para a janela de 90 dias do dashboard, com limites UTC determinísticos.
+- CI/build continua sem aprovação por ausência de execução bem-sucedida verificável nesta etapa.
+
+**Current implementation scope estimate: 96%**
+
+O restante está concentrado em QA integrado/E2E, decomposição final do App.tsx, paridade/ajustes finos de UX, observabilidade e homologação final de produção.
