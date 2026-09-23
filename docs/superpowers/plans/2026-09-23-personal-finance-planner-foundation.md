@@ -1,8 +1,8 @@
-# Personal Finance Planner Foundation Implementation Plan
+# Personal Finance Planner 100% Parity → KOVIAN Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Transform KOVIAN Finance into a KOVIAN-owned financial-planning product using the complete UX/application-shell strengths of `oofangoo/personal-finance-planner` while keeping Spring Boot/PostgreSQL as the authoritative financial system.
+**Goal:** First reproduce and verify 100% of the relevant functional UX/workflow surface of `oofangoo/personal-finance-planner` inside KOVIAN Finance, using the upstream project as the planning foundation while keeping Spring Boot/PostgreSQL authoritative. Only after upstream parity is verified do we layer KOVIAN-specific capabilities such as KOVI Intelligence, advanced governance, ecosystem integrations and other proprietary differentiators on top.
 
 **Architecture:** The existing Spring Boot 4 backend remains the system of record and keeps its security, ownership, ledger, audit, import, reconciliation, forecasting and KOVI boundaries. The frontend is evolved toward the upstream planner's module-oriented application structure and workflows, but its persistence is replaced by typed KOVIAN API/query adapters; browser persistence is limited to UI preferences, transient state and controlled import/export staging. KOVI Intelligence is exposed only through governed application services.
 
@@ -273,7 +273,9 @@ git add frontend/src/pages/import-export frontend/src/components/import frontend
 git commit -m "feat: add governed import and export workflows"
 ```
 
-### Task 8: Integrate KOVI Intelligence into the planner UX
+### Task 8: Prepare the KOVIAN layer without activating proprietary features
+
+> **Sequencing rule:** This task is preparation only. Do not expose KOVI Intelligence or other KOVIAN-only differentiators in the primary planner experience until Tasks 1–7, 9 and 10 establish and verify 100% relevant upstream planner parity. The KOVIAN layer is activated only in the post-parity phase.
 
 **Files:**
 - Modify: `frontend/src/lib/api.ts`
@@ -292,18 +294,17 @@ git commit -m "feat: add governed import and export workflows"
 - Frontend must never send database credentials, unrestricted SQL or raw persistence graphs.
 
 - [ ] **Step 1: Write tests** proving insights render provenance, generated time and computed-vs-AI distinction.
-- [ ] **Step 2: Expose/consume typed endpoints** for financial insights, anomaly explanations, forecast intelligence and scenario planning through the existing KOVI boundary.
-- [ ] **Step 3: Implement intelligence cards** in dashboard and dedicated KOVI Finance view.
-- [ ] **Step 4: Implement scenario planning** with explicit user inputs and read-only computed results.
-- [ ] **Step 5: Add backend authorization/context-size tests** proving owner scope, bounded context and fail-closed behavior.
-- [ ] **Step 6: Run frontend/backend tests.**
-- [ ] **Step 7: Commit.**
+- [ ] **Step 2: Keep existing KOVI backend contracts intact and documented, but do not add new KOVI UI dependencies to the planner parity gate.
+- [ ] **Step 3: Add explicit feature boundaries so KOVIAN-only capabilities can be enabled after parity without rewriting planner modules.
+- [ ] **Step 4: Add backend authorization/context-size tests only where required to preserve existing KOVI contracts.
+- [ ] **Step 5: Run regression tests for the existing KOVI boundary.
+- [ ] **Step 6: Commit.**
 ```bash
 git add frontend/src/pages/intelligence frontend/src/components/intelligence frontend/src/lib/api.ts frontend/src/lib/queries.ts
 git commit -m "feat: integrate governed KOVI finance intelligence"
 ```
 
-### Task 9: Complete localization, preferences and planner UX parity
+### Task 9: Complete localization, preferences and full planner UX parity
 
 **Files:**
 - Modify: `frontend/src/i18n/config.ts`
@@ -387,7 +388,7 @@ git add src/main/java/com/kovian/finance src/test/java/com/kovian/finance pom.xm
 git commit -m "hardening: secure planner-facing finance APIs"
 ```
 
-### Task 12: Production verification, documentation and migration completion
+### Task 12: Verify 100% Personal Finance Planner parity before KOVIAN activation
 
 **Files:**
 - Modify: `docs/ARCHITECTURE.md`
@@ -424,8 +425,19 @@ git add docs README.md .github
 git commit -m "docs: finalize finance planner migration"
 ```
 
+## Phase A — Personal Finance Planner 100% Parity Gate
+
+The project is **not considered migrated or complete** until every relevant upstream workflow is represented, tested and usable in KOVIAN Finance. The parity gate covers dashboard, income, expenses, recurring expenses, installments, goals, budgets, forecast, scenario planning, calendar/table planning, multi-currency, multi-language, theme/preferences, import/export, responsive/mobile workflows, empty/loading/error states and the upstream application's core navigation/application-shell behavior. LocalStorage-based financial persistence is intentionally replaced by KOVIAN APIs and therefore is not a parity requirement.
+
+Only after this gate passes may Phase B begin.
+
+## Phase B — KOVIAN Layer
+
+After Phase A is verified, activate and expand KOVIAN-specific capabilities on top of the stable planner foundation: KOVI Intelligence, governed insights, anomaly explanations, advanced security/audit controls, ecosystem integrations, automation and other proprietary KOVIAN modules. These additions must not regress planner parity.
+
 ## Final Verification Gate
 
+- [ ] **Phase A parity gate passes before KOVIAN-only UI/features are activated.**
 - [ ] Backend `./mvnw test` passes.
 - [ ] Frontend `npm run lint`, `npm test`, and `npm run build` pass.
 - [ ] Chromium critical E2E suite passes.
