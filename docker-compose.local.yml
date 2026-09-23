@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "${KOVIAN_FINANCE_POSTGRES_PORT:-55435}:5432"
+      - "127.0.0.1:${KOVIAN_FINANCE_POSTGRES_PORT:-55435}:5432"
     volumes:
       - kovian-finance-local-postgres:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "${KOVIAN_FINANCE_REDIS_PORT:-56382}:6379"
+      - "127.0.0.1:${KOVIAN_FINANCE_REDIS_PORT:-56382}:6379"
     volumes:
       - kovian-finance-local-redis:/data
     healthcheck:
@@ -34,7 +34,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8082:8082"
+      - "127.0.0.1:8082:8082"
     environment:
       SERVER_PORT: 8082
       DATABASE_URL: jdbc:postgresql://postgres:5432/kovian_finance
