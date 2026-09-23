@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import Shell from './components/layout/FinanceShell'
-import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FileText, FolderTree, Plus, Receipt, ShieldCheck, Target, Wallet } from 'lucide-react'
+import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FileText, FolderTree, Plus, Receipt, ShieldCheck, Settings2, Target, Wallet } from 'lucide-react'
 import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getOwnerId, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from './lib/api'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds, periodStartFor } from './lib/budgetUtils'
@@ -13,29 +13,6 @@ import { useFinanceDashboard, useFinanceMutation } from './lib/queries'
 
 const getLocale = () => typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(getLocale(), { style: 'currency', currency })
-type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'planejamento' | 'organizacao' | 'sistema' }
-const items: Item[] = [
-  { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
-  { to: '/transacoes', key: 'transactions', icon: Receipt, group: 'principal' },
-  { to: '/contas', key: 'accounts', icon: Wallet, group: 'principal' },
-  { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'principal' },
-  { to: '/orcamentos', key: 'budgets', icon: Target, group: 'planejamento' },
-  { to: '/metas', key: 'goals', icon: Target, group: 'planejamento' },
-  { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'planejamento' },
-  { to: '/previsao', key: 'forecast', icon: CalendarClock, group: 'planejamento' },
-]
-const moreItems: Item[] = [
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
-  { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
-]
-const navGroups = [
-  { key: 'principal', items: items.filter(item => item.group === 'principal') },
-  { key: 'planejamento', items: items.filter(item => item.group === 'planejamento') },
-]
-const localAppUrl=(port:number,configured:string)=>{if(configured.trim())return configured;const host=window.location.hostname;if(['localhost','127.0.0.1'].includes(host)||host.startsWith('192.168.'))return window.location.protocol+'//'+host+':'+port+'/';return ''}
-const fitnessUrl=localAppUrl(5175,import.meta.env.VITE_KOVIAN_FITNESS_URL || '')
-const koviUrl=localAppUrl(3003,import.meta.env.VITE_KOVI_APP_URL || '')
 function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{title}</h1><p>{desc}</p></div>{action}</section> }
 function Dashboard() {
   const { t } = useTranslation()
