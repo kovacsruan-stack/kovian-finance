@@ -17,6 +17,7 @@ export default function TransferPage() {
   const [saving,setSaving]=useState(false)
   const [error,setError]=useState<string|null>(null)
   const [success,setSuccess]=useState(false)
+  const [idempotencyKey,setIdempotencyKey]=useState<string|null>(null)
 
   const activeAccounts=(accounts.data??[]).filter(account=>account.status==='ACTIVE')
   const from=activeAccounts.find(account=>account.id===fromAccountId)
@@ -30,7 +31,9 @@ export default function TransferPage() {
     if(!sameCurrency) return setError(t('errorTransferCurrency'))
     if(from && value>Number(from.currentBalance)) return setError(t('errorTransferBalance'))
     setSaving(true)
-    try { await createTransfer({fromAccountId,toAccountId,amount:value,description:description.trim()}); setAmount(''); setDescription(''); setSuccess(true); await accounts.refetch() }
+    const key=idempotencyKey || (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`)
+    setIdempotencyKey(key)
+    try { await createTransfer({fromAccountId,toAccountId,amount:value,description:description.trim()}, key); setAmount(''); setDescription(''); setSuccess(true); setIdempotencyKey(null); await accounts.refetch() }
     catch(e){ setError(e instanceof Error ? e.message.replace('FINANCE_API_',t('apiErrorPrefix')) : t('saveError')) }
     finally { setSaving(false) }
   }
