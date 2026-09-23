@@ -59,7 +59,7 @@ export default function ControlPlane() {
         detail={runs[0] ? '{t('lastRun')+' '}' + runs[0].status.toLowerCase() : '{t('noRunRecorded')}'} />
       <Card icon={RefreshCw} title={t('reconciliation')} value={loading ? '...' : String(exceptionCount)}
         detail={loading ? '{t('loading')}' : runs.length + ' {t('runsRecorded')}'} />
-      <Card icon={Download} title="{t('exports')}" value={t('controlled')} detail={t('exportDetail')} />
+      <Card icon={Download} title={t('exports')} value={t('controlled')} detail={t('exportDetail')} />
     </div>
 
     <div className="tabs">
