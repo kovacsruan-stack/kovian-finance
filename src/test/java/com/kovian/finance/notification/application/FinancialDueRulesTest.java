@@ -3,17 +3,11 @@ package com.kovian.finance.notification.application;
 import com.kovian.finance.card.repository.CreditCardInvoiceRepository;
 import com.kovian.finance.debt.repository.DebtRepository;
 import com.kovian.finance.goal.repository.FinancialGoalRepository;
-import com.kovian.finance.notification.domain.Notification;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
-import com.kovian.finance.transaction.domain.FinancialTransaction;
-import com.kovian.finance.transaction.domain.TransactionStatus;
-import com.kovian.finance.transaction.domain.TransactionType;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.*;
