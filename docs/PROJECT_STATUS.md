@@ -616,3 +616,14 @@ This remains a scope estimate for engineering implementation. The remaining 6% i
 - A integração com o upstream oofangoo/personal-finance-planner permanece documentada como fundação de UX/aplicação, sem substituir a arquitetura de domínio e persistência do KOVIAN.
 - Este checkpoint registra a alteração estrutural no branch main; CI/build continua sem aprovação enquanto não houver evidência de verificação bem-sucedida.
 - Último commit observado antes deste registro: 6793b69cf342eb3820f4db7315ce79fb7f5fd935.
+
+
+## 2026-09-23 — Final hardening continuation
+
+- Corrigido teste de snapshot para usar assertiva JUnit explícita em vez de Java assert, tornando a verificação independente de `-ea`.
+- Endurecido o contrato de evidências do KOVI para descrições de transação nulas, evitando falhas ao construir respostas de contexto.
+- Aplicada a mesma proteção à superfície interna KOVI Finance.
+- Removida dependência/import não utilizado do controller de outbox.
+- Mantida a separação de responsabilidades: KOVI interno somente leitura, backend financeiro como fonte de verdade e escopo do proprietário autenticado nas superfícies financeiras.
+- CI/build continua não aprovado sem evidência verificável de execução bem-sucedida.
+- Escopo de implementação estimado: 95%.
