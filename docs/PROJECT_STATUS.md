@@ -670,3 +670,20 @@ Restante principal: execução/homologação E2E integrada, validação real de 
 **Current implementation scope estimate: 98%**
 
 Remaining work is concentrated in integrated execution/homologation, deeper UX parity polish, additional shell decomposition where it materially reduces coupling, observability validation in a live runtime, and final production/release readiness.
+
+
+## 2026-09-23 — Online deployment gate and hosting hardening
+
+- Frontend hosting was audited against the actual Vercel configuration instead of assuming the local `/app/` base path also applies to root-hosted Vercel deployments.
+- Made the Vite base path configurable through VITE_APP_BASE_PATH; local/Spring-hosted behavior keeps `/app/`, while Vercel is configured for `/`.
+- Switched PWA manifest/icon URLs to Vite's %BASE_URL% placeholder and derived the React Router basename/service-worker scope from import.meta.env.BASE_URL.
+- Added a Vercel rewrite that proxies `/api/v1/*` to the Railway Finance API, keeping the browser API origin aligned with the deployed frontend.
+- Verified the Railway Finance API service is connected to kovacsruan-stack/kovian-finance:main and exposes the healthcheck path `/actuator/health`.
+- Production backend homologation is still blocked by infrastructure configuration: the Railway Finance API has no PostgreSQL service/connection variables in its production environment, and the latest observed backend startup failed because the resolved datasource URL was not a JDBC URL.
+- Vercel deployment verification is currently blocked by the connected provider/build-rate-limit state; no READY deployment is claimed for the new frontend commits.
+- No production credentials or secret values were added to the repository.
+- No GitHub Actions, Work or Codex dependency was introduced.
+
+**Current implementation scope estimate: 98%**
+
+The remaining implementation is small and concentrated in integrated production homologation: provision/wire PostgreSQL + Redis in the runtime environment, apply production secrets, obtain a successful Vercel build/deployment, execute end-to-end smoke checks against the real API and close the release checklist. This percentage is an engineering-scope estimate, not a build/test/release percentage.
