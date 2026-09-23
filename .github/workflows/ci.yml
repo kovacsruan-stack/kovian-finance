@@ -67,6 +67,35 @@ jobs:
           npm ci
           npm run build
 
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Cache Dependency-Check data
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: dependency-check-finance-${{ runner.os }}-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            dependency-check-finance-${{ runner.os }}-
+      - name: OWASP Dependency-Check
+        run: mvn -B -ntp -Psecurity-scan verify
+      - name: Upload security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: finance-dependency-check
+          path: target/dependency-check/
+          if-no-files-found: warn
+
   diagnostic:
     runs-on: ubuntu-latest
     timeout-minutes: 15
