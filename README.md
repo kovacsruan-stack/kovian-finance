@@ -29,18 +29,9 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 User-facing changes require automated validation plus real local browser QA for applicable flows. Keep domain ownership explicit and preserve the KOVI integration boundary.
 
-
-## Validation
-
-Backend:
-
-    ./mvnw test
-
-Frontend:
+Canonical local QA:
 
     cd frontend
-    npm run lint
-    npm run build
     npm run qa:chromium
 
-User-facing changes must also pass real local browser QA for the affected flow. Build and automated tests do not replace local runtime verification.
+The frontend smoke suite covers shell rendering, browser errors, bilingual switching and primary navigation.
