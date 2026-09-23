@@ -1,6 +1,6 @@
 # KOVIAN Finance local development
 
-The repository includes a standalone Docker stack and a dedicated Vite port so Finance can run beside Fitness without host-port collisions.
+The repository includes a standalone Docker stack and a dedicated Vite port so Finance can run beside Fitness without host-port collisions. Local validation is auxiliary to the hosted online QA gate.
 
 ## Services
 
@@ -31,7 +31,6 @@ npm run dev -- --host 127.0.0.1 --port 5174
 
 The Vite proxy target is `http://localhost:8082` and can be overridden with `VITE_API_PROXY_TARGET`.
 
-
 ### Workstation health validation
 
 After startup, verify:
@@ -42,6 +41,11 @@ http://localhost:8082/actuator/health
 
 A healthy HTTP response confirms reachability only; it is not a substitute for the project's full test suite or end-to-end validation.
 
+## Online-first QA
+
+Hosted deployments, public healthchecks, HTTP/API behavior and runtime logs are the primary validation evidence. Local development is an auxiliary diagnostic environment. Browser/Opera QA should be used selectively and in batched sessions because browser usage is a limited resource.
+
+For the current cross-chat state and deployment blockers, read `docs/KOVIAN_ECOSYSTEM_HANDOFF.md`.
 
 ## Unified KOVIAN workstation
 
