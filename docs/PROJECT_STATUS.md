@@ -7,7 +7,7 @@
 Updated: 2026-09-23
 Branch: main
 Repository: https://github.com/kovacsruan-stack/kovian-finance
-Latest known commit: d9f8f803f9659e21b61ba692bb450bd01bbc7db3
+Latest known commit: ac88bdc6f55216793defbc9f33d7308ed2a295fa6
 
 ## Purpose
 
@@ -517,3 +517,9 @@ This remains a scope estimate for engineering implementation, not a test/build/r
 - Net Worth now accounts for outstanding debt obligations in addition to registered liabilities.
 - Snapshot rebuild semantics and debt/asset/liability validation were hardened with explicit API behavior.
 - Current implementation scope estimate: 89%.
+
+
+## 2026-09-23 — KOVI context payload hardening
+
+- KOVI Finance context now caps transaction evidence at 2,000 records per bounded request while preserving aggregate calculations across the complete requested window.
+- The response explicitly reports when transaction evidence is truncated, keeping the internal intelligence contract bounded without silently changing aggregate totals.
