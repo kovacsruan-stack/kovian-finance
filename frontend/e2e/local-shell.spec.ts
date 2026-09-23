@@ -35,3 +35,9 @@ test('language switcher changes between PT and EN', async ({ page }) => {
   await page.getByRole('menuitem', { name: /Português/ }).click()
   await expect(trigger).toContainText('PT')
 })
+
+test('mobile shell does not overflow horizontally', async ({ page }) => {
+  await page.goto('/')
+  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  expect(overflow).toBeLessThanOrEqual(1)
+})
