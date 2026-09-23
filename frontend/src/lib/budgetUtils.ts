@@ -1,5 +1,18 @@
 import type { FinanceBudget, FinanceCategory, FinanceTransaction } from './api'
 
+export function periodStartFor(period: FinanceBudget['period'], reference = new Date()): Date {
+  const start = new Date(reference)
+  start.setHours(0, 0, 0, 0)
+  if (period === 'WEEKLY') {
+    const day = start.getDay()
+    const mondayOffset = day === 0 ? -6 : 1 - day
+    start.setDate(start.getDate() + mondayOffset)
+    return start
+  }
+  if (period === 'YEARLY') return new Date(start.getFullYear(), 0, 1)
+  return new Date(start.getFullYear(), start.getMonth(), 1)
+}
+
 export function periodBounds(budget: FinanceBudget): { from: Date; to: Date } {
   const start = new Date(budget.periodStart)
   if (budget.period === 'WEEKLY') {
