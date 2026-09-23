@@ -1,8 +1,8 @@
-export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, ReconciliationRun } from './financeTypes'
-import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, ReconciliationRun } from './financeTypes'
+export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
+import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
 
-import { financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
+import { financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
 
 let fallbackRequestId = 0
 
@@ -199,3 +199,6 @@ export function importCsv(accountId: string, file: File) {
 }
 export function getImportHistory() { return get<FinanceImport[]>('/imports') }
 export function getImportErrors(id: string) { return get<Array<{ rowNumber?: number; message?: string }>>(`/imports/${encodeURIComponent(id)}/errors`) }
+
+export function getAssets(ownerId: string) { return get(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
+export function getLiabilities(ownerId: string) { return get(`/liabilities?ownerId=${encodeURIComponent(ownerId)}`, financeLiabilityListSchema) }
