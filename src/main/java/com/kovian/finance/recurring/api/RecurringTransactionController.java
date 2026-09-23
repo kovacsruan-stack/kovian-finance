@@ -18,8 +18,7 @@ import com.kovian.finance.account.repository.*; import com.kovian.finance.catego
   UUID owner=CurrentUser.ownerId();
   if(date.isAfter(LocalDate.now()))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Cannot process recurring transactions beyond today");
   int count=0;
-  for(var r:recurring.findByActiveTrueAndNextOccurrenceLessThanEqual(date)){
-   if(!r.getOwnerId().equals(owner))continue;
+  for(var r:recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceLessThanEqual(owner,date)) {
    while(r.isActive()&&!r.getNextOccurrence().isAfter(date)){
     var key="recurring:"+r.getId()+":"+r.getNextOccurrence();
     if(!transactions.existsByOwnerIdAndExternalId(owner,key)){
