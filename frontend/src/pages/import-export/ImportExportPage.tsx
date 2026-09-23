@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Download, FileUp, RefreshCw } from 'lucide-react'
-import { getAccounts, getImportHistory, getImportErrors, importCsv, getTransactions, type FinanceAccount, type FinanceImport, type FinanceTransaction } from '../../lib/api'
+import { getAccounts, getImportHistory, importCsv, getTransactions, type FinanceAccount, type FinanceImport, type FinanceTransaction } from '../../lib/api'
 import { getOwnerId } from '../../lib/api'
-import { money } from '../../lib/format'
 import { useTranslation } from 'react-i18next'
 
 function safeCsvCell(value: unknown) {
