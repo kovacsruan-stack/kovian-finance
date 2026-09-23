@@ -53,3 +53,13 @@ html.light .notice{background:#fff5f5;border-color:#f0cccc;color:#a33a3a}
 html.light .bottom-nav{background:rgba(255,255,255,.96)}
 
 .skip-link{position:fixed;left:12px;top:12px;z-index:200;transform:translateY(-180%);padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);font-size:12px;font-weight:800;text-decoration:none;box-shadow:0 10px 30px rgba(0,0,0,.25)}.skip-link:focus{transform:translateY(0);outline:2px solid var(--primary);outline-offset:2px}.content:focus{outline:none}
+
+/* KOVIAN final polish */
+:root{color-scheme:dark}
+html.light{color-scheme:light}
+html{scroll-behavior:smooth}
+body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button:disabled,a[aria-disabled="true"]{cursor:not-allowed}
+:focus-visible{outline:2px solid var(--primary,#19b8c5);outline-offset:2px}
+@media (prefers-contrast:more){button,a,input,select,textarea{outline-offset:3px}.top-divider{opacity:1}.nav-item,.top-action-button{border:1px solid var(--line)}}
+@media (max-width:560px){.topbar{min-height:64px}.project-brand{min-width:0}.project-brand strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.top-actions{min-width:0}.top-action-button{flex:none}.language-switcher{flex:none}}
