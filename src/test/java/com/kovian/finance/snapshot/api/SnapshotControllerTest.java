@@ -55,6 +55,34 @@ class SnapshotControllerTest {
     }
 
     @Test
+    void rebuild_refreshesExistingSnapshot() {
+        UUID owner = UUID.randomUUID();
+        LocalDate date = LocalDate.of(2026, 9, 1);
+        var snapshots = mock(FinancialSnapshotRepository.class);
+        var assets = mock(FinancialAssetRepository.class);
+        var liabilities = mock(FinancialLiabilityRepository.class);
+        var debts = mock(DebtRepository.class);
+        var transactions = mock(FinancialTransactionRepository.class);
+        when(transactions.findByOwnerIdAndOccurredAtBetweenOrderOrderByOccurredAtDesc(any(), any(), any())).thenReturn(List.of());
+        when(transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(eq(owner), any(), any())).thenReturn(List.of());
+        when(assets.findByOwnerIdAndActiveTrue(owner)).thenReturn(List.of());
+        when(liabilities.findByOwnerIdAndActiveTrue(owner)).thenReturn(List.of());
+        when(debts.findByOwnerIdOrderByName(owner)).thenReturn(List.of());
+        var existing = new com.kovian.finance.snapshot.domain.FinancialSnapshot(
+                owner, date, java.math.BigDecimal.TEN, java.math.BigDecimal.ONE,
+                java.math.BigDecimal.valueOf(100), java.math.BigDecimal.valueOf(10)
+        );
+        when(snapshots.findByOwnerIdAndSnapshotDate(owner, date)).thenReturn(Optional.of(existing));
+        SnapshotController controller = new SnapshotController(snapshots, assets, liabilities, debts, transactions);
+        try (MockedStatic<CurrentUser> currentUser = mockStatic(CurrentUser.class)) {
+            currentUser.when(CurrentUser::ownerId).thenReturn(owner);
+            controller.rebuild(date);
+        }
+        verify(snapshots, never()).save(any());
+        assert existing.getNetWorth().compareTo(java.math.BigDecimal.ZERO) == 0;
+    }
+
+    @Test
     void list_usesAuthenticatedOwner() {
         UUID authenticatedOwner = UUID.randomUUID();
         var snapshots = mock(FinancialSnapshotRepository.class);
