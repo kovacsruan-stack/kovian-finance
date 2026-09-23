@@ -596,3 +596,12 @@ This remains a scope estimate for engineering implementation. The remaining 6% i
 - O backend continua como fonte de verdade e o escopo do usuário autenticado permanece obrigatório.
 - CI/build não foi considerado aprovado nesta etapa; as alterações foram registradas diretamente no branch `main`.
 - Último commit verificado antes deste registro: `8ae4a61b257e1c5db553a9747ae951a923522e23`.
+
+
+## 2026-09-23 — Transfer reliability hardening
+
+- Transfer retries now reuse the same client-generated idempotency key for a logical submission, preventing a network retry from creating a second ledger transfer.
+- The backend ledger transfer service remains the authoritative source for balance, currency, ownership, idempotency and audit enforcement.
+- Snapshot history and transfer contracts are now covered by frontend runtime-schema regression tests.
+- Final implementation checkpoint for this continuation: latest main commit is tracked below after the final documentation commit.
+- Scope estimate: 92%.
