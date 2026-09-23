@@ -1,9 +1,9 @@
 import { z } from 'zod'
-export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, FinanceDebt, FinanceSnapshot, ReconciliationRun } from './financeTypes'
+export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, FinanceDebt, FinanceSnapshot, FinanceTransfer, ReconciliationRun } from './financeTypes'
 import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
 
-import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeSnapshotListSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financePurchaseSchema, financePurchaseListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
+import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeSnapshotListSchema, financeTransferSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeTransactionListSchema, financeGoalListSchema, financeCardListSchema, financeInvoiceListSchema, financePurchaseSchema, financePurchaseListSchema, financeCategoryListSchema, financeBudgetListSchema, financeRecurringListSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
 
 let fallbackRequestId = 0
 
@@ -233,3 +233,5 @@ export function getNotifications(unreadOnly = false) { return get(`/notification
 export function markNotificationRead(id: string) { return post<void>(`/notifications/${encodeURIComponent(id)}/read`, {}) }
 
 export function getFinancialSnapshots() { return get('/snapshots', financeSnapshotListSchema) }
+
+export function createTransfer(input: { fromAccountId: string; toAccountId: string; amount: number; description: string }) { return post<FinanceTransfer>('/transfers', input, financeTransferSchema, ) }
