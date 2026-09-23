@@ -541,3 +541,20 @@ This remains a scope estimate for engineering implementation, not a test/build/r
 
 
 The implementation pass also confirmed there are no remaining TODO/TBD placeholders in the repository search used for this checkpoint. CI/build is still not claimed as verified.
+
+## 2026-09-23 — Contract, UX and domain-integrity hardening continuation
+
+- Restored the Finance application effect import and removed remaining hardcoded UI labels from the main financial shell where localization already exists.
+- Hardened the command palette with focus trapping and background-scroll locking; notification actions now handle mutation failures without unhandled promises.
+- Scoped notification query invalidation to the authenticated owner and localized notification timestamps.
+- Kept dashboard income/expense totals currency-consistent by using backend analytics only when all owner accounts are BRL; otherwise the dashboard derives BRL totals from BRL transactions.
+- Consolidated frontend response validation for mutation payloads and invoice-purchase lists, including structured multipart import error handling.
+- Tightened frontend monetary schemas to reject impossible negative/zero values according to the corresponding domain invariants.
+- Enforced category hierarchy type integrity and restricted budgets to expense categories at the backend boundary, with regression tests.
+- Hardened asset/liability update validation and debt rate/date invariants, with regression coverage.
+- KOVI Finance context now reports the complete non-cancelled transaction count separately from the bounded transaction evidence list, and the summary surface exposes the evidence-truncation flag.
+- No CI/build success is claimed from these changes; verification remains a separate release gate.
+
+**Current implementation scope estimate: 93%**
+
+This is an engineering-scope estimate, not a test/build/release percentage. Remaining work is concentrated in integrated QA/E2E coverage, broader application-shell decomposition, deeper planner parity/UX, observability and final production verification.
