@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { ArrowRightLeft, CheckCircle2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createTransfer, getAccounts, getOwnerId } from '../lib/api'
 
@@ -23,7 +23,7 @@ export default function TransferPage() {
   const to=activeAccounts.find(account=>account.id===toAccountId)
   const sameCurrency=Boolean(from&&to&&from.currency===to.currency)
 
-  const submit=async(e:React.FormEvent)=>{
+  const submit=async(e:FormEvent)=>{
     e.preventDefault(); setError(null); setSuccess(false)
     const value=Number(amount)
     if(!fromAccountId||!toAccountId||fromAccountId===toAccountId||!description.trim()||!Number.isFinite(value)||value<=0) return setError(t('errorTransferRequired'))
