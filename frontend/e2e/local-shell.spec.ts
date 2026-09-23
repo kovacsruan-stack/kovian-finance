@@ -7,6 +7,7 @@ test('local shell renders without a blank screen', async ({ page }) => {
   await expect(page.locator('#root')).not.toBeEmpty()
   await expect(page.locator('main')).toBeVisible()
   await expect(page.locator('body')).toContainText(/finance|finan|dashboard|conta/i)
+  await expect(page.locator('body')).not.toContainText(/GROUPS\\.|skipToContent|professionalArea/)
   expect(pageErrors).toEqual([])
 })
 
