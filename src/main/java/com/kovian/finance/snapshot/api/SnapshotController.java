@@ -43,7 +43,7 @@ public class SnapshotController {
 
     @PostMapping("/rebuild")
     @Transactional
-    public FinancialSnapshot rebuild(@RequestParam LocalDate date) {
+    public SnapshotResponse rebuild(@RequestParam LocalDate date) {
         UUID ownerId = CurrentUser.ownerId();
         LocalDate firstDay = date.withDayOfMonth(1);
         LocalDate nextDay = date.withDayOfMonth(date.lengthOfMonth()).plusDays(1);
@@ -84,16 +84,18 @@ public class SnapshotController {
         if (existing.isPresent()) {
             FinancialSnapshot snapshot = existing.get();
             snapshot.refresh(income, expense, totalAssets, totalLiabilities);
-            return snapshot;
+            return SnapshotResponse.from(snapshot);
         }
 
-        return snapshots.save(new FinancialSnapshot(
+        return SnapshotResponse.from(snapshots.save(new FinancialSnapshot(
                 ownerId, date, income, expense, totalAssets, totalLiabilities
-        ));
+        )));
     }
 
     @GetMapping
-    public List<FinancialSnapshot> list() {
-        return snapshots.findByOwnerIdOrderBySnapshotDateDesc(CurrentUser.ownerId());
+    public List<SnapshotResponse> list() {
+        return snapshots.findByOwnerIdOrderBySnapshotDateDesc(CurrentUser.ownerId()).stream()
+                .map(SnapshotResponse::from)
+                .toList();
     }
 }
