@@ -588,3 +588,11 @@ This remains a scope estimate for engineering implementation. The remaining 6% i
 - Current latest implementation commit: `78f3be7470bb4701e3ba9cf113e4c7c6dfeb4ed7`.
 - CI/build remains unverified; no successful workflow or local build is claimed.
 - Scope estimate: 91%.
+
+
+## Checkpoint — 2026-09-23 — transfer, snapshots e hardening de API
+
+- Registrado no GitHub o bloco de evolução do Finance: contratos e histórico de snapshots financeiros; validação centralizada de erros de API; contratos frontend para snapshots e transferências; transferências com Idempotency-Key; nova superfície de transferência entre contas; localização PT-BR/EN; navegação e rotas correspondentes.
+- O backend continua como fonte de verdade e o escopo do usuário autenticado permanece obrigatório.
+- CI/build não foi considerado aprovado nesta etapa; as alterações foram registradas diretamente no branch `main`.
+- Último commit verificado antes deste registro: `8ae4a61b257e1c5db553a9747ae951a923522e23`.
