@@ -3,6 +3,12 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kovian-finance-pwa
+  cancel-in-progress: true
 jobs:
   pwa:
     runs-on: ubuntu-latest
@@ -11,16 +17,21 @@ jobs:
         working-directory: frontend
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
       - name: Install frontend
-        run: npm install --package-lock=false
+        run: npm ci
       - name: Build frontend
         run: npm run build
       - name: Verify PWA assets
         run: |
+          set -euo pipefail
           test -f public/manifest.webmanifest
           test -f public/sw.js
           test -f public/kovian-finance-icon.svg
-          grep -q '"display":"standalone"' public/manifest.webmanifest
+          grep -Eq '"display"[[:space:]]*:[[:space:]]*"standalone"' public/manifest.webmanifest
