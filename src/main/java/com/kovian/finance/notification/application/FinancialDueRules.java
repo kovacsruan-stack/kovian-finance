@@ -5,8 +5,6 @@ import com.kovian.finance.debt.domain.*;
 import com.kovian.finance.debt.repository.DebtRepository;
 import com.kovian.finance.goal.repository.FinancialGoalRepository;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
-import com.kovian.finance.transaction.domain.TransactionStatus;
-import com.kovian.finance.transaction.domain.TransactionType;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +28,9 @@ public class FinancialDueRules {
   invoices.findDueBetweenForOwner(owner,today,horizon).forEach(i->notify(owner,"CARD_INVOICE_DUE","WARNING","Fatura do cartão próxima do vencimento","A fatura vence em "+i.getDueDate()+".","CreditCardInvoice",i.getId(),"card:"+i.getId()+":"+i.getDueDate()));
   recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceBetweenOrderByNextOccurrence(owner,today,horizon).forEach(r->notify(owner,"RECURRING_DUE","INFO","Lançamento recorrente próximo","Existe um lançamento recorrente previsto para "+r.getNextOccurrence()+".","RecurringTransaction",r.getId(),"recurring:"+r.getId()+":"+r.getNextOccurrence()));
   debts.findByOwnerIdAndStatusAndOutstandingAmountGreaterThanOrderByStartDateAsc(owner,DebtStatus.ACTIVE,java.math.BigDecimal.ZERO).forEach(d->notify(owner,"DEBT_ACTIVE","INFO","Dívida em aberto","A dívida possui saldo pendente de "+d.getOutstandingAmount()+".","Debt",d.getId(),"debt:"+d.getId()+":"+today));
-  OffsetDateTime cashFrom=today.minusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime cashTo=today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC); java.math.BigDecimal income=java.math.BigDecimal.ZERO,expense=java.math.BigDecimal.ZERO;
-  for(var tx:transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(owner,cashFrom,cashTo)){if(tx.getStatus()==TransactionStatus.CANCELLED)continue;if(tx.getTransactionType()==TransactionType.INCOME)income=income.add(tx.getAmount());else if(tx.getTransactionType()==TransactionType.EXPENSE)expense=expense.add(tx.getAmount());}
+  OffsetDateTime cashFrom=today.minusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime cashTo=today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+  java.math.BigDecimal income=transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
+  java.math.BigDecimal expense=transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
   if(expense.compareTo(income)>0)notify(owner,"CASH_FLOW_RISK","WARNING","Fluxo de caixa negativo","Nos últimos 30 dias, as despesas superaram as receitas. Revise o caixa e os próximos compromissos.","FinancialTransaction",owner,"cash-risk:"+owner+":"+today);
   OffsetDateTime from=today.atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime to=today.plusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC);
   goals.findActiveWithDeadlineBetweenForOwner(owner,from,to).forEach(g->notify(owner,"GOAL_DEADLINE","WARNING","Meta financeira próxima do prazo","A meta está próxima da data planejada.","FinancialGoal",g.getId(),"goal:"+g.getId()+":"+g.getTargetDate()));
