@@ -75,6 +75,8 @@ export type ReconciliationRun = {
   status: string
 }
 
+let fallbackRequestId = 0
+
 const baseUrl = (import.meta.env.VITE_API_BASE_URL?.trim() || '/api/v1').replace(/\/$/, '')
 
 export class FinanceApiError extends Error {
@@ -82,8 +84,8 @@ export class FinanceApiError extends Error {
   readonly requestId: string
   readonly code: string
 
-  constructor(status: number, requestId: string, code = 'FINANCE_API_ERROR') {
-    super(`${code}_${status}`)
+  constructor(status: number, requestId: string, code = 'FINANCE_API_ERROR', message?: string) {
+    super(message || `${code}_${status}`)
     this.name = 'FinanceApiError'
     this.status = status
     this.requestId = requestId
@@ -127,8 +129,10 @@ export function getOwnerId(): string | null {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const accessToken = token()
   if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
-  const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`
-  const response = await fetch(baseUrl + path, {
+  const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${++fallbackRequestId}`
+  let response: Response
+  try {
+    response = await fetch(baseUrl + path, {
     ...init,
     signal: init?.signal ?? AbortSignal.timeout(15000),
     headers: {
@@ -140,16 +144,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.headers ?? {}),
     },
   })
+  } catch (error) {
+    const cause = error as { name?: string; message?: string }
+    const timedOut = cause?.name === 'TimeoutError'
+    throw new FinanceApiError(0, requestId, timedOut ? 'TIMEOUT' : 'NETWORK_ERROR', timedOut ? 'Finance API request timed out.' : cause?.message || 'Finance API request failed.')
+  }
   if (!response.ok) {
     let code = 'FINANCE_API_ERROR'
+    let message: string | undefined
     try {
-      const payload = await response.clone().json() as { code?: unknown; error?: unknown }
+      const payload = await response.json() as { code?: unknown; error?: unknown; message?: unknown }
       const candidate = payload.code ?? payload.error
       if (typeof candidate === 'string' && candidate.trim()) code = candidate.trim().slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
+      if (typeof payload.message === 'string' && payload.message.trim()) message = payload.message.trim().slice(0, 500)
     } catch {
       // Preserve the status-only error when the backend response is not JSON.
     }
-    throw new FinanceApiError(response.status, requestId, code)
+    throw new FinanceApiError(response.status, response.headers.get('X-Request-ID') || requestId, code, message)
   }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
