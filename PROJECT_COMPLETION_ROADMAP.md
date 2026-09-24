@@ -70,3 +70,9 @@ KOVIAN OS compatibility is now persisted as a governed application boundary. Fin
 **Current implementation scope estimate: 98%**
 
 Remaining work is primarily runtime/production validation, real PostgreSQL/Redis evidence, full browser/E2E/security/performance validation, operational recovery and deployment readiness.
+
+
+## 2026-09-24 — coordinated UX hardening checkpoint
+- Calendar authentication/error notices now expose semantic status to assistive technologies.
+- Calendar event rendering uses a more stable composite key.
+- Implementation scope remains **98%**; remaining gaps are production PostgreSQL/Redis evidence, full browser/E2E/security/performance validation, DR and deployment readiness.
