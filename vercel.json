@@ -1,7 +1,7 @@
 {
   "installCommand": "cd frontend && npm ci",
   "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "src/main/resources/static/app",
+  "outputDirectory": "frontend/dist",
   "env": {
     "VITE_APP_BASE_PATH": "/"
   },
