@@ -26,7 +26,7 @@ export default function CalendarPage(){
   const recurringEvents=(recurring.data??[]).filter((item:FinanceRecurring)=>item.active&&item.nextOccurrence>=from&&item.nextOccurrence<to).map(item=>({date:item.nextOccurrence,title:item.description,amount:Number(item.amount),kind:'RECURRING' as const}))
   return [...tx,...recurringEvents].sort((a,b)=>a.date.localeCompare(b.date))
  },[transactions.data,recurring.data,from,to])
- const byDay=useMemo(()=>events.reduce<Record<string,CalendarEvent[]>>((acc,event)=>(acc[event.date]??=[]).concat(event),{}),[events])
+ const byDay=useMemo(()=>events.reduce<Record<string,CalendarEvent[]>>((acc,event)=>{(acc[event.date]??=[]).push(event);return acc},{}),[events])
  const cells=useMemo(()=>Array.from({length:mondayOffset(month)+daysInMonth(month)},(_,index)=>index<mondayOffset(month)?null:index-mondayOffset(month)+1),[month])
  const locale=document.documentElement.lang||'pt-BR'
  const label=month.toLocaleDateString(locale,{month:'long',year:'numeric'})
