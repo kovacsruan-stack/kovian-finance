@@ -36,7 +36,7 @@ class DatasourceConfigurationContractTest {
     @Test
     void flywayMigrationVersionsAreUnique() throws Exception {
         Path dir = Path.of("src/main/resources/db/migration");
-        var versions = Files.list(dir).filter(p -> p.getFileName().toString().matches("V\\\\d+__.*\\\\.sql"))
+        var versions = Files.list(dir).filter(p -> p.getFileName().toString().matches("V\\d+__.*\\.sql"))
                 .map(p -> p.getFileName().toString().split("__", 2)[0]).toList();
         assertTrue(versions.size() == versions.stream().distinct().count(), "Duplicate Flyway migration version detected: " + versions);
     }
