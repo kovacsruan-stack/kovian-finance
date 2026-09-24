@@ -1,0 +1,3 @@
+[deploy]
+healthcheckPath = "/actuator/health/readiness"
+healthcheckTimeout = 300
