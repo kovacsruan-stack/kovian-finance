@@ -11,6 +11,7 @@ import DebtsPage from './pages/DebtsPage'
 import NotificationsPage from './pages/NotificationsPage'
 import TransferPage from './pages/TransferPage'
 import ImportExportPage from './pages/import-export/ImportExportPage'
+import CalendarPage from './pages/CalendarPage'
 
 function App() {
   const { t } = useTranslation()
@@ -25,6 +26,7 @@ function App() {
         <Route path="/notificacoes" element={<NotificationsPage />} />
         <Route path="/transferencias" element={<TransferPage />} />
         <Route path="/import-export" element={<ImportExportPage />} />
+        <Route path="/calendario" element={<CalendarPage />} />
         {Object.entries(pageConfig).map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}
         <Route path="*" element={<main className="page"><Header title={t('notFoundTitle')} desc={t('notFoundDesc')} action={<NavLink className="secondary" to="/">{t('backHome')}</NavLink>} /><section className="panel empty-state"><FileText size={30} /><div><strong>{t('notFoundRoute')}</strong><p>{t('notFoundHelp')}</p></div></section></main>} />
       </Routes>
