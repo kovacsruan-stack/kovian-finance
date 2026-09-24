@@ -43,3 +43,24 @@ html,body,#root{background:var(--bg)}
 
 /* Financial calendar */
 .finance-calendar{overflow:hidden}.calendar-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.calendar-toolbar strong{font-size:14px}.calendar-toolbar span{font-size:10px;color:var(--muted)}.calendar-weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.calendar-weekdays{margin-bottom:5px}.calendar-weekdays span{padding:7px 6px;color:var(--muted);font-size:9px;font-weight:800;text-transform:uppercase}.calendar-cell{min-height:112px;border:1px solid var(--line);border-radius:10px;padding:7px;background:#0b1821;overflow:hidden}.calendar-cell-empty{background:transparent;border-style:dashed;opacity:.35}.calendar-day{display:block;font-size:10px;font-weight:800;color:var(--text);margin-bottom:5px}.calendar-events{display:grid;gap:4px}.calendar-event{display:flex;align-items:center;gap:5px;border-left:2px solid var(--primary);background:#102b34;border-radius:5px;padding:4px 5px;min-width:0}.calendar-event.expense{border-left-color:var(--danger)}.calendar-event.recurring{border-left-color:#8aa7ff}.calendar-event span{font-size:8px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}.calendar-event b{font-size:8px;color:var(--muted);white-space:nowrap}.calendar-events>small{font-size:8px;color:var(--muted);padding-left:3px}@media(max-width:700px){.calendar-cell{min-height:82px;padding:5px}.calendar-weekdays span{padding:5px 3px;font-size:8px}.calendar-event{padding:3px}.calendar-event span{font-size:7px}.calendar-event b{display:none}}@media(max-width:560px){.calendar-grid,.calendar-weekdays{gap:3px}.calendar-cell{min-height:66px;border-radius:7px}.calendar-events{gap:2px}.calendar-event{border-left-width:2px;padding:2px 3px}.calendar-event span{font-size:6.5px}.calendar-day{font-size:9px;margin-bottom:3px}.calendar-toolbar strong{font-size:13px}}
+
+
+/* KOVIAN Finance reference-alignment layer: Personal Finance Planner-inspired analytics workspace. */
+:root{--finance-bg:#08121a;--finance-panel:#101d27;--finance-panel-raised:#142632;--finance-line:#203b48;--finance-accent:#20c4d0;--finance-positive:#20c4a1;}
+body{background:var(--finance-bg);}
+.drawer{width:264px;background:linear-gradient(180deg,#09151e,#08131a);border-right-color:var(--finance-line);padding:12px 10px}
+.brand{padding:4px 8px 16px}.nav-groups{gap:8px}.nav-item{min-height:40px;border:1px solid transparent}.nav-item.active{border-color:#1d4650;background:#102f38;color:var(--text)}.nav-item.active svg{color:var(--finance-accent)}
+.content{min-width:0}.topbar{height:62px;padding:0 24px;border-bottom-color:var(--finance-line);background:rgba(8,18,26,.84)}
+.page{max-width:1320px;padding:26px 28px}.page-header{margin-bottom:18px}.page-header h1{font-size:28px}
+.hero-card{border-color:#244a54;background:radial-gradient(circle at 82% 18%,rgba(32,196,208,.10),transparent 35%),linear-gradient(135deg,#102b35,#0c1b23)}
+.stat-grid{grid-template-columns:repeat(3,1fr);gap:9px}.stat-card{min-height:108px;background:linear-gradient(180deg,var(--finance-panel),#0d1a22);border-color:var(--finance-line)}
+.dashboard-grid{grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);gap:10px}.panel{border-radius:14px;background:linear-gradient(180deg,var(--finance-panel),#0d1a22);border-color:var(--finance-line)}
+.feature-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.feature-card{background:linear-gradient(180deg,var(--finance-panel),#0d1a22);border-color:var(--finance-line);transition:transform .16s ease,border-color .16s ease,background .16s ease}.feature-card:hover{transform:translateY(-1px);border-color:#2b5b66;background:var(--finance-panel-raised)}
+.account-row{min-height:58px}.account-row b,.positive,.negative{font-variant-numeric:tabular-nums}
+/* Analytics surfaces: make charts/tables read like a finance planning workspace. */
+.chart-card,.analytics-card{background:var(--finance-panel);border:1px solid var(--finance-line);border-radius:14px}
+.modal{border-color:#2a505b;background:#0b1821}
+@media(max-width:900px){.drawer{width:min(300px,88vw)}.topbar{padding:0 16px}.page{padding:20px 18px 90px}.dashboard-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.stat-grid{grid-template-columns:1fr 1fr}.feature-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.stat-grid{grid-template-columns:1fr 1fr}.stat-card{min-height:96px}.feature-grid{grid-template-columns:1fr}.page{padding:18px 14px 92px}.page-header h1{font-size:24px}.panel{padding:14px}}
+@media(prefers-reduced-motion:reduce){.feature-card{transition:none}}
