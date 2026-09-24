@@ -52,3 +52,14 @@ html,body,#root{background:var(--bg)}
 
 /* Unified ecosystem language control */
 .language-switcher{border:0!important;padding:0!important;background:transparent!important}.language-switcher-trigger{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;min-height:36px;padding:0 9px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--muted);font-size:11px;font-weight:800}.language-switcher-trigger:hover{background:#102b34;color:var(--text)}.language-switcher-menu{position:absolute;right:0;top:42px;z-index:100;width:156px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--card);box-shadow:0 16px 40px rgba(0,0,0,.35)}.language-option{display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border:0;border-radius:8px;background:transparent;color:var(--muted);text-align:left;font-size:11px;cursor:pointer}.language-option span{display:flex;align-items:center;gap:8px}.language-option b{font-size:9px}.language-option:hover{background:#102b34;color:var(--text)}.language-option.active{background:#102b34;color:var(--primary);font-weight:700}
+
+/* Navigation refinement: compact, quiet hierarchy inspired by the reference UI. */
+.nav-groups{gap:18px}
+.nav-group{gap:2px}
+.nav-group-title{padding:0 12px 6px;color:#71808d;font-size:9px;font-weight:800;letter-spacing:.14em}
+.nav-item{min-height:40px;padding:9px 12px;border-radius:9px;gap:10px;transition:background .15s ease,color .15s ease}
+.nav-item.active{font-weight:700}
+.nav-item.active svg{color:var(--primary)}
+.nav-subitems{display:grid;gap:2px;margin-top:2px}
+.ecosystem-links{margin-top:auto;padding-top:4px}
+@media(max-width:900px){.nav-groups{gap:14px}.ecosystem-links{margin-top:12px}}
