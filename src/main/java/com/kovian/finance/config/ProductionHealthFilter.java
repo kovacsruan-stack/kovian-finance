@@ -34,6 +34,6 @@ public class ProductionHealthFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{"status":"UP"}");
+        response.getWriter().write("{\\\"status\\\":\\\"UP\\\"}");
     }
 }
