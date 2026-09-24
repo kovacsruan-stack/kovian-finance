@@ -105,9 +105,9 @@ describe('finance api', () => {
   it('sends an idempotency key for transfers and validates the response', async () => {
     localStorage.setItem('access_token', 'header.e30.signature')
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
-      id: '11111111-1111-1111-1111-111111111111',
-      fromAccountId: '22222222-2222-2222-2222-222222222222',
-      toAccountId: '33333333-3333-3333-3333-333333333333',
+      id: '11111111-1111-4111-8111-111111111111',
+      fromAccountId: '22222222-2222-4222-8222-222222222222',
+      toAccountId: '33333333-3333-4333-8333-333333333333',
       amount: 100,
       description: 'Reserva mensal',
       status: 'POSTED',
@@ -117,8 +117,8 @@ describe('finance api', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await createTransfer({
-      fromAccountId: '22222222-2222-2222-2222-222222222222',
-      toAccountId: '33333333-3333-3333-3333-333333333333',
+      fromAccountId: '22222222-2222-4222-8222-222222222222',
+      toAccountId: '33333333-3333-4333-8333-333333333333',
       amount: 100,
       description: 'Reserva mensal',
     }, 'transfer-key-1')

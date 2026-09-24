@@ -32,8 +32,8 @@ public class FinancialDueRules {
   installments.findByOwnerIdAndStatusAndDueDateBeforeOrderByDueDate(owner,InstallmentStatus.PENDING,today).forEach(i->notify(owner,"DEBT_INSTALLMENT_OVERDUE","CRITICAL","Parcela de dívida em atraso","A parcela da dívida venceu em "+i.getDueDate()+" e continua pendente.","DebtInstallment",i.getId(),"debt-installment-overdue:"+i.getId()+":"+i.getDueDate()));
   installments.findByOwnerIdAndStatusAndDueDateBetweenOrderByDueDate(owner,InstallmentStatus.PENDING,today,horizon).forEach(i->notify(owner,"DEBT_INSTALLMENT_DUE","WARNING","Parcela de dívida próxima","A parcela vence em "+i.getDueDate()+".","DebtInstallment",i.getId(),"debt-installment:"+i.getId()+":"+i.getDueDate()));
   OffsetDateTime cashFrom=today.minusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime cashTo=today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
-  java.math.BigDecimal income=transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
-  java.math.BigDecimal expense=transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
+  java.math.BigDecimal income=Optional.ofNullable(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo)).orElse(java.math.BigDecimal.ZERO);
+  java.math.BigDecimal expense=Optional.ofNullable(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo)).orElse(java.math.BigDecimal.ZERO);
   if(expense.compareTo(income)>0)notify(owner,"CASH_FLOW_RISK","WARNING","Fluxo de caixa negativo","Nos últimos 30 dias, as despesas superaram as receitas. Revise o caixa e os próximos compromissos.","FinancialTransaction",owner,"cash-risk:"+owner+":"+today);
   OffsetDateTime currentWeekStart=today.minusDays(7).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime currentWeekEnd=today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
   OffsetDateTime previousWeekStart=today.minusDays(14).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime previousWeekEnd=today.minusDays(7).atStartOfDay().atOffset(ZoneOffset.UTC);

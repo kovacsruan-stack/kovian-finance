@@ -1,5 +1,6 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { FileText } from 'lucide-react'
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import Shell from './components/layout/FinanceShell'
 import { Dashboard, Header } from './pages/FinancePage'
@@ -14,7 +15,8 @@ import ImportExportPage from './pages/import-export/ImportExportPage'
 import CalendarPage from './pages/CalendarPage'
 
 function App() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  useEffect(() => { document.documentElement.lang = i18n.language }, [i18n.language])
   return (
     <Shell>
       <Routes>

@@ -6,10 +6,10 @@ import { financeDebtListSchema } from './apiSchemas'
 
 describe('finance debt response schema', () => {
   it('accepts an owner-scoped debt payload', () => {
-    expect(financeDebtListSchema.parse([{ id: '11111111-1111-1111-1111-111111111111', ownerId: '22222222-2222-2222-2222-222222222222', name: 'Financiamento', debtType: 'LOAN', principalAmount: 15000, outstandingAmount: 1200, annualInterestRate: 12, startDate: '2026-01-01', endDate: null, totalInstallments: 12, status: 'ACTIVE' }])).toHaveLength(1)
+    expect(financeDebtListSchema.parse([{ id: '11111111-1111-4111-8111-111111111111', ownerId: '22222222-2222-4222-8222-222222222222', name: 'Financiamento', debtType: 'LOAN', principalAmount: 15000, outstandingAmount: 1200, annualInterestRate: 12, startDate: '2026-01-01', endDate: null, totalInstallments: 12, status: 'ACTIVE' }])).toHaveLength(1)
   })
-  it('rejects negative debt balances', () => { expect(() => financeDebtListSchema.parse([{ id: '11111111-1111-1111-1111-111111111111', ownerId: '22222222-2222-2222-2222-222222222222', name: 'Financiamento', debtType: 'LOAN', principalAmount: -1, outstandingAmount: 1200, annualInterestRate: 12, startDate: '2026-01-01', endDate: null, totalInstallments: 12, status: 'ACTIVE' }])).toThrow() })
+  it('rejects negative debt balances', () => { expect(() => financeDebtListSchema.parse([{ id: '11111111-1111-4111-8111-111111111111', ownerId: '22222222-2222-4222-8222-222222222222', name: 'Financiamento', debtType: 'LOAN', principalAmount: -1, outstandingAmount: 1200, annualInterestRate: 12, startDate: '2026-01-01', endDate: null, totalInstallments: 12, status: 'ACTIVE' }])).toThrow() })
   it('rejects malformed debt amounts', () => {
-    expect(() => financeDebtListSchema.parse([{ id: '11111111-1111-1111-1111-111111111111', ownerId: '22222222-2222-2222-2222-222222222222', name: 'Financiamento', debtType: 'LOAN', principalAmount: 15000, outstandingAmount: '1200', annualInterestRate: 12, startDate: '2026-01-01', endDate: null, totalInstallments: 12, status: 'ACTIVE' }])).toThrow()
+    expect(() => financeDebtListSchema.parse([{ id: '11111111-1111-4111-8111-111111111111', ownerId: '22222222-2222-4222-8222-222222222222', name: 'Financiamento', debtType: 'LOAN', principalAmount: 15000, outstandingAmount: '1200', annualInterestRate: 12, startDate: '2026-01-01', endDate: null, totalInstallments: 12, status: 'ACTIVE' }])).toThrow()
   })
 })
