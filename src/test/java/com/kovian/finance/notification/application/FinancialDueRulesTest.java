@@ -2,6 +2,9 @@ package com.kovian.finance.notification.application;
 
 import com.kovian.finance.card.repository.CreditCardInvoiceRepository;
 import com.kovian.finance.debt.repository.DebtRepository;
+import com.kovian.finance.debt.repository.DebtInstallmentRepository;
+import com.kovian.finance.debt.domain.DebtInstallment;
+import com.kovian.finance.debt.domain.InstallmentStatus;
 import com.kovian.finance.goal.repository.FinancialGoalRepository;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
 import com.kovian.finance.recurring.domain.RecurringTransaction;
@@ -28,12 +31,13 @@ class FinancialDueRulesTest {
 
         CreditCardInvoiceRepository invoices = mock(CreditCardInvoiceRepository.class);
         DebtRepository debts = mock(DebtRepository.class);
+        DebtInstallmentRepository installments = mock(DebtInstallmentRepository.class);
         RecurringTransactionRepository recurring = mock(RecurringTransactionRepository.class);
         FinancialGoalRepository goals = mock(FinancialGoalRepository.class);
         NotificationService notifications = mock(NotificationService.class);
 
         FinancialDueRules rules = new FinancialDueRules(
-                invoices, debts, recurring, goals, notifications, transactions);
+                invoices, debts, installments, recurring, goals, notifications, transactions);
 
         rules.evaluate(LocalDate.of(2026, 9, 20), owner);
 
@@ -61,6 +65,7 @@ class FinancialDueRulesTest {
         FinancialDueRules rules = new FinancialDueRules(
                 mock(CreditCardInvoiceRepository.class),
                 mock(DebtRepository.class),
+                mock(DebtInstallmentRepository.class),
                 mock(RecurringTransactionRepository.class),
                 mock(FinancialGoalRepository.class),
                 mock(NotificationService.class),
@@ -86,6 +91,7 @@ class FinancialDueRulesTest {
         FinancialDueRules rules = new FinancialDueRules(
                 mock(CreditCardInvoiceRepository.class),
                 mock(DebtRepository.class),
+                mock(DebtInstallmentRepository.class),
                 recurring,
                 mock(FinancialGoalRepository.class),
                 notifications,
@@ -102,6 +108,42 @@ class FinancialDueRulesTest {
                 eq("RecurringTransaction"),
                 eq(overdue.getId()),
                 startsWith("recurring-overdue:"));
+    }
+
+    @Test
+    void shouldNotifyOverdueAndUpcomingDebtInstallments() {
+        UUID owner = UUID.randomUUID();
+        DebtInstallmentRepository installments = mock(DebtInstallmentRepository.class);
+        DebtInstallment overdue = mock(DebtInstallment.class);
+        DebtInstallment upcoming = mock(DebtInstallment.class);
+        UUID overdueId = UUID.randomUUID();
+        UUID upcomingId = UUID.randomUUID();
+        when(overdue.getId()).thenReturn(overdueId);
+        when(overdue.getDueDate()).thenReturn(LocalDate.of(2026, 9, 20));
+        when(upcoming.getId()).thenReturn(upcomingId);
+        when(upcoming.getDueDate()).thenReturn(LocalDate.of(2026, 9, 26));
+        when(installments.findByOwnerIdAndStatusAndDueDateBeforeOrderByDueDate(eq(owner), eq(InstallmentStatus.PENDING), eq(LocalDate.of(2026, 9, 24))))
+                .thenReturn(java.util.List.of(overdue));
+        when(installments.findByOwnerIdAndStatusAndDueDateBetweenOrderByDueDate(eq(owner), eq(InstallmentStatus.PENDING), eq(LocalDate.of(2026, 9, 24)), eq(LocalDate.of(2026, 9, 27))))
+                .thenReturn(java.util.List.of(upcoming));
+        NotificationService notifications = mock(NotificationService.class);
+        FinancialTransactionRepository transactions = mock(FinancialTransactionRepository.class);
+        when(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(any(), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
+        when(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(any(), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
+
+        FinancialDueRules rules = new FinancialDueRules(
+                mock(CreditCardInvoiceRepository.class),
+                mock(DebtRepository.class),
+                installments,
+                mock(RecurringTransactionRepository.class),
+                mock(FinancialGoalRepository.class),
+                notifications,
+                transactions);
+
+        rules.evaluate(LocalDate.of(2026, 9, 24), owner);
+
+        verify(notifications).createForOwner(eq(owner), eq("DEBT_INSTALLMENT_OVERDUE"), eq("CRITICAL"), anyString(), anyString(), eq("DebtInstallment"), eq(overdueId), startsWith("debt-installment-overdue:"));
+        verify(notifications).createForOwner(eq(owner), eq("DEBT_INSTALLMENT_DUE"), eq("WARNING"), anyString(), anyString(), eq("DebtInstallment"), eq(upcomingId), startsWith("debt-installment:"));
     }
 
 }
