@@ -162,8 +162,9 @@ function Shell({ children }: { children: ReactNode }) {
       <div className="content">
         <header className="topbar">
           <div className="top-left">
-            <div className="md:hidden flex min-w-0 items-center">
-              <BrandMark productName="FINANCE" className="h-9 w-9 shrink-0" />
+            <div className="md:hidden flex min-w-0 items-center gap-2.5">
+              <BrandMark productName="FINANCE" className="h-8 w-8 shrink-0" />
+              <div className="min-w-0"><strong className="block truncate text-xs font-extrabold tracking-[0.08em] text-[var(--text)]">KOVIAN <span className="kovian-brand-accent">FINANCE</span></strong><small className="block text-[9px] text-[var(--muted)]">{t('ecosystem')}</small></div>
             </div>
             <div className="hidden md:block">
               <small>{t('ecosystem')}</small>
