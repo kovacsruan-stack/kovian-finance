@@ -735,3 +735,11 @@ The remaining work is release/homologation rather than broad feature implementat
 - Added migration V21 aligning debt-installment and financial-transaction scheduled-rule indexes with owner/status/type/date predicates.
 - Added regression coverage for weekly spending spikes and stabilized due-rule tests after the additional aggregate reads.
 - Backend remains the sole financial source of truth; notifications remain advisory and are emitted through the existing outbox-backed owner-aware path.
+
+
+## 2026-09-24 — Finance migration integrity hardening
+- Detected and removed a duplicate Flyway `V18` migration introduced by the debt-installment index work; the same index is already correctly owned by `V21__financial_rules_query_indexes.sql`.
+- Added a regression contract test that scans migration filenames and fails on duplicate Flyway version numbers.
+- This prevents a release-time Flyway startup failure from reaching production unnoticed.
+
+**Current implementation scope estimate: 99%**
