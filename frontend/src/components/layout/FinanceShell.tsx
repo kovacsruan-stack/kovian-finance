@@ -21,6 +21,7 @@ const items: Item[] = [
   { to: '/notificacoes', key: 'notifications', icon: Bell, group: 'sistema' },
 ]
 const moreItems: Item[] = [
+  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock, group: 'organizacao' },
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
   { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
   { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
