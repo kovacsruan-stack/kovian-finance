@@ -169,3 +169,33 @@ textarea{resize:vertical}
 .finance-planner-shell .nav-item.active{box-shadow:inset 3px 0 0 var(--finance-accent)}
 .finance-planner-shell .search-box{min-width:210px}
 @media(max-width:720px){.finance-planner-shell .search-box{min-width:38px;width:38px;padding-inline:0;justify-content:center}.finance-planner-shell .search-box span,.finance-planner-shell .search-box kbd{display:none}}
+
+
+/* Finance v4 — refined mobile header, brand and language control. */
+.finance-planner-shell .brand{display:flex;align-items:center;gap:11px;padding:5px 8px 18px}
+.finance-planner-shell .finance-brand-mark,.finance-planner-shell .finance-page-logo{display:grid;place-items:center;flex:none;border:1px solid rgba(40,215,159,.28);background:linear-gradient(145deg,rgba(40,215,159,.2),rgba(40,215,159,.05));color:var(--finance-accent);box-shadow:0 8px 20px rgba(40,215,159,.08)}
+.finance-planner-shell .finance-brand-mark{width:38px;height:38px;border-radius:12px}
+.finance-planner-shell .finance-brand-copy{display:grid;line-height:1.05}
+.finance-planner-shell .finance-brand-copy strong{font-size:14px;letter-spacing:.16em;color:#10231d}
+.finance-planner-shell .finance-brand-copy span{margin-top:4px;font-size:11px;font-weight:650;letter-spacing:.02em;color:#64756f}
+.finance-planner-shell .finance-page-brand{display:flex;align-items:center;gap:10px}
+.finance-planner-shell .finance-page-logo{width:34px;height:34px;border-radius:10px}
+.finance-planner-shell .finance-page-brand>div{display:grid;line-height:1}
+.finance-planner-shell .finance-page-brand small{font-size:9px;font-weight:800;letter-spacing:.18em;color:#6c7d77}
+.finance-planner-shell .finance-page-brand strong{margin-top:3px;font-size:16px;font-weight:800;letter-spacing:-.02em;color:#12201c}
+.finance-planner-shell .finance-language-trigger{display:inline-flex;align-items:center;gap:7px;height:40px;padding:4px 10px 4px 5px;border:1px solid rgba(16,35,29,.1);border-radius:13px;background:rgba(255,255,255,.88);color:#24342f;box-shadow:0 6px 18px rgba(15,23,42,.06);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.finance-planner-shell .finance-language-trigger:hover{transform:translateY(-1px);border-color:rgba(40,215,159,.35);box-shadow:0 9px 24px rgba(15,23,42,.09)}
+.finance-planner-shell .finance-language-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:#10231d;color:#d8fff1}
+.finance-planner-shell .finance-language-icon svg{width:16px;height:16px}
+.finance-planner-shell .finance-language-code{min-width:20px;font-size:12px;font-weight:850;letter-spacing:.04em}
+.finance-planner-shell .finance-language-chevron{width:14px;height:14px;color:#73827d;transition:transform .18s ease}
+.finance-planner-shell .finance-language-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:100;width:190px;padding:7px;border:1px solid rgba(16,35,29,.1);border-radius:15px;background:rgba(255,255,255,.98);box-shadow:0 18px 45px rgba(15,23,42,.16);backdrop-filter:blur(14px)}
+.finance-planner-shell .finance-language-menu-title{padding:5px 9px 7px;font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#81908b}
+.finance-planner-shell .finance-language-option{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px;border:0;border-radius:10px;background:transparent;text-align:left;color:#52615c;cursor:pointer}
+.finance-planner-shell .finance-language-option>span{display:flex;align-items:center;gap:9px}
+.finance-planner-shell .finance-language-option strong{display:grid;place-items:center;width:30px;height:26px;border-radius:8px;background:#f0f5f3;font-size:10px;color:#4b5e57}
+.finance-planner-shell .finance-language-option small{font-size:11px;font-weight:650}
+.finance-planner-shell .finance-language-option svg{width:15px;height:15px;color:#18b985}
+.finance-planner-shell .finance-language-option:hover{background:#f3f8f6;color:#14251f}
+.finance-planner-shell .finance-language-option.selected{background:rgba(40,215,159,.1);color:#123c2f}
+@media(max-width:720px){.finance-planner-shell .finance-page-brand strong{font-size:15px}.finance-planner-shell .finance-language-trigger{height:42px;padding-right:9px}.finance-planner-shell .finance-language-menu{right:-2px;width:180px}.finance-planner-shell .finance-topbar{padding-inline:14px}.finance-planner-shell .top-actions{gap:8px}}
