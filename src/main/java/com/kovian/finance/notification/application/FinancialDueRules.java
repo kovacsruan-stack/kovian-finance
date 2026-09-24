@@ -2,7 +2,7 @@ package com.kovian.finance.notification.application;
 
 import com.kovian.finance.card.repository.CreditCardInvoiceRepository;
 import com.kovian.finance.debt.domain.*;
-import com.kovian.finance.debt.repository.DebtRepository;
+import com.kovian.finance.debt.repository.DebtRepository; import com.kovian.finance.debt.repository.DebtInstallmentRepository;
 import com.kovian.finance.goal.repository.FinancialGoalRepository;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
@@ -14,12 +14,12 @@ import java.util.*;
 @Service
 public class FinancialDueRules {
  private final CreditCardInvoiceRepository invoices;
- private final DebtRepository debts;
+ private final DebtRepository debts; private final DebtInstallmentRepository installments;
  private final RecurringTransactionRepository recurring;
  private final FinancialGoalRepository goals;
  private final NotificationService notifications;
  private final FinancialTransactionRepository transactions;
- public FinancialDueRules(CreditCardInvoiceRepository i,DebtRepository d,RecurringTransactionRepository r,FinancialGoalRepository g,NotificationService n,FinancialTransactionRepository t){invoices=i;debts=d;recurring=r;goals=g;notifications=n;transactions=t;}
+ public FinancialDueRules(CreditCardInvoiceRepository i,DebtRepository d,DebtInstallmentRepository di,RecurringTransactionRepository r,FinancialGoalRepository g,NotificationService n,FinancialTransactionRepository t){invoices=i;debts=d;installments=di;recurring=r;goals=g;notifications=n;transactions=t;}
 
  @Transactional
  public void evaluate(LocalDate today,UUID owner){
@@ -29,6 +29,8 @@ public class FinancialDueRules {
   recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceLessThanEqual(owner,today.minusDays(1)).forEach(r->notify(owner,"RECURRING_OVERDUE","WARNING","Lançamento recorrente atrasado","O lançamento recorrente previsto para "+r.getNextOccurrence()+" ainda está pendente.","RecurringTransaction",r.getId(),"recurring-overdue:"+r.getId()+":"+r.getNextOccurrence()));
     recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceBetweenOrderByNextOccurrence(owner,today,horizon).forEach(r->notify(owner,"RECURRING_DUE","INFO","Lançamento recorrente próximo","Existe um lançamento recorrente previsto para "+r.getNextOccurrence()+".","RecurringTransaction",r.getId(),"recurring:"+r.getId()+":"+r.getNextOccurrence()));
   debts.findByOwnerIdAndStatusAndOutstandingAmountGreaterThanOrderByStartDateAsc(owner,DebtStatus.ACTIVE,java.math.BigDecimal.ZERO).forEach(d->notify(owner,"DEBT_ACTIVE","INFO","Dívida em aberto","A dívida possui saldo pendente de "+d.getOutstandingAmount()+".","Debt",d.getId(),"debt:"+d.getId()+":"+today));
+  installments.findByOwnerIdAndStatusAndDueDateBeforeOrderByDueDate(owner,InstallmentStatus.PENDING,today).forEach(i->notify(owner,"DEBT_INSTALLMENT_OVERDUE","CRITICAL","Parcela de dívida em atraso","A parcela da dívida venceu em "+i.getDueDate()+" e continua pendente.","DebtInstallment",i.getId(),"debt-installment-overdue:"+i.getId()+":"+i.getDueDate()));
+  installments.findByOwnerIdAndStatusAndDueDateBetweenOrderByDueDate(owner,InstallmentStatus.PENDING,today,horizon).forEach(i->notify(owner,"DEBT_INSTALLMENT_DUE","WARNING","Parcela de dívida próxima","A parcela vence em "+i.getDueDate()+".","DebtInstallment",i.getId(),"debt-installment:"+i.getId()+":"+i.getDueDate()));
   OffsetDateTime cashFrom=today.minusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime cashTo=today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
   java.math.BigDecimal income=transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
   java.math.BigDecimal expense=transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
