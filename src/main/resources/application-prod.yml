@@ -10,6 +10,9 @@ spring:
     properties:
       hibernate:
         default_schema: ${DB_SCHEMA:finance}
+  data:
+    redis:
+      url: ${REDIS_URL}
   flyway:
     default-schema: ${DB_SCHEMA:finance}
     schemas: ${DB_SCHEMA:finance}
