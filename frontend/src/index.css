@@ -64,3 +64,40 @@ body{background:var(--finance-bg);}
 @media(max-width:700px){.stat-grid{grid-template-columns:1fr 1fr}.feature-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.stat-grid{grid-template-columns:1fr 1fr}.stat-card{min-height:96px}.feature-grid{grid-template-columns:1fr}.page{padding:18px 14px 92px}.page-header h1{font-size:24px}.panel{padding:14px}}
 @media(prefers-reduced-motion:reduce){.feature-card{transition:none}}
+
+/* KOVIAN Finance product polish: dense analytics, resilient mobile layout and interaction feedback. */
+html,body,#root{min-height:100%;min-width:0}
+body{overflow-x:hidden}
+button,a,select,input,textarea{-webkit-tap-highlight-color:transparent}
+button:disabled{cursor:not-allowed}
+a,button{transition:background-color .16s ease,border-color .16s ease,color .16s ease,transform .16s ease,box-shadow .16s ease}
+a:hover,button:hover:not(:disabled){transform:translateY(-1px)}
+a:active,button:active:not(:disabled){transform:translateY(0)}
+.page{min-width:0}.page-header{display:flex;align-items:flex-end;justify-content:space-between;gap:18px}.page-header>div{min-width:0}.page-header p{max-width:760px}
+.panel,.stat-card,.feature-card,.chart-card,.analytics-card{overflow:hidden}
+.section-title>div{min-width:0}.section-title h2{overflow-wrap:anywhere}
+.account-row,.activity-row,.transaction-row{min-width:0}.account-row>*,.activity-row>*{min-width:0}
+table{font-variant-numeric:tabular-nums;border-collapse:separate;border-spacing:0}
+input,select,textarea{min-width:0;max-width:100%;box-sizing:border-box}
+textarea{resize:vertical}
+.chart-card svg,.analytics-card svg{max-width:100%}
+@media(max-width:900px){
+  .page-header{align-items:flex-start;flex-direction:column}
+  .page-header>.primary,.page-header>.secondary{width:100%}
+}
+@media(max-width:700px){
+  .feature-grid{grid-template-columns:1fr 1fr}
+  .data-table-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+  .data-table{min-width:680px}
+}
+@media(max-width:560px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .feature-grid{grid-template-columns:1fr}
+  .page-header h1{line-height:1.08}
+  .hero-actions{flex-wrap:wrap}
+  .hero-actions>*{flex:1 1 150px}
+  .form-grid{grid-template-columns:1fr!important}
+  .account-row,.activity-row{align-items:flex-start;flex-wrap:wrap}
+  .calendar-cell{min-width:0}
+}
+@media(prefers-reduced-motion:reduce){a,button{transition:none}}
