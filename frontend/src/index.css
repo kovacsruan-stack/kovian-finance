@@ -72,3 +72,38 @@ html,body,#root{background:var(--bg)}
 .stat-card{padding:14px}
 .panel{padding:16px}
 @media(min-width:901px){.page{padding-left:34px;padding-right:34px}}
+
+/* Internal component refinement: quieter hierarchy and stronger mobile ergonomics. */
+.page .panel,.page .stat-card,.page .quick-card,.page .feature-card{transition:background .16s ease,border-color .16s ease,box-shadow .16s ease,transform .16s ease}
+.page .quick-card:hover,.page .feature-card:hover{transform:translateY(-1px)}
+.page .account-row,.page .budget-row{min-width:0}
+.page .account-row span,.page .budget-row-head span{min-width:0}
+.page .account-row strong,.page .budget-row-head strong{overflow-wrap:anywhere}
+@media(max-width:900px){
+  .page{min-width:0}
+  .page .dashboard-grid{min-width:0}
+  .page .data-panel{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+@media(max-width:560px){
+  .topbar{padding:0 12px}
+  .top-left{min-width:0}
+  .top-left>div{min-width:0}
+  .top-left strong,.top-left small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top-actions{gap:6px}
+  .page{padding:18px 14px 88px}
+  .page-header{gap:10px}
+  .page-header h1{font-size:22px}
+  .page-header p{font-size:12px}
+  .hero-card{gap:14px}
+  .hero-card strong{font-size:26px}
+  .stat-grid{gap:8px}
+  .stat-card{min-width:0}
+  .stat-card strong{font-size:17px;overflow-wrap:anywhere}
+  .panel{border-radius:13px}
+  .section-title{align-items:flex-start}
+  .section-title a{white-space:nowrap}
+  .quick-card,.feature-card{min-width:0}
+  .quick-card strong,.feature-card strong{overflow-wrap:anywhere}
+  .modal-overlay{padding:10px}
+  .modal{max-height:calc(100vh - 20px);padding:15px;border-radius:15px}
+}
