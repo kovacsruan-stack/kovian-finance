@@ -13,7 +13,7 @@ spring:
     enabled: true
   data:
     redis:
-      url: ${SPRING_DATA_REDIS_URL:${REDIS_URL:redis://localhost:6379}}
+      url: ${REDIS_URL:redis://localhost:6379}
   servlet:
     multipart:
       max-file-size: 5MB
