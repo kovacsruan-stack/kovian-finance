@@ -129,7 +129,7 @@ function Shell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className="nav-groups">
+        <nav aria-label="Primary navigation" className="nav-groups">
           {navGroups.map(group => (
             <div className="nav-group" key={group.key}>
               <span className="nav-group-title">{t(`group_${group.key}`)}</span>
