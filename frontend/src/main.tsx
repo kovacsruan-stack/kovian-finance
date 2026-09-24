@@ -14,7 +14,7 @@ class AppErrorBoundary extends Component<{ children: ReactNode }, { error: Error
   render() {
     if (!this.state.error) return this.props.children
     const english = typeof document !== 'undefined' && document.documentElement.lang === 'en'
-    return <main className="page" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}><section className="panel" style={{ maxWidth: 680, width: '100%' }}><span className="eyebrow">KOVIAN</span><h1>{english ? 'Something went wrong' : 'Ocorreu um erro inesperado'}</h1><p>{english ? 'The application was protected. Reload to continue.' : 'A aplicação foi protegida. Recarregue para continuar.'}</p>{import.meta.env.DEV&&<pre style={{ whiteSpace: 'pre-wrap', opacity: .7 }}>{this.state.error.message}</pre>}<button type="button" className="primary" onClick={() => window.location.reload()}>{english ? 'Reload' : 'Recarregar'}</button></section></main>
+    return <main className="page app-error-page"><section className="panel app-error-card"><span className="eyebrow">KOVIAN</span><h1>{english ? 'Something went wrong' : 'Ocorreu um erro inesperado'}</h1><p>{english ? 'The application was protected. Reload to continue.' : 'A aplicação foi protegida. Recarregue para continuar.'}</p>{import.meta.env.DEV&&<pre className="app-error-details">{this.state.error.message}</pre>}<button type="button" className="primary" onClick={() => window.location.reload()}>{english ? 'Reload' : 'Recarregar'}</button></section></main>
   }
 }
 
