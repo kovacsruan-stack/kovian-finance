@@ -159,3 +159,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}.nav-item:hover,.stat-card:hover,.quick-card:hover,.feature-card:hover{transform:none!important}}
 
 @media(max-width:640px){.page,.content{width:100%;min-width:0}.page-header{margin-bottom:14px}button{min-height:36px}input,select,textarea{min-height:40px}}
+
+:where(button,a,[role="button"],input,select,textarea):focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}
