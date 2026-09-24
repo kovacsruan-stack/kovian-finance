@@ -88,6 +88,9 @@ class FinancialDueRulesTest {
                 .thenReturn(java.util.List.of(overdue));
 
         NotificationService notifications = mock(NotificationService.class);
+        FinancialTransactionRepository transactions = mock(FinancialTransactionRepository.class);
+        when(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(any(), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
+        when(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(any(), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
         FinancialDueRules rules = new FinancialDueRules(
                 mock(CreditCardInvoiceRepository.class),
                 mock(DebtRepository.class),
@@ -95,7 +98,7 @@ class FinancialDueRulesTest {
                 recurring,
                 mock(FinancialGoalRepository.class),
                 notifications,
-                mock(FinancialTransactionRepository.class));
+                transactions);
 
         rules.evaluate(LocalDate.of(2026, 9, 20), owner);
 
