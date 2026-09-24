@@ -61,3 +61,12 @@ KOVIAN OS compatibility is now persisted as a governed application boundary. Fin
 - Calendar user-facing flow is wired to live transaction, recurring and account services with loading, empty and error states.
 - KOVIAN Finance remains authoritative for financial mutations; KOVI integration cannot bypass Finance services.
 - Implementation scope estimate: **98%**. This remains an implementation estimate, not a runtime/test percentage.
+
+
+## 2026-09-24 — Calendar resilience continuation
+- Calendar now surfaces failures from transactions, recurring items and account-currency resolution instead of silently rendering a partial financial view.
+- Loading and empty states remain explicit, while Finance remains authoritative for financial records and currency/account ownership.
+
+**Current implementation scope estimate: 98%**
+
+Remaining work is primarily runtime/production validation, real PostgreSQL/Redis evidence, full browser/E2E/security/performance validation, operational recovery and deployment readiness.
