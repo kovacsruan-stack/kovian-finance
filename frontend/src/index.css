@@ -131,3 +131,6 @@ html,body,#root{background:var(--bg)}
 .page .data-panel{scrollbar-width:thin}
 .page .primary,.page .secondary{transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
 @media(max-width:560px){.page .header-actions{flex-direction:column}.page .header-actions>a,.page .header-actions>button{width:100%}}
+
+/* Finance data-dense surfaces. */
+.account-row b,.stat-card strong,.hero-card strong{font-variant-numeric:tabular-nums}.account-row:hover{background:rgba(25,184,197,.035)}.account-row{border-radius:8px;padding-left:6px;padding-right:6px}.quick-card:hover{border-color:rgba(25,184,197,.28);box-shadow:0 6px 20px rgba(0,0,0,.10)}.section-title h2{letter-spacing:-.015em}.notice span{overflow-wrap:anywhere}@media(max-width:560px){.account-row{align-items:flex-start}.account-row>b{font-size:10px;max-width:42%;text-align:right;overflow-wrap:anywhere}.hero-card{min-width:0}.hero-card>div:first-child{min-width:0}.hero-card span,.hero-card small{overflow-wrap:anywhere}}
