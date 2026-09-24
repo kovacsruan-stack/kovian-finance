@@ -155,3 +155,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:560px){.page{padding:20px 12px 88px}.hero-card{padding:18px}.stat-grid{gap:8px}.language-switcher{height:38px}}
 
 .skip-link{position:fixed;left:12px;top:12px;z-index:9999;transform:translateY(-180%);padding:8px 12px;border-radius:8px;background:var(--text);color:var(--bg);font-size:12px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:transform .15s ease}.skip-link:focus{transform:translateY(0);outline:2px solid var(--primary);outline-offset:2px}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}.nav-item:hover,.stat-card:hover,.quick-card:hover,.feature-card:hover{transform:none!important}}
