@@ -159,3 +159,13 @@ textarea{resize:vertical}
 [data-kovian-product="finance"] .data-table tbody tr:hover td{background:rgba(42,215,161,.035);}
 @media(max-width:900px){[data-kovian-product="finance"] .drawer{width:286px;}[data-kovian-product="finance"] .content{margin-left:0;}[data-kovian-product="finance"] .page{padding:22px 18px 96px;}[data-kovian-product="finance"] .dashboard-grid{grid-template-columns:1fr;}}
 @media(max-width:560px){[data-kovian-product="finance"] .topbar{height:62px;padding:0 14px;}[data-kovian-product="finance"] .page{padding:18px 14px 96px;}[data-kovian-product="finance"] .page-header h1{font-size:25px;}[data-kovian-product="finance"] .hero-card strong{font-size:30px;}[data-kovian-product="finance"] .stat-card{min-height:100px;}}
+
+
+/* Finance v3 shell — Personal Finance Planner-inspired command workspace. */
+.finance-planner-shell{--finance-accent:#28d79f;--finance-line:#dce5e1;--finance-sidebar:#fbfdfc;}
+.finance-planner-shell .finance-content{min-width:0}
+.finance-planner-shell .finance-topbar{box-shadow:0 1px 0 rgba(15,23,42,.04),0 8px 28px rgba(15,23,42,.04)}
+.finance-planner-shell .drawer{width:264px}
+.finance-planner-shell .nav-item.active{box-shadow:inset 3px 0 0 var(--finance-accent)}
+.finance-planner-shell .search-box{min-width:210px}
+@media(max-width:720px){.finance-planner-shell .search-box{min-width:38px;width:38px;padding-inline:0;justify-content:center}.finance-planner-shell .search-box span,.finance-planner-shell .search-box kbd{display:none}}
