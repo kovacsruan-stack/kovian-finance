@@ -12,7 +12,7 @@ const endOfMonth=(date:Date)=>new Date(date.getFullYear(),date.getMonth()+1,0)
 const daysInMonth=(date:Date)=>endOfMonth(date).getDate()
 const mondayOffset=(date:Date)=>(date.getDay()+6)%7
 
-type CalendarEvent={date:string;title:string;amount:number;kind:'INCOME'|'EXPENSE'|'RECURRING'}
+type CalendarEvent={date:string;title:string;amount:number;kind:'INCOME'|'EXPENSE'|'TRANSFER'|'RECURRING'}
 
 export default function CalendarPage(){
  const {t}=useTranslation()
@@ -40,6 +40,6 @@ export default function CalendarPage(){
    <div className="calendar-weekdays">{(locale.startsWith('pt')?['Seg','Ter','Qua','Qui','Sex','Sáb','Dom']:['Mon','Tue','Wed','Thu','Fri','Sat','Sun']).map(day=><span key={day}>{day}</span>)}</div>
    <div className="calendar-grid">{cells.map((day,index)=>{const date=day?iso(new Date(month.getFullYear(),month.getMonth(),day)):'';const items=day?(byDay[date]??[]):[];return <div className={day?'calendar-cell':'calendar-cell calendar-cell-empty'} key={index}>{day&&<><span className="calendar-day">{day}</span><div className="calendar-events">{items.slice(0,3).map((event,i)=><div className={'calendar-event '+event.kind.toLowerCase()} key={event.title+i} title={event.title}><span>{event.title}</span><b>{money(event.amount)}</b></div>)}{items.length>3&&<small>+{items.length-3}</small>}</div></>}</div>})}</div>
   </section>
-  <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow"><CalendarDays size={12}/></span><h2>{locale.startsWith('pt')?'Eventos do mês':'Month events'}</h2></div></div>{monthEvents.length?monthEvents.map((event,index)=><div className="account-row" key={event.date+event.title+index}><i/><span><strong>{event.title}</strong><small>{new Date(event.date+'T00:00:00').toLocaleDateString(locale)} · {event.kind==='RECURRING'?(locale.startsWith('pt')?'Recorrente':'Recurring'):event.kind==='INCOME'?(locale.startsWith('pt')?'Entrada':'Income'):(locale.startsWith('pt')?'Saída':'Expense')}</small></span><b className={event.kind==='INCOME'?'positive':event.kind==='EXPENSE'?'negative':''}>{money(event.amount)}</b></div>):<div className="empty-inline">{locale.startsWith('pt')?'Nenhum evento neste mês.':'No events this month.'}</div>}</section>
+  <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow"><CalendarDays size={12}/></span><h2>{locale.startsWith('pt')?'Eventos do mês':'Month events'}</h2></div></div>{monthEvents.length?monthEvents.map((event,index)=><div className="account-row" key={event.date+event.title+index}><i/><span><strong>{event.title}</strong><small>{new Date(event.date+'T00:00:00').toLocaleDateString(locale)} · {event.kind==='RECURRING'?(locale.startsWith('pt')?'Recorrente':'Recurring'):event.kind==='INCOME'?(locale.startsWith('pt')?'Entrada':'Income'):event.kind==='TRANSFER'?(locale.startsWith('pt')?'Transferência':'Transfer'):(locale.startsWith('pt')?'Saída':'Expense')}</small></span><b className={event.kind==='INCOME'?'positive':event.kind==='EXPENSE'?'negative':''}>{money(event.amount)}</b></div>):<div className="empty-inline">{locale.startsWith('pt')?'Nenhum evento neste mês.':'No events this month.'}</div>}</section>
  </main>
 }
