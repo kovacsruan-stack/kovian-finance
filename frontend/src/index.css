@@ -63,3 +63,12 @@ html,body,#root{background:var(--bg)}
 .nav-subitems{display:grid;gap:2px;margin-top:2px}
 .ecosystem-links{margin-top:auto;padding-top:4px}
 @media(max-width:900px){.nav-groups{gap:14px}.ecosystem-links{margin-top:12px}}
+
+/* Dashboard refinement: quieter hierarchy and reference-style financial surfaces. */
+.page{padding-top:28px}
+.page-header{margin-bottom:18px}
+.stat-grid{gap:10px}
+.stat-card,.panel,.quick-card,.feature-card{box-shadow:0 4px 18px rgba(0,0,0,.10)}
+.stat-card{padding:14px}
+.panel{padding:16px}
+@media(min-width:901px){.page{padding-left:34px;padding-right:34px}}
