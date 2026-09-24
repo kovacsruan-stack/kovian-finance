@@ -101,3 +101,21 @@ textarea{resize:vertical}
   .calendar-cell{min-width:0}
 }
 @media(prefers-reduced-motion:reduce){a,button{transition:none}}
+
+/* KOVIAN Finance final UX layer: planning-first hierarchy and mobile-safe controls. */
+:root{--finance-focus:var(--finance-accent);}
+.hero-card,.panel,.stat-card,.feature-card,.chart-card,.analytics-card{backdrop-filter:blur(8px);}
+.section-title a{white-space:nowrap;}
+@media(max-width:700px){
+  .topbar{min-height:58px;}
+  .page-header{align-items:flex-start;}
+  .page-header h1{letter-spacing:-.02em;}
+  .hero-card{border-radius:16px;}
+  .calendar-toolbar{flex-wrap:wrap;}
+  button,a[role="button"]{min-height:40px;}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr;}
+  .stat-card strong{font-size:20px;overflow-wrap:anywhere;}
+  .calendar-weekdays span{text-align:center;}
+}
