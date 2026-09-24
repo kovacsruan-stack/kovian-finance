@@ -118,7 +118,7 @@ function Shell({ children }: { children: ReactNode }) {
   }, [palette, filtered.length])
 
   return (
-    <div className="app-shell">
+    <div className="app-shell"><a href="#finance-main" className="skip-link">Pular para o conteúdo</a>
       {open && <button type="button" className="scrim" aria-label={t('closeMenu')} onClick={() => setOpen(false)} />}
 
       <aside className={open ? 'drawer drawer-open' : 'drawer'}>
@@ -159,7 +159,7 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="content">
+      <div className="content" id="finance-main" tabIndex={-1}>
         <header className="topbar">
           <div className="top-left">
             <div className="md:hidden flex min-w-0 items-center gap-2.5">
