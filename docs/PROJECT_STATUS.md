@@ -728,3 +728,10 @@ The remaining work is release/homologation rather than broad feature implementat
 - Added planner mapping documentation so the calendar interaction is recovered without adopting browser-side financial persistence.
 - Backend Railway QA remains green on the latest verified finance commit; Vercel frontend deployments are currently blocked by the account build-rate limit, so the new frontend path still requires an executable frontend build/QA before production promotion.
 \n\n## 2026-09-24 — Financial rules hardening continuation\n- Added owner-scoped indexed debt-installment queries for overdue and upcoming pending installments.\n- Extended scheduled financial rules with deterministic overdue/upcoming debt-installment notifications using existing owner-aware deduplication and transactional outbox creation.\n- Added domain access for installment due dates and regression coverage for the new notification rules.\n- No new financial source of truth was introduced; the backend remains authoritative.\n- CI/build/release status remains evidence-based and is not claimed from code changes alone.\n\n**Current implementation scope estimate: 99%**\n\nRemaining scope is concentrated in integrated runtime validation, production infrastructure, final financial-domain audit/E2E, real external transport/consumer integration and release homologation.\n
+
+## 2026-09-24 — Financial intelligence rules expansion
+- Added deterministic weekly spending-spike detection using bounded posted-expense aggregates, with 50% threshold and daily owner-scoped deduplication.
+- Added goal-progress risk notification when an active goal due within 30 days remains below 50% of target.
+- Added migration V21 aligning debt-installment and financial-transaction scheduled-rule indexes with owner/status/type/date predicates.
+- Added regression coverage for weekly spending spikes and stabilized due-rule tests after the additional aggregate reads.
+- Backend remains the sole financial source of truth; notifications remain advisory and are emitted through the existing outbox-backed owner-aware path.
