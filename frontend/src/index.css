@@ -107,3 +107,20 @@ html,body,#root{background:var(--bg)}
   .modal-overlay{padding:10px}
   .modal{max-height:calc(100vh - 20px);padding:15px;border-radius:15px}
 }
+
+/* Shell polish: keep navigation quiet and make mobile controls easier to scan. */
+.nav-item{transition:background .16s ease,border-color .16s ease,color .16s ease}
+.nav-subitems{display:grid;gap:2px;padding-left:10px}
+.nav-subitems .nav-item{font-size:11px;padding-top:8px;padding-bottom:8px}
+.ecosystem-links{margin-top:4px}
+@media(max-width:560px){
+  .topbar{height:58px}
+  .top-actions .language-switcher{transform:scale(.94);transform-origin:right center}
+  .drawer{padding:16px 12px}
+  .drawer .brand{padding-bottom:20px}
+  .nav-groups{gap:10px}
+  .nav-group-title{padding-left:10px}
+  .nav-item{min-height:40px}
+  .bottom-nav{padding-left:7px;padding-right:7px}
+  .bottom-nav a,.bottom-nav button{min-height:46px}
+}
