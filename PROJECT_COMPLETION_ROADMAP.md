@@ -1,6 +1,8 @@
 # KOVIAN Finance — Project Completion Roadmap
 
-Current implementation scope: 96%
+Updated: 2026-09-24
+
+Current implementation scope: 98%
 
 ## Implemented
 - financial domain core;
@@ -51,3 +53,11 @@ KOVIAN OS compatibility is now persisted as a governed application boundary. Fin
 - Added a datasource configuration contract test.
 - Railway runtime validation identified an invalid DATABASE_URL value containing unresolved PGHOST/PGPORT/PGDATABASE placeholders; the application correctly fails during Flyway initialization instead of silently falling back to an unsafe database.
 - Free-tier deployment remains the target; a real PostgreSQL connection is still required before production runtime validation can pass.
+
+
+## 2026-09-24 continuation checkpoint
+- Flyway migration integrity hardening is now documented and guarded by automated version checks.
+- Production datasource configuration remains fail-closed when required connection variables are invalid or unresolved.
+- Calendar user-facing flow is wired to live transaction, recurring and account services with loading, empty and error states.
+- KOVIAN Finance remains authoritative for financial mutations; KOVI integration cannot bypass Finance services.
+- Implementation scope estimate: **98%**. This remains an implementation estimate, not a runtime/test percentage.
