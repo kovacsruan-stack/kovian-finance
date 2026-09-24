@@ -35,8 +35,14 @@ public class FinancialDueRules {
   java.math.BigDecimal income=transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
   java.math.BigDecimal expense=transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,cashFrom,cashTo);
   if(expense.compareTo(income)>0)notify(owner,"CASH_FLOW_RISK","WARNING","Fluxo de caixa negativo","Nos últimos 30 dias, as despesas superaram as receitas. Revise o caixa e os próximos compromissos.","FinancialTransaction",owner,"cash-risk:"+owner+":"+today);
+  OffsetDateTime currentWeekStart=today.minusDays(7).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime currentWeekEnd=today.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+  OffsetDateTime previousWeekStart=today.minusDays(14).atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime previousWeekEnd=today.minusDays(7).atStartOfDay().atOffset(ZoneOffset.UTC);
+  java.math.BigDecimal currentWeekExpense=transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,currentWeekStart,currentWeekEnd);
+  java.math.BigDecimal previousWeekExpense=transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(owner,previousWeekStart,previousWeekEnd);
+  if(previousWeekExpense.signum()>0 && currentWeekExpense.compareTo(previousWeekExpense.multiply(new java.math.BigDecimal("1.5")))>0)notify(owner,"SPENDING_SPIKE","WARNING","Aumento de gastos detectado","Os gastos dos últimos 7 dias ficaram pelo menos 50% acima dos 7 dias anteriores.","FinancialTransaction",owner,"spending-spike:"+owner+":"+today);
+
   OffsetDateTime from=today.atStartOfDay().atOffset(ZoneOffset.UTC); OffsetDateTime to=today.plusDays(30).atStartOfDay().atOffset(ZoneOffset.UTC);
-  goals.findActiveWithDeadlineBetweenForOwner(owner,from,to).forEach(g->notify(owner,"GOAL_DEADLINE","WARNING","Meta financeira próxima do prazo","A meta está próxima da data planejada.","FinancialGoal",g.getId(),"goal:"+g.getId()+":"+g.getTargetDate()));
+  goals.findActiveWithDeadlineBetweenForOwner(owner,from,to).forEach(g->{ notify(owner,"GOAL_DEADLINE","WARNING","Meta financeira próxima do prazo","A meta está próxima da data planejada.","FinancialGoal",g.getId(),"goal:"+g.getId()+":"+g.getTargetDate()); if(g.getTargetDate()!=null && g.getCurrentAmount().compareTo(g.getTargetAmount().multiply(new java.math.BigDecimal("0.5")))<0) notify(owner,"GOAL_PROGRESS_RISK","WARNING","Meta financeira atrasada","A meta está próxima do prazo e ainda não alcançou 50% do valor planejado.","FinancialGoal",g.getId(),"goal-progress-risk:"+g.getId()+":"+g.getTargetDate()); });
  }
 
  private void notify(UUID owner,String type,String severity,String title,String message,String entity,UUID id,String key){notifications.createForOwner(owner,type,severity,title,message,entity,id,key);}
