@@ -18,6 +18,7 @@ This document prevents accidental duplication of the financial domain while pres
 | Goals | Goal API | PostgreSQL remains authoritative |
 | Budgets | Budget API | PostgreSQL remains authoritative |
 | Forecast | Forecast/scenario APIs | Computed projections are server-generated |
+| Calendar | `frontend/src/pages/CalendarPage.tsx` | UI aggregates server transactions/recurrences; no second financial source of truth |
 | Multi-currency | Backend currency/domain contracts + locale-aware UI | Never infer exchange truth in the browser |
 | Import/export | Importer/reconciliation + controlled export APIs | Preview is transient; persistence is server-side |
 | LocalStorage financial state | **Not adopted** | LocalStorage may contain UI preferences only |
