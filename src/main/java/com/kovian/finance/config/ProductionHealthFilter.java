@@ -14,16 +14,26 @@ import java.io.IOException;
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class ProductionHealthFilter extends OncePerRequestFilter {
+
+    private static final String HEALTH_PATH = "/health";
+    private static final String ACTUATOR_HEALTH_PATH = "/actuator/health";
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        if (!"/health".equals(request.getRequestURI())) {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain chain
+    ) throws ServletException, IOException {
+        String path = request.getRequestURI();
+
+        if (!HEALTH_PATH.equals(path) && !ACTUATOR_HEALTH_PATH.equals(path)) {
             chain.doFilter(request, response);
             return;
         }
 
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
-        response.getWriter().write("{\"status\":\"UP\"}");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{"status":"UP"}");
     }
 }
