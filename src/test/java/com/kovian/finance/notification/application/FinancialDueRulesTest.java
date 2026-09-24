@@ -149,4 +149,29 @@ class FinancialDueRulesTest {
         verify(notifications).createForOwner(eq(owner), eq("DEBT_INSTALLMENT_DUE"), eq("WARNING"), anyString(), anyString(), eq("DebtInstallment"), eq(upcomingId), startsWith("debt-installment:"));
     }
 
+    @Test
+    void shouldCreateWarningForWeeklySpendingSpike() {
+        UUID owner = UUID.randomUUID();
+        FinancialTransactionRepository transactions = mock(FinancialTransactionRepository.class);
+        when(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(eq(owner), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
+        when(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(eq(owner), any(), any()))
+                .thenReturn(new java.math.BigDecimal("180.00"), new java.math.BigDecimal("100.00"), new java.math.BigDecimal("50.00"));
+        NotificationService notifications = mock(NotificationService.class);
+
+        FinancialDueRules rules = new FinancialDueRules(
+                mock(CreditCardInvoiceRepository.class),
+                mock(DebtRepository.class),
+                mock(DebtInstallmentRepository.class),
+                mock(RecurringTransactionRepository.class),
+                mock(FinancialGoalRepository.class),
+                notifications,
+                transactions);
+
+        rules.evaluate(LocalDate.of(2026, 9, 24), owner);
+
+        verify(notifications).createForOwner(
+                eq(owner), eq("SPENDING_SPIKE"), eq("WARNING"), anyString(), anyString(),
+                eq("FinancialTransaction"), eq(owner), startsWith("spending-spike:"));
+    }
+
 }
