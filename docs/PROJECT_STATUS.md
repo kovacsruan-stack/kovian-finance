@@ -214,6 +214,7 @@ Build the complete user-facing product:
 - KOVI AI
 - responsive/mobile UX
 - loading/empty/error states
+- financial calendar aggregating server transactions and recurring schedules
 - accessibility
 
 ### M9 — Ecosystem integration
@@ -719,3 +720,10 @@ The remaining work is concentrated in production infrastructure/homologation: pr
 **Current implementation scope estimate: 98%**
 
 The remaining work is release/homologation rather than broad feature implementation: provision PostgreSQL/Redis or an explicitly approved equivalent runtime, wire production variables, obtain successful Railway and Vercel deployments, run integrated smoke/E2E checks and close the release checklist.
+
+
+## 2026-09-24 continuation checkpoint
+- Added the financial calendar UI, using authoritative transaction/recurring/account APIs and preserving account currency in event rendering.
+- Added calendar navigation, responsive month grid, event list and ecosystem navigation entry in PT-BR/EN.
+- Added planner mapping documentation so the calendar interaction is recovered without adopting browser-side financial persistence.
+- Backend Railway QA remains green on the latest verified finance commit; Vercel frontend deployments are currently blocked by the account build-rate limit, so the new frontend path still requires an executable frontend build/QA before production promotion.
