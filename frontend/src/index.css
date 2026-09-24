@@ -124,3 +124,10 @@ html,body,#root{background:var(--bg)}
   .bottom-nav{padding-left:7px;padding-right:7px}
   .bottom-nav a,.bottom-nav button{min-height:46px}
 }
+
+/* Final UI consistency pass. */
+.page input,.page select,.page textarea{max-width:100%}
+.page .panel{min-width:0}
+.page .data-panel{scrollbar-width:thin}
+.page .primary,.page .secondary{transition:background .16s ease,border-color .16s ease,box-shadow .16s ease}
+@media(max-width:560px){.page .header-actions{flex-direction:column}.page .header-actions>a,.page .header-actions>button{width:100%}}
