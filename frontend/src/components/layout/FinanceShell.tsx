@@ -46,7 +46,7 @@ const localAppUrl = (port: number, configured: string) => {
 }
 
 const fitnessUrl = localAppUrl(5175, import.meta.env.VITE_KOVIAN_FITNESS_URL || '')
-const koviUrl = localAppUrl(3003, import.meta.env.VITE_KOVI_APP_URL || '')
+const koviUrl = (import.meta.env.VITE_KOVI_APP_URL || '').trim() || `${localAppUrl(5176, '')}app/`
 
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
