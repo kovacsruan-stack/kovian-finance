@@ -10,8 +10,10 @@ export default function Modal({ title, children, onClose }: { title: string; chi
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null
+    const previousOverflow = document.body.style.overflow
     const dialog = dialogRef.current
     if (!dialog) return
+    document.body.style.overflow = 'hidden'
     const focusable = () => Array.from(dialog.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])')).filter(element => element.offsetParent !== null)
     focusable()[0]?.focus()
     const onKeyDown = (event: KeyboardEvent) => {
@@ -25,7 +27,7 @@ export default function Modal({ title, children, onClose }: { title: string; chi
       else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
     }
     document.addEventListener('keydown', onKeyDown)
-    return () => { document.removeEventListener('keydown', onKeyDown); previousFocus?.focus() }
+    return () => { document.removeEventListener('keydown', onKeyDown); document.body.style.overflow = previousOverflow; previousFocus?.focus() }
   }, [])
 
   return <div className="modal-overlay" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) closeRef.current() }}>
