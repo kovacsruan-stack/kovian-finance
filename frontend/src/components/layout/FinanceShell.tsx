@@ -163,20 +163,18 @@ function Shell({ children }: { children: ReactNode }) {
         <header className="topbar">
           <div className="top-left">
             <div className="md:hidden flex min-w-0 items-center gap-2.5">
-              <BrandMark productName="FINANCE" className="h-8 w-8 shrink-0" />
+              <BrandMark productName="FINANCE" showWordmark={false} className="h-8 w-8 shrink-0" />
               <div className="min-w-0"><strong className="block truncate text-xs font-extrabold tracking-[0.08em] text-[var(--text)]">KOVIAN <span className="kovian-brand-accent">FINANCE</span></strong><small className="block text-[9px] text-[var(--muted)]">{t('ecosystem')}</small></div>
             </div>
             <div className="hidden md:flex items-center gap-2.5 min-w-0">
-              <BrandMark productName="FINANCE" className="h-8 w-8 shrink-0" />
+              <BrandMark productName="FINANCE" showWordmark={false} className="h-8 w-8 shrink-0" />
               <div className="min-w-0"><small>{t('ecosystem')}</small><strong>{t('financeName')}</strong></div>
             </div>
           </div>
 
           <div className="top-actions">
-            <button type="button" className="search-box" aria-label={t('search')} onClick={openPalette}>
-              <Search size={15} />
-              <span>{t('search')}...</span>
-              <kbd>Ctrl K</kbd>
+            <button type="button" className="search-icon-button" aria-label={t('search')} title={`${t('search')} · Ctrl K`} onClick={openPalette}>
+              <Search size={17} aria-hidden="true" />
             </button>
             <LanguageSwitcher />
             <button type="button" className="icon-button mobile-only" aria-label={t('more')} onClick={() => setOpen(true)}>
