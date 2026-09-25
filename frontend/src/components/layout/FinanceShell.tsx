@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
@@ -60,6 +60,8 @@ function Shell({ children }: { children: ReactNode }) {
   const [moreOpen, setMoreOpen] = useState(false)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
+  const location = useLocation()
+  const moreActive = moreItems.some(item => item.to === location.pathname)
 
   const commands = [...items, ...moreItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
@@ -86,6 +88,10 @@ function Shell({ children }: { children: ReactNode }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+
+  useEffect(() => {
+    if (moreItems.some(item => item.to === location.pathname)) setMoreOpen(true)
+  }, [location.pathname])
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 900px)')
@@ -188,7 +194,7 @@ function Shell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="nav-group">
-          <button className="nav-item" type="button" onClick={() => setMoreOpen(v => !v)} aria-expanded={moreOpen}>
+          <button className={moreActive ? "nav-item active" : "nav-item"} type="button" onClick={() => setMoreOpen(v => !v)} aria-expanded={moreOpen}>
             <MoreHorizontal size={17} />
             <span>{t('more')}</span>
             <ChevronRight size={15} className={moreOpen ? 'rotate-90' : ''} />
