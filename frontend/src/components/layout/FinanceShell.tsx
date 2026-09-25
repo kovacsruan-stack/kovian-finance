@@ -50,6 +50,10 @@ const koviUrl = localAppUrl(3003, import.meta.env.VITE_KOVI_APP_URL || '')
 
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches)
+  const drawerRef = useRef<HTMLElement | null>(null)
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null)
+  const drawerWasOpen = useRef(false)
   const [palette, setPalette] = useState(false)
   const [query, setQuery] = useState('')
   const paletteReturnFocus = useRef<HTMLElement | null>(null)
@@ -82,6 +86,46 @@ function Shell({ children }: { children: ReactNode }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 900px)')
+    const sync = () => setIsMobile(media.matches)
+    sync()
+    media.addEventListener('change', sync)
+    return () => media.removeEventListener('change', sync)
+  }, [])
+
+  useEffect(() => {
+    if (!open || !isMobile) {
+      if (drawerWasOpen.current) menuTriggerRef.current?.focus()
+      drawerWasOpen.current = false
+      return
+    }
+    drawerWasOpen.current = true
+    const drawer = drawerRef.current
+    if (!drawer) return
+    const focusable = () => Array.from(drawer.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input, select, textarea')).filter(element => element.offsetParent !== null)
+    focusable()[0]?.focus()
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        setOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = focusable()
+      if (!items.length) { event.preventDefault(); return }
+      if (event.shiftKey && document.activeElement === items[0]) {
+        event.preventDefault()
+        items[items.length - 1].focus()
+      } else if (!event.shiftKey && document.activeElement === items[items.length - 1]) {
+        event.preventDefault()
+        items[0].focus()
+      }
+    }
+    drawer.addEventListener('keydown', onKeyDown)
+    return () => drawer.removeEventListener('keydown', onKeyDown)
+  }, [open, isMobile])
 
   useEffect(() => {
     const locked = open || palette
@@ -121,7 +165,7 @@ function Shell({ children }: { children: ReactNode }) {
     <div className="app-shell"><a href="#finance-main" className="skip-link">Pular para o conteúdo</a>
       {open && <button type="button" className="scrim" aria-label={t('closeMenu')} onClick={() => setOpen(false)} />}
 
-      <aside className={open ? 'drawer drawer-open' : 'drawer'}>
+      <aside id="finance-navigation" ref={drawerRef} className={open ? 'drawer drawer-open' : 'drawer'} aria-hidden={isMobile && !open} inert={isMobile && !open}>
         <div className="brand">
           <BrandMark productName="FINANCE" className="h-9 w-9 shrink-0" />
           <button type="button" className="icon-button mobile-only" aria-label={t('closeMenu')} onClick={() => setOpen(false)}>
@@ -177,7 +221,7 @@ function Shell({ children }: { children: ReactNode }) {
               <Search size={17} aria-hidden="true" />
             </button>
             <LanguageSwitcher />
-            <button type="button" className="icon-button mobile-only" aria-label={t('more')} onClick={() => setOpen(true)}>
+            <button ref={menuTriggerRef} type="button" className="icon-button mobile-only" aria-label={t('more')} aria-expanded={open} aria-controls="finance-navigation" onClick={() => setOpen(true)}>
               <Menu size={19} />
             </button>
           </div>
