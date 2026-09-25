@@ -102,6 +102,33 @@ describe('finance api', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'invalid', status: 'ACTIVE' }), { status: 200 })))
     await expect(createAccount({ ownerId: 'owner-123', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', openingBalance: 0 })).rejects.toThrow()
   })
+  it('sends the trimmed account name and opening balance to the account endpoint', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'VALIDATION_ERROR' }), {
+      status: 400,
+      headers: { 'content-type': 'application/json' },
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(createAccount({
+      ownerId: 'owner-123',
+      name: 'Nubank Ruan',
+      accountType: 'CHECKING',
+      currency: 'BRL',
+      openingBalance: 0,
+    })).rejects.toBeInstanceOf(FinanceApiError)
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(url).toContain('/accounts')
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      ownerId: 'owner-123',
+      name: 'Nubank Ruan',
+      accountType: 'CHECKING',
+      currency: 'BRL',
+      openingBalance: 0,
+    })
+  })
+
   it('sends an idempotency key for transfers and validates the response', async () => {
     localStorage.setItem('access_token', 'header.e30.signature')
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
