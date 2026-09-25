@@ -46,7 +46,7 @@ const localAppUrl = (port: number, configured: string) => {
 }
 
 const fitnessUrl = localAppUrl(5175, import.meta.env.VITE_KOVIAN_FITNESS_URL || '')
-const koviUrl = (import.meta.env.VITE_KOVI_APP_URL || '').trim() || `${localAppUrl(5176, '')}app/`
+const koviUrl = (import.meta.env.VITE_KOVI_APP_URL || '').trim() || (['localhost', '127.0.0.1'].includes(window.location.hostname) || window.location.hostname.startsWith('192.168.') ? window.location.protocol + '//' + window.location.hostname + ':5176/app/' : '')
 
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
