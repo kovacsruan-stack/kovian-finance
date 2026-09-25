@@ -1,5 +1,8 @@
 # KOVIAN Finance
 
+<p align="center"><img src="frontend/public/kovian-finance-icon.svg" alt="KOVIAN" width="150" /></p>
+
+
 KOVIAN Finance is the personal finance platform of the KOVIAN technology ecosystem.
 
 ## Vision
