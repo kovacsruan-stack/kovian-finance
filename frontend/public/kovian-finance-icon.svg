@@ -1,1 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="42" fill="#25d39b"/><path d="M58 48h26l22 35 22-35h26l-31 48 31 48h-26l-22-35-22 35H58l31-48z" fill="#06100d"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">KOVIAN</title><desc id="desc">Símbolo K em gradiente verde, ciano e azul, dentro de uma moldura branca sobre fundo grafite.</desc>
+<defs><linearGradient id="frame" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".58" stop-color="#F8FCFD"/><stop offset="1" stop-color="#DCE7EB"/></linearGradient><linearGradient id="base" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#252B32"/><stop offset=".48" stop-color="#111419"/><stop offset="1" stop-color="#050608"/></linearGradient><linearGradient id="green" x1="0" y1="0" x2=".15" y2="1"><stop stop-color="#008F91"/><stop offset=".52" stop-color="#00D7B4"/><stop offset="1" stop-color="#00E6A8"/></linearGradient><linearGradient id="cyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#00F0A7"/><stop offset=".48" stop-color="#00C9B9"/><stop offset="1" stop-color="#00A7D9"/></linearGradient><linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#087D9E"/><stop offset="1" stop-color="#00628C"/></linearGradient></defs>
+<rect width="1024" height="1024" rx="188" fill="#000000"/><rect x="76" y="76" width="872" height="872" rx="150" fill="url(#frame)"/><rect x="154" y="154" width="716" height="716" rx="112" fill="url(#base)" stroke="#1A2026" stroke-width="8"/>
+<path d="M302 286h86c13 0 22 5 30 16l143 207-73 94-186-265z" fill="#007B8D" opacity=".65"/>
+<path d="M302 286h91c11 0 20 5 27 15l139 205-76 98-182 242c-7 10-16 15-28 15h-69c-13 0-22-10-22-23V309c0-13 9-23 22-23z" fill="url(#green)" stroke="#28F3C6" stroke-opacity=".55" stroke-width="3"/>
+<path d="M585 508 735 309c8-15 18-23 34-23h125c10 0 14 9 7 18L591 744c-8 10-18 16-30 16h-81z" fill="url(#cyan)" stroke="#B6FFE7" stroke-opacity=".75" stroke-width="3"/>
+<path d="M585 508 749 739c5 7 2 16-8 16H607c-14 0-23-5-31-16L488 610z" fill="url(#blue)"/>
+</svg>
