@@ -57,6 +57,7 @@ export function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   const [loading, setLoading] = useState(false)
   const [modal, setModal] = useState<'transaction' | 'account' | 'category' | 'budget' | 'goal' | 'recurring' | 'card' | 'cardPurchase' | 'invoicePayment' | null>(null)
   const [saving, setSaving] = useState(false)
+  const savingLock = useRef(false)
   const [refreshVersion, setRefreshVersion] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -100,7 +101,7 @@ export function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   }, [ownerId, config.actionTo, refreshVersion, t])
   const isAccounts = config.actionTo === '/contas'; const isTransactions = config.actionTo === '/transacoes'; const isGoals = config.actionTo === '/metas'; const isCards = config.actionTo === '/cartoes'; const isCategories = config.actionTo === '/categorias'; const isBudgets = config.actionTo === '/orcamentos'; const isRecurring = config.actionTo === '/recorrentes'; const isReports = config.actionTo === '/relatorios'; const isSettings = config.actionTo === '/configuracoes'
   const saveMutation = useFinanceMutation(async (task: () => Promise<unknown>) => task())
-  const save = async (task: () => Promise<unknown>) => { setSaving(true); setFormError(null); try { await saveMutation.mutateAsync(task); setModal(null); resetForm(); setRefreshVersion(version => version + 1) } catch (e) { setFormError(e instanceof Error ? e.message.replace('FINANCE_API_', t('apiErrorPrefix')) : t('saveError')) } finally { setSaving(false) } }
+  const save = async (task: () => Promise<unknown>) => { if (savingLock.current) return; savingLock.current = true; setSaving(true); setFormError(null); try { await saveMutation.mutateAsync(task); setModal(null); resetForm(); setRefreshVersion(version => version + 1) } catch (e) { setFormError(e instanceof Error ? e.message.replace('FINANCE_API_', t('apiErrorPrefix')) : t('saveError')) } finally { savingLock.current = false; setSaving(false) } }
   const selectedCategories = categories.filter(c => c.kind === transactionType)
   const categoryName = (id: string | null) => categories.find(c => c.id === id)?.name ?? t('noCategory')
   const accountName = (id: string) => accounts.find(a => a.id === id)?.name ?? t('account')
