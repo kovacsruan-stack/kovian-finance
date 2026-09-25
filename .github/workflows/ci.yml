@@ -64,9 +64,9 @@ jobs:
           duplicates="$(find src/main/resources/db/migration -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sed -nE 's/^(V[^_]+)__.*/\1/p' | sort | uniq -d)"
           test -z "$duplicates" || { echo "Duplicate Flyway migration versions:"; echo "$duplicates"; exit 1; }
       - name: Dependency review
-        run: mvn -B -ntp dependency:tree -DoutputType=text -Dverbose=false
+        run: ./mvnw -B -ntp dependency:tree -DoutputType=text -Dverbose=false
       - name: Verify backend
-        run: mvn -B -ntp clean verify
+        run: ./mvnw -B -ntp clean verify
       - name: Verify frontend
         working-directory: frontend
         run: |
@@ -95,7 +95,7 @@ jobs:
           restore-keys: |
             dependency-check-finance-${{ runner.os }}-
       - name: OWASP Dependency-Check
-        run: mvn -B -ntp -Psecurity-scan verify
+        run: ./mvnw -B -ntp -Psecurity-scan verify
       - name: Upload security reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -130,7 +130,8 @@ jobs:
           KOVIAN_JWT_SECRET: ci-only-test-secret-at-least-32-characters-long
         run: |
           set +e
-          mvn -B -ntp clean verify > finance-maven-diagnostics.log 2>&1
+          chmod +x mvnw
+          ./mvnw -B -ntp clean verify > finance-maven-diagnostics.log 2>&1
           echo "MVN_EXIT=$?" >> finance-maven-diagnostics.log
           exit 0
       - name: Upload diagnostics
