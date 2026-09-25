@@ -161,3 +161,8 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:640px){.page,.content{width:100%;min-width:0}.page-header{margin-bottom:14px}button{min-height:36px}input,select,textarea{min-height:40px}}
 
 :where(button,a,[role="button"],input,select,textarea):focus-visible{outline:2px solid hsl(var(--primary));outline-offset:2px}
+
+/* Compact command search and prevent the topbar from repeating the wordmark. */
+.search-icon-button{width:38px;min-width:38px;height:38px;min-height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:11px;background:var(--card);color:var(--muted);transition:background .15s ease,color .15s ease,border-color .15s ease}
+.search-icon-button:hover,.search-icon-button:focus-visible{background:color-mix(in srgb,var(--primary) 10%,var(--card));border-color:var(--primary);color:var(--primary)}
+@media(max-width:560px){.search-icon-button{width:36px;min-width:36px;height:36px;min-height:36px}.top-actions{gap:7px}}
