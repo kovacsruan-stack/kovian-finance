@@ -63,6 +63,8 @@ jobs:
           set -euo pipefail
           duplicates="$(find src/main/resources/db/migration -maxdepth 1 -type f -name '*.sql' -printf '%f\n' | sed -nE 's/^(V[^_]+)__.*/\1/p' | sort | uniq -d)"
           test -z "$duplicates" || { echo "Duplicate Flyway migration versions:"; echo "$duplicates"; exit 1; }
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
       - name: Dependency review
         run: ./mvnw -B -ntp dependency:tree -DoutputType=text -Dverbose=false
       - name: Verify backend
@@ -94,6 +96,8 @@ jobs:
           key: dependency-check-finance-${{ runner.os }}-${{ hashFiles('pom.xml') }}
           restore-keys: |
             dependency-check-finance-${{ runner.os }}-
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
       - name: OWASP Dependency-Check
         run: ./mvnw -B -ntp -Psecurity-scan verify
       - name: Upload security reports
