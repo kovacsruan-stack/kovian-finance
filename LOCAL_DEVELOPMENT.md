@@ -26,10 +26,10 @@ The local image builds with Maven 3.9.12 directly because the repository does no
 ```powershell
 cd frontend
 npm install
-npm run dev -- --host 127.0.0.1 --port 5174
+npm run dev -- --host 0.0.0.0 --port 5174
 ```
 
-The Vite proxy target is `http://localhost:8082` and can be overridden with `VITE_API_PROXY_TARGET`.
+The Vite proxy target defaults to `http://localhost:8082` and can be overridden with `VITE_API_PROXY_TARGET`. Keep the frontend bound to `0.0.0.0` when testing from a phone on the same Wi-Fi; `127.0.0.1` only exposes it to the PC itself.
 
 ### Workstation health validation
 
