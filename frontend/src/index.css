@@ -243,3 +243,15 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .top-actions .language-option{min-height:34px;padding:7px 9px;font-size:11px}
 .top-actions .language-option b{font-size:9px}
 @media(max-width:560px){.top-actions .language-switcher-trigger{height:30px!important;min-height:30px!important;padding:0 7px!important}.top-actions .language-switcher-menu{top:36px}}
+
+
+/* Bring dense financial subviews into the same light theme. */
+.calendar-cell{background:#ffffff}
+.calendar-event{background:#e8f7f4}
+.calendar-event span{color:var(--text)}
+.calendar-event b{color:var(--muted)}
+.budget-progress{background:#e2e8f0}
+.negative{color:#b91c1c}
+.budget-row{border-top-color:var(--line)}
+.language-switcher{background:#ffffff!important;border-color:var(--line)!important;box-shadow:none}
+.language-switcher-trigger{background:#ffffff;color:var(--muted)}
