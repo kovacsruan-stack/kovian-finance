@@ -31,10 +31,6 @@ const moreItems: Item[] = [
   { to: '/import-export', key: 'importExport', icon: FileText },
 ]
 
-const navGroups = [
-  { key: 'principal', items },
-]
-
 const localAppUrl = (port: number, configured: string) => {
   if (configured.trim()) return configured
   const host = window.location.hostname
@@ -179,17 +175,15 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <nav aria-label="Primary navigation" className="nav-groups">
-          {navGroups.map(group => (
-            <div className="nav-group" key={group.key}>
-              <span className="nav-group-title">{t(`group_${group.key}`)}</span>
-              {group.items.map(item => (
-                <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                  <item.icon size={17} />
-                  <span>{t(item.key)}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
+          <div className="nav-group">
+            <span className="nav-group-title">{t('group_principal')}</span>
+            {items.map(item => (
+              <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                <item.icon size={17} />
+                <span>{t(item.key)}</span>
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         <div className="nav-group">
