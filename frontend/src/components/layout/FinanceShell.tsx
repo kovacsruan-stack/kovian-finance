@@ -13,6 +13,8 @@ const items: Item[] = [
   { to: '/contas', key: 'accounts', icon: Wallet },
 ]
 
+const isRouteActive = (pathname: string, route: string) => pathname === route || (route !== '/' && pathname.startsWith(`${route}/`))
+
 const moreItems: Item[] = [
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
   { to: '/cartoes', key: 'cards', icon: CreditCard },
@@ -56,7 +58,7 @@ function Shell({ children }: { children: ReactNode }) {
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
   const location = useLocation()
-  const moreActive = moreItems.some(item => item.to === location.pathname)
+  const moreActive = moreItems.some(item => isRouteActive(location.pathname, item.to))
 
   const commands = [...items, ...moreItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
@@ -85,7 +87,7 @@ function Shell({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (moreItems.some(item => item.to === location.pathname)) setMoreOpen(true)
+    if (moreItems.some(item => isRouteActive(location.pathname, item.to))) setMoreOpen(true)
   }, [location.pathname])
 
   useEffect(() => {
