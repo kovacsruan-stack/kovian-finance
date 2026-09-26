@@ -211,14 +211,10 @@ function Shell({ children }: { children: ReactNode }) {
 
       <div className="content" id="finance-main" tabIndex={-1}>
         <header className="topbar">
-          <div className="top-left">
-            <div className="md:hidden flex min-w-0 items-center gap-2.5">
+          <div className="top-left min-w-0">
+            <div className="flex min-w-0 items-center gap-2.5">
               <BrandMark productName="FINANCE" showWordmark={false} className="h-8 w-8 shrink-0" />
-              <div className="min-w-0"><strong className="block truncate text-xs font-extrabold tracking-[0.08em] text-[var(--text)]">KOVIAN <span className="kovian-brand-accent">FINANCE</span></strong><small className="block text-[9px] text-[var(--muted)]">{t('ecosystem')}</small></div>
-            </div>
-            <div className="hidden md:flex min-w-0 flex-col">
-              <small>{t('ecosystem')}</small>
-              <strong>{t('financeName')}</strong>
+              <strong className="min-w-0 whitespace-nowrap text-xs font-extrabold tracking-[0.06em] text-[var(--text)]">KOVIAN <span className="kovian-brand-accent">FINANCE</span></strong>
             </div>
           </div>
 
