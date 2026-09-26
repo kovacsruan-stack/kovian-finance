@@ -102,7 +102,7 @@ jobs:
         run: ./mvnw -B -ntp -Psecurity-scan verify
       - name: Upload security reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: finance-dependency-check
           path: target/dependency-check/
@@ -140,7 +140,7 @@ jobs:
           exit 0
       - name: Upload diagnostics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: finance-maven-diagnostics
           path: finance-maven-diagnostics.log

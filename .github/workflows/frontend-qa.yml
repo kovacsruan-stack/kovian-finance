@@ -29,7 +29,7 @@ jobs:
       - run: npm run test:e2e
       - name: Upload Playwright results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: finance-playwright-results
           path: frontend/test-results/
