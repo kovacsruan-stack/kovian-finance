@@ -29,7 +29,7 @@ const moreItems: Item[] = [
   { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
   { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
   { to: '/import-export', key: 'importExport', icon: FileText, group: 'sistema' },
-}
+]
 
 const navGroups = [
   { key: 'principal', items: items.filter(item => item.group === 'principal') },
