@@ -1,1 +1,35 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#111827"/><path fill="#fff" d="M120 144h272v64H120zm0 80h272v64H120zm0 80h180v64H120z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+<title id="title">KOVIAN</title>
+<desc id="desc">Símbolo K geométrico em verde, ciano e azul, com moldura branca e fundo grafite.</desc>
+<defs>
+  <linearGradient id="frame" x1="0" y1="0" x2=".9" y2="1">
+    <stop stop-color="#FFFFFF"/><stop offset=".58" stop-color="#F8FCFD"/><stop offset="1" stop-color="#DCE7EB"/>
+  </linearGradient>
+  <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#20252C"/><stop offset=".5" stop-color="#090B10"/><stop offset="1" stop-color="#030406"/>
+  </linearGradient>
+  <linearGradient id="stem" x1="0" y1="0" x2=".1" y2="1">
+    <stop stop-color="#008C91"/><stop offset=".48" stop-color="#00CDB2"/><stop offset="1" stop-color="#00E6B0"/>
+  </linearGradient>
+  <linearGradient id="front" x1=".1" y1="0" x2=".9" y2="1">
+    <stop stop-color="#00F0A8"/><stop offset=".52" stop-color="#00DDB0"/><stop offset="1" stop-color="#00B8C9"/>
+  </linearGradient>
+  <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#087E9F"/><stop offset="1" stop-color="#00658F"/>
+  </linearGradient>
+  <linearGradient id="back" x1="0" y1="0" x2="1" y2="1">
+    <stop stop-color="#087D8A"/><stop offset="1" stop-color="#006B83"/>
+  </linearGradient>
+</defs>
+<rect width="1024" height="1024" fill="#000"/>
+<rect x="76" y="76" width="872" height="872" rx="150" fill="url(#frame)"/>
+<rect x="164" y="164" width="696" height="696" rx="112" fill="url(#base)" stroke="#1A2026" stroke-width="8"/>
+<!-- Rear arm of the K -->
+<path d="M372 286h48c13 0 23 5 31 16l163 222-62 79-180-246z" fill="url(#back)"/>
+<!-- Upright -->
+<path d="M322 286h96c14 0 23 5 31 16l15 20v402c0 14-10 24-24 24h-95c-14 0-24-10-24-24V310c0-14 10-24 24-24z" fill="url(#stem)" stroke="#28F3C6" stroke-opacity=".55" stroke-width="2"/>
+<!-- Forward diagonal -->
+<path d="M300 678 636 305c10-13 20-19 37-19h70c15 0 19 10 10 22L477 681l-31 40c-9 12-18 17-33 17h-91c-15 0-23-9-22-22z" fill="url(#front)" stroke="#B6FFE7" stroke-opacity=".75" stroke-width="2"/>
+<!-- Lower blue arm -->
+<path d="M505 624 738 734c8 4 8 15-3 15H625c-14 0-23-5-31-16L486 612z" fill="url(#blue)"/>
+</svg>
