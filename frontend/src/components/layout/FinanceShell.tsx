@@ -10,26 +10,26 @@ type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' |
 const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
   { to: '/transacoes', key: 'transactions', icon: Receipt, group: 'principal' },
-  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft, group: 'principal' },
   { to: '/contas', key: 'accounts', icon: Wallet, group: 'principal' },
-  { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'principal' },
-  { to: '/orcamentos', key: 'budgets', icon: Target, group: 'planejamento' },
-  { to: '/metas', key: 'goals', icon: Target, group: 'planejamento' },
-  { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'planejamento' },
-  { to: '/previsao', key: 'forecast', icon: CalendarClock, group: 'planejamento' },
-  { to: '/patrimonio', key: 'netWorth', icon: Wallet, group: 'planejamento' },
-  { to: '/inteligencia', key: 'insights', icon: Sparkles, group: 'planejamento' },
-  { to: '/dividas', key: 'debts', icon: CreditCard, group: 'planejamento' },
-  { to: '/notificacoes', key: 'notifications', icon: Bell, group: 'sistema' },
 ]
 
 const moreItems: Item[] = [
+  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft, group: 'organizacao' },
+  { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'organizacao' },
+  { to: '/orcamentos', key: 'budgets', icon: Target, group: 'organizacao' },
+  { to: '/metas', key: 'goals', icon: Target, group: 'organizacao' },
+  { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'organizacao' },
+  { to: '/previsao', key: 'forecast', icon: CalendarClock, group: 'organizacao' },
+  { to: '/patrimonio', key: 'netWorth', icon: Wallet, group: 'organizacao' },
+  { to: '/inteligencia', key: 'insights', icon: Sparkles, group: 'organizacao' },
+  { to: '/dividas', key: 'debts', icon: CreditCard, group: 'organizacao' },
+  { to: '/notificacoes', key: 'notifications', icon: Bell, group: 'sistema' },
   { to: '/calendario', key: 'financialCalendar', icon: CalendarClock, group: 'organizacao' },
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
   { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
   { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
   { to: '/import-export', key: 'importExport', icon: FileText, group: 'sistema' },
-]
+}
 
 const navGroups = [
   { key: 'principal', items: items.filter(item => item.group === 'principal') },
@@ -247,7 +247,7 @@ function Shell({ children }: { children: ReactNode }) {
         {children}
 
         <nav className="bottom-nav">
-          {[items[0], items[1], items[2], items[3]].map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}
+          {items.map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}
           <button type="button" onClick={() => setOpen(true)}><MoreHorizontal size={18} /><span>{t('more')}</span></button>
         </nav>
       </div>
