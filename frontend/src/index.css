@@ -255,3 +255,25 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .budget-row{border-top-color:var(--line)}
 .language-switcher{background:#ffffff!important;border-color:var(--line)!important;box-shadow:none}
 .language-switcher-trigger{background:#ffffff;color:var(--muted)}
+
+
+/* Mobile header: one compact brand lockup, controls aligned on the same baseline. */
+@media(max-width:560px){
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:58px;height:58px;padding:0 12px}
+  .top-left{flex:1;min-width:0;overflow:hidden}
+  .top-left>div{min-width:0;gap:8px}
+  .top-left .brand-mark-lockup{gap:8px;flex:0 0 auto}
+  .top-left .brand-mark-image{width:30px!important;height:30px!important}
+  .top-left>div>strong{min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:11px;letter-spacing:.025em}
+  .top-actions{display:flex;flex:0 0 auto;align-items:center;gap:5px}
+  .top-actions .search-icon-button,.top-actions .icon-button{width:36px;min-width:36px;height:36px;min-height:36px;padding:0}
+  .top-actions .language-switcher-trigger{height:36px;min-height:36px;padding:0 7px}
+}
+@media(max-width:380px){
+  .topbar{padding:0 8px;gap:5px}
+  .top-left>div{gap:6px}
+  .top-left .brand-mark-image{width:27px!important;height:27px!important}
+  .top-left>div>strong{font-size:10px;letter-spacing:0}
+  .top-actions{gap:3px}
+  .top-actions .search-icon-button,.top-actions .icon-button{width:32px;min-width:32px}
+}
