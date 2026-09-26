@@ -5,35 +5,32 @@ import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
 import { useTranslation } from 'react-i18next'
 
-type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'planejamento' | 'organizacao' | 'sistema' }
+type Item = { to: string; key: string; icon: typeof Wallet }
 
 const items: Item[] = [
-  { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
-  { to: '/transacoes', key: 'transactions', icon: Receipt, group: 'principal' },
-  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft, group: 'principal' },
-  { to: '/contas', key: 'accounts', icon: Wallet, group: 'principal' },
-  { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'principal' },
-  { to: '/orcamentos', key: 'budgets', icon: Target, group: 'planejamento' },
-  { to: '/metas', key: 'goals', icon: Target, group: 'planejamento' },
-  { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'planejamento' },
-  { to: '/previsao', key: 'forecast', icon: CalendarClock, group: 'planejamento' },
-  { to: '/patrimonio', key: 'netWorth', icon: Wallet, group: 'planejamento' },
-  { to: '/inteligencia', key: 'insights', icon: Sparkles, group: 'planejamento' },
-  { to: '/dividas', key: 'debts', icon: CreditCard, group: 'planejamento' },
-  { to: '/notificacoes', key: 'notifications', icon: Bell, group: 'sistema' },
+  { to: '/', key: 'financeOverview', icon: BarChart3 },
+  { to: '/transacoes', key: 'transactions', icon: Receipt },
+  { to: '/contas', key: 'accounts', icon: Wallet },
 ]
+
+const isRouteActive = (pathname: string, route: string) => pathname === route || (route !== '/' && pathname.startsWith(`${route}/`))
 
 const moreItems: Item[] = [
-  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock, group: 'organizacao' },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
-  { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
-  { to: '/import-export', key: 'importExport', icon: FileText, group: 'sistema' },
-]
-
-const navGroups = [
-  { key: 'principal', items: items.filter(item => item.group === 'principal') },
-  { key: 'planejamento', items: items.filter(item => item.group === 'planejamento') },
+  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
+  { to: '/cartoes', key: 'cards', icon: CreditCard },
+  { to: '/orcamentos', key: 'budgets', icon: Target },
+  { to: '/metas', key: 'goals', icon: Target },
+  { to: '/relatorios', key: 'reports', icon: BarChart3 },
+  { to: '/previsao', key: 'forecast', icon: CalendarClock },
+  { to: '/patrimonio', key: 'netWorth', icon: Wallet },
+  { to: '/inteligencia', key: 'insights', icon: Sparkles },
+  { to: '/dividas', key: 'debts', icon: CreditCard },
+  { to: '/notificacoes', key: 'notifications', icon: Bell },
+  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
+  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
+  { to: '/categorias', key: 'categories', icon: FolderTree },
+  { to: '/configuracoes', key: 'financeSettings', icon: Settings2 },
+  { to: '/import-export', key: 'importExport', icon: FileText },
 ]
 
 const localAppUrl = (port: number, configured: string) => {
@@ -61,7 +58,7 @@ function Shell({ children }: { children: ReactNode }) {
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
   const location = useLocation()
-  const moreActive = moreItems.some(item => item.to === location.pathname)
+  const moreActive = moreItems.some(item => isRouteActive(location.pathname, item.to))
 
   const commands = [...items, ...moreItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
@@ -90,7 +87,7 @@ function Shell({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (moreItems.some(item => item.to === location.pathname)) setMoreOpen(true)
+    if (moreItems.some(item => isRouteActive(location.pathname, item.to))) setMoreOpen(true)
   }, [location.pathname])
 
   useEffect(() => {
@@ -180,17 +177,15 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <nav aria-label="Primary navigation" className="nav-groups">
-          {navGroups.map(group => (
-            <div className="nav-group" key={group.key}>
-              <span className="nav-group-title">{t(`group_${group.key}`)}</span>
-              {group.items.map(item => (
-                <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                  <item.icon size={17} />
-                  <span>{t(item.key)}</span>
-                </NavLink>
-              ))}
-            </div>
-          ))}
+          <div className="nav-group">
+            <span className="nav-group-title">{t('group_principal')}</span>
+            {items.map(item => (
+              <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                <item.icon size={17} />
+                <span>{t(item.key)}</span>
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         <div className="nav-group">
@@ -247,7 +242,7 @@ function Shell({ children }: { children: ReactNode }) {
         {children}
 
         <nav className="bottom-nav">
-          {[items[0], items[1], items[2], items[3]].map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}
+          {items.map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}
           <button type="button" onClick={() => setOpen(true)}><MoreHorizontal size={18} /><span>{t('more')}</span></button>
         </nav>
       </div>
