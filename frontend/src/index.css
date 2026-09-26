@@ -195,3 +195,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
   .form-grid{grid-template-columns:minmax(0,1fr);gap:12px}
   .form-grid>.form-error,.form-grid>.form-submit{grid-column:auto}
 }
+
+
+/* Fix dark-theme foreground inheritance and keep the brand mark constrained. */
+:root{color:var(--text)}
+html,body,#root{color:var(--text)}
+.brand-mark-lockup{display:inline-flex;align-items:center;gap:10px;min-width:0;flex:none}
+.brand-mark-image{display:block;flex:0 0 auto;max-width:40px;max-height:40px;object-fit:contain;border-radius:10px}
+.brand-mark-wordmark{display:flex;min-width:0;flex-direction:column;gap:4px;line-height:1}
+.brand-mark-name{display:block;color:var(--text);font-size:13px;font-weight:800;letter-spacing:.14em}
+.brand-mark-product{display:block;margin:0;color:var(--primary);font-size:9px;font-weight:800;letter-spacing:.2em}
