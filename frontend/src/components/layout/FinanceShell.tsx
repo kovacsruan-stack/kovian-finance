@@ -5,30 +5,30 @@ import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
 import { useTranslation } from 'react-i18next'
 
-type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'organizacao' | 'sistema' }
+type Item = { to: string; key: string; icon: typeof Wallet }
 
 const items: Item[] = [
-  { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
-  { to: '/transacoes', key: 'transactions', icon: Receipt, group: 'principal' },
-  { to: '/contas', key: 'accounts', icon: Wallet, group: 'principal' },
+  { to: '/', key: 'financeOverview', icon: BarChart3 },
+  { to: '/transacoes', key: 'transactions', icon: Receipt },
+  { to: '/contas', key: 'accounts', icon: Wallet },
 ]
 
 const moreItems: Item[] = [
-  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft, group: 'organizacao' },
-  { to: '/cartoes', key: 'cards', icon: CreditCard, group: 'organizacao' },
-  { to: '/orcamentos', key: 'budgets', icon: Target, group: 'organizacao' },
-  { to: '/metas', key: 'goals', icon: Target, group: 'organizacao' },
-  { to: '/relatorios', key: 'reports', icon: BarChart3, group: 'organizacao' },
-  { to: '/previsao', key: 'forecast', icon: CalendarClock, group: 'organizacao' },
-  { to: '/patrimonio', key: 'netWorth', icon: Wallet, group: 'organizacao' },
-  { to: '/inteligencia', key: 'insights', icon: Sparkles, group: 'organizacao' },
-  { to: '/dividas', key: 'debts', icon: CreditCard, group: 'organizacao' },
-  { to: '/notificacoes', key: 'notifications', icon: Bell, group: 'sistema' },
-  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock, group: 'organizacao' },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock, group: 'organizacao' },
-  { to: '/categorias', key: 'categories', icon: FolderTree, group: 'organizacao' },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings2, group: 'sistema' },
-  { to: '/import-export', key: 'importExport', icon: FileText, group: 'sistema' },
+  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
+  { to: '/cartoes', key: 'cards', icon: CreditCard },
+  { to: '/orcamentos', key: 'budgets', icon: Target },
+  { to: '/metas', key: 'goals', icon: Target },
+  { to: '/relatorios', key: 'reports', icon: BarChart3 },
+  { to: '/previsao', key: 'forecast', icon: CalendarClock },
+  { to: '/patrimonio', key: 'netWorth', icon: Wallet },
+  { to: '/inteligencia', key: 'insights', icon: Sparkles },
+  { to: '/dividas', key: 'debts', icon: CreditCard },
+  { to: '/notificacoes', key: 'notifications', icon: Bell },
+  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
+  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
+  { to: '/categorias', key: 'categories', icon: FolderTree },
+  { to: '/configuracoes', key: 'financeSettings', icon: Settings2 },
+  { to: '/import-export', key: 'importExport', icon: FileText },
 ]
 
 const navGroups = [
