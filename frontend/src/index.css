@@ -228,3 +228,9 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .language-switcher{background:#ffffff;border-color:var(--line);color:var(--muted)}
 .language-switcher-trigger:hover,.language-option:hover{background:#e8f7f4;color:#087f75}
 .language-option.active{background:#e8f7f4;color:#087f75}
+
+
+/* Keep the expanded secondary navigation compact and independently scrollable. */
+.nav-subitems{max-height:min(48vh,480px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
+.nav-subitems .nav-item{min-height:36px;padding-top:7px;padding-bottom:7px}
+@media(max-width:900px){.nav-subitems{max-height:42vh}}
