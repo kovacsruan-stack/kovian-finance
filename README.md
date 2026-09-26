@@ -5,6 +5,10 @@
 
 KOVIAN Finance is the personal finance platform of the KOVIAN technology ecosystem.
 
+## Tooling constraint: no GitHub Actions
+
+GitHub Actions is not available for this project. Do not add or rely on Actions workflows, runners, hosted CI/CD, billing diagnostics, or manual workflow dispatch. Run lint, tests, builds, and browser QA locally using the commands below. Revisit this only if the project owner explicitly confirms Actions has been enabled. See [AGENTS.md](AGENTS.md).
+
 ## Vision
 
 Manage personal finances, planning, goals, cash flow, assets, liabilities and financial intelligence, with a controlled integration layer for KOVIAN Fitness and KOVI AI.
