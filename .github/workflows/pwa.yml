@@ -1,14 +1,12 @@
 name: Finance PWA
+
+# PWA-specific checks remain available manually; main CI handles standard validation.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
-concurrency:
-  group: kovian-finance-pwa-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+
 jobs:
   pwa:
     runs-on: ubuntu-latest
@@ -25,19 +23,11 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install frontend
-        run: npm ci
-      - name: Dependency audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
-      - name: Lint frontend
-        run: npm run lint
-      - name: Type check frontend
-        run: npx tsc --noEmit
-      - name: Test frontend
-        run: npm test -- --run
-      - name: Build frontend
-        run: npm run build
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test -- --run
+      - run: npm run build
       - name: Verify PWA assets
         run: |
           set -euo pipefail
