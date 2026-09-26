@@ -32,8 +32,8 @@ const moreItems: Item[] = [
 ]
 
 const navGroups = [
-  { key: 'principal', items: items.filter(item => item.group === 'principal') },
-].filter(group => group.items.length > 0)
+  { key: 'principal', items },
+]
 
 const localAppUrl = (port: number, configured: string) => {
   if (configured.trim()) return configured
