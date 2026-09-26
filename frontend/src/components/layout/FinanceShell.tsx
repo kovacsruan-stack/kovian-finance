@@ -33,7 +33,6 @@ const moreItems: Item[] = [
 
 const navGroups = [
   { key: 'principal', items: items.filter(item => item.group === 'principal') },
-  { key: 'planejamento', items: items.filter(item => item.group === 'planejamento') },
 ].filter(group => group.items.length > 0)
 
 const localAppUrl = (port: number, configured: string) => {
