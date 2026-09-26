@@ -5,7 +5,7 @@ import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
 import { useTranslation } from 'react-i18next'
 
-type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'planejamento' | 'organizacao' | 'sistema' }
+type Item = { to: string; key: string; icon: typeof Wallet; group: 'principal' | 'organizacao' | 'sistema' }
 
 const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3, group: 'principal' },
