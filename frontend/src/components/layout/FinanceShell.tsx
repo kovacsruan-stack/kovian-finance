@@ -19,6 +19,13 @@ const moreItems: Item[] = [
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
   { to: '/cartoes', key: 'cards', icon: CreditCard },
   { to: '/orcamentos', key: 'budgets', icon: Target },
+  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
+  { to: '/categorias', key: 'categories', icon: FolderTree },
+  { to: '/import-export', key: 'importExport', icon: FileText },
+  { to: '/configuracoes', key: 'financeSettings', icon: Settings2 },
+]
+
+const advancedItems: Item[] = [
   { to: '/metas', key: 'goals', icon: Target },
   { to: '/relatorios', key: 'reports', icon: BarChart3 },
   { to: '/previsao', key: 'forecast', icon: CalendarClock },
@@ -27,10 +34,6 @@ const moreItems: Item[] = [
   { to: '/dividas', key: 'debts', icon: CreditCard },
   { to: '/notificacoes', key: 'notifications', icon: Bell },
   { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
-  { to: '/categorias', key: 'categories', icon: FolderTree },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings2 },
-  { to: '/import-export', key: 'importExport', icon: FileText },
 ]
 
 const localAppUrl = (port: number, configured: string) => {
@@ -55,12 +58,13 @@ function Shell({ children }: { children: ReactNode }) {
   const [query, setQuery] = useState('')
   const paletteReturnFocus = useRef<HTMLElement | null>(null)
   const [moreOpen, setMoreOpen] = useState(false)
+  const [advancedOpen, setAdvancedOpen] = useState(false)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
   const location = useLocation()
-  const moreActive = moreItems.some(item => isRouteActive(location.pathname, item.to))
+  const moreActive = [...moreItems, ...advancedItems].some(item => isRouteActive(location.pathname, item.to))
 
-  const commands = [...items, ...moreItems].map(item => ({ ...item, label: t(item.key) }))
+  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
 
   const openPalette = () => {
@@ -87,7 +91,8 @@ function Shell({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (moreItems.some(item => isRouteActive(location.pathname, item.to))) setMoreOpen(true)
+    if ([...moreItems, ...advancedItems].some(item => isRouteActive(location.pathname, item.to))) setMoreOpen(true)
+    if (advancedItems.some(item => isRouteActive(location.pathname, item.to))) setAdvancedOpen(true)
   }, [location.pathname])
 
   useEffect(() => {
@@ -194,7 +199,7 @@ function Shell({ children }: { children: ReactNode }) {
             <span>{t('more')}</span>
             <ChevronRight size={15} className={moreOpen ? 'rotate-90' : ''} />
           </button>
-          {moreOpen && <div className="nav-subitems">{moreItems.map(item => <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}</div>}
+          {moreOpen && <div className="nav-subitems">{moreItems.map(item => <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}<button className={advancedItems.some(item => isRouteActive(location.pathname, item.to)) ? "nav-item active" : "nav-item"} type="button" onClick={() => setAdvancedOpen(v => !v)} aria-expanded={advancedOpen}><MoreHorizontal size={17} /><span>{t('advancedFeatures')}</span><ChevronRight size={15} className={advancedOpen ? 'rotate-90' : ''} /></button>{advancedOpen && <div className="nav-subitems">{advancedItems.map(item => <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}</div>}</div>}
         </div>
 
         <div className="nav-group ecosystem-links">
