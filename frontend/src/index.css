@@ -205,3 +205,26 @@ html,body,#root{color:var(--text)}
 .brand-mark-wordmark{display:flex;min-width:0;flex-direction:column;gap:4px;line-height:1}
 .brand-mark-name{display:block;color:var(--text);font-size:13px;font-weight:800;letter-spacing:.14em}
 .brand-mark-product{display:block;margin:0;color:var(--primary);font-size:9px;font-weight:800;letter-spacing:.2em}
+
+
+/* Light, calm Finance palette: replace the former near-black surfaces. */
+:root{--bg:#f6f8fb;--card:#ffffff;--line:#e2e8f0;--muted:#64748b;--text:#1e293b;--primary:#0f9f95;--danger:#dc2626;--kovian-accent:#0f9f95;color:var(--text);background:var(--bg)}
+html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
+.drawer{background:#ffffff;border-color:var(--line)}
+.topbar{background:rgba(255,255,255,.94);border-color:var(--line)}
+.nav-item.active,.nav-item:hover,.bottom-nav a.active{background:#e8f7f4;color:#087f75}
+.palette{background:#ffffff;border-color:var(--line)}
+.palette-item:hover,.palette-item:focus-visible{background:#e8f7f4;color:#087f75}
+.avatar,.hero-orb,.feature-icon{background:#e0f2f1;color:#087f75}
+.hero-card{border-color:#ccebe6;background:linear-gradient(135deg,#f0fdfa,#ffffff)}
+.bottom-nav{background:rgba(255,255,255,.97);border-color:var(--line)}
+.modal{background:#ffffff;border-color:var(--line)}
+.field input,.field select,.field textarea{background:#ffffff;color:var(--text);border-color:var(--line)}
+.field input::placeholder,.field textarea::placeholder{color:#94a3b8}
+.field select option,.language-switcher option{background:#ffffff;color:var(--text)}
+.budget-row{border-color:var(--line)}
+.budget-progress{background:#e2e8f0}
+.notice,.form-error{border-color:#fecaca;background:#fff1f2;color:#b91c1c}
+.language-switcher{background:#ffffff;border-color:var(--line);color:var(--muted)}
+.language-switcher-trigger:hover,.language-option:hover{background:#e8f7f4;color:#087f75}
+.language-option.active{background:#e8f7f4;color:#087f75}
