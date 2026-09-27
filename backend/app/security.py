@@ -1,7 +1,8 @@
 """Password hashing and signed access-token primitives.
 
-This module deliberately does not expose login endpoints until persistence,
-rate limiting, account recovery, and authorization dependencies are wired in.
+Authentication routes use these helpers for Argon2 password hashes and
+short-lived, signed access tokens. Rate limiting and account recovery remain
+separate application-level responsibilities.
 """
 import os
 from datetime import datetime, timedelta, timezone
