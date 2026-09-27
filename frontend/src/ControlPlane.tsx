@@ -94,7 +94,7 @@ export default function ControlPlane() {
   }, [])
 
   const exceptionCount = useMemo(
-    () => runs.filter(run => Math.abs(run.difference) > 0.005).length,
+    () => runs.filter(run => run.status !== 'MATCHED').length,
     [runs],
   )
 
@@ -154,7 +154,7 @@ export default function ControlPlane() {
       {!loading && !error && runs.length === 0 && <div className="exception"><CheckCircle2/><div><b>{t('noReconciliation')}</b><span>{t('runFirstReconciliation')}</span></div></div>}
 
       {runs.map(run => <div className="exception" key={run.id}>
-        <AlertTriangle/>
+        {run.status === 'MATCHED' ? <CheckCircle2/> : <AlertTriangle/>}
         <div><b>{t('account')} {run.accountId}</b><span>
           {t('expected')} {formatAmount(run.expectedBalance)} · {t('actual')} {formatAmount(run.actualBalance)} · {t('difference')} {formatAmount(run.difference)}
         </span></div>
