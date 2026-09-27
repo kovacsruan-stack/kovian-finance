@@ -28,3 +28,14 @@ uvicorn app.main:app --reload
 ## Required before production
 
 Add authentication and tenant isolation, migrations, account and transaction endpoints, idempotent imports, transfer pairing, recurring transactions, installment schedules, budgets, goals, forecasts, reconciliation, audit history, and end-to-end tests. Never use binary floating-point for money; keep currency explicit and do not silently convert currencies.
+
+## Database migrations
+
+The Alembic environment is configured, but an initial migration has not yet been generated or applied. After configuring `DATABASE_URL`, generate and review the first migration, then apply it:
+
+```bash
+alembic revision --autogenerate -m "initial schema"
+alembic upgrade head
+```
+
+Review generated SQL carefully before applying it to any database containing real data.
