@@ -1,10 +1,10 @@
-"""Create the initial application schema from SQLAlchemy metadata.
+"""Create the initial schema without silently orphaning legacy records.
 
-This bootstrap migration is safe to re-run against an existing database: create_all
-only creates missing tables. It intentionally does not drop application tables on
-downgrade, because that could destroy user data.
+Existing tables that gained ownership columns must be migrated explicitly so
+records can be assigned to the correct user. This migration refuses to guess.
 """
 from alembic import op
+from sqlalchemy import inspect
 
 from app.models import Base
 
@@ -13,9 +13,23 @@ down_revision = None
 branch_labels = None
 depends_on = None
 
+OWNED_TABLES = ("accounts", "transactions", "budgets", "financial_goals", "students", "group_sessions")
+
 
 def upgrade() -> None:
-    Base.metadata.create_all(bind=op.get_bind(), checkfirst=True)
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    existing_tables = set(inspector.get_table_names())
+    for table_name in OWNED_TABLES:
+        if table_name in existing_tables:
+            columns = {column["name"] for column in inspector.get_columns(table_name)}
+            if "user_id" not in columns:
+                raise RuntimeError(
+                    f"Table '{table_name}' already exists without user_id. "
+                    "Create a reviewed data migration that assigns each legacy row "
+                    "to its rightful owner before enabling this schema."
+                )
+    Base.metadata.create_all(bind=bind, checkfirst=True)
 
 
 def downgrade() -> None:
