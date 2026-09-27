@@ -1,0 +1,47 @@
+/* KOVIAN shared design tokens. Keep in sync across all product frontends. */
+:root {
+  color-scheme: light;
+  --kovian-primary: #047857;
+  --kovian-primary-hover: #065f46;
+  --kovian-accent: #10b981;
+  --kovian-ai-accent: #8b5cf6;
+  --kovian-background: #f8fafc;
+  --kovian-surface: #ffffff;
+  --kovian-surface-muted: #f1f5f9;
+  --kovian-text: #0f172a;
+  --kovian-muted: #64748b;
+  --kovian-border: #e2e8f0;
+  --kovian-danger: #dc2626;
+  --kovian-warning: #d97706;
+  --kovian-radius-sm: 8px;
+  --kovian-radius-md: 12px;
+  --kovian-radius-lg: 16px;
+  --kovian-control-height: 44px;
+  --kovian-space-1: 4px;
+  --kovian-space-2: 8px;
+  --kovian-space-3: 12px;
+  --kovian-space-4: 16px;
+  --kovian-space-6: 24px;
+  --kovian-space-8: 32px;
+  --kovian-shadow-card: 0 4px 16px rgb(15 23 42 / 5%);
+  --kovian-primary-hsl: 158 96% 24%;
+  --kovian-background-hsl: 210 40% 98%;
+  --kovian-surface-hsl: 0 0% 100%;
+  --kovian-text-hsl: 222 47% 11%;
+  --kovian-muted-hsl: 215 16% 47%;
+  --kovian-border-hsl: 214 32% 91%;
+}
+.dark {
+  color-scheme: dark;
+  --kovian-background: #0f172a;
+  --kovian-surface: #111827;
+  --kovian-surface-muted: #1e293b;
+  --kovian-text: #f8fafc;
+  --kovian-muted: #94a3b8;
+  --kovian-border: #334155;
+  --kovian-background-hsl: 222 47% 11%;
+  --kovian-surface-hsl: 217 33% 17%;
+  --kovian-text-hsl: 210 40% 98%;
+  --kovian-muted-hsl: 215 20% 65%;
+  --kovian-border-hsl: 215 25% 27%;
+}
