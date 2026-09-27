@@ -47,6 +47,7 @@ def decode_access_token(token: str) -> dict:
     if not secret or len(secret) < 32:
         raise RuntimeError("JWT_SECRET must be configured with at least 32 characters")
     payload = jwt.decode(token, secret, algorithms=[_ALGORITHM])
-    if payload.get("type") != "access" or not payload.get("sub"):
+    subject = payload.get("sub")
+    if payload.get("type") != "access" or not isinstance(subject, str) or not subject.strip():
         raise ValueError("Invalid access token")
     return payload
