@@ -19,7 +19,7 @@ uvicorn app.main:app --reload
 
 ## Implemented foundation
 
-- Password hashing and signed access-token primitives; no login endpoint is exposed yet.
+- Google OpenID Connect login endpoint (`POST /auth/google`) that verifies Google ID tokens server-side and issues a product-specific KOVIAN access token.
 
 - Decimal-based ledger entry validation and cash-flow calculation.
 - Transfers excluded from net cash flow to avoid double-counting internal movements.
