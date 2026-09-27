@@ -1,6 +1,6 @@
 # KOVIAN Finance
 
-<p align="center"><img src="frontend/public/kovian-finance-icon.svg" alt="KOVIAN" width="150" /></p>
+<p align="center"><img src="frontend/public/kovian-icon.svg" alt="KOVIAN" width="150" /></p>
 
 
 KOVIAN Finance is the personal finance platform of the KOVIAN technology ecosystem.
@@ -71,3 +71,6 @@ Browser persistence is limited to UI preferences and transient workflow state; c
 ## KOVIAN shared identity
 
 This frontend follows the KOVIAN ecosystem design system. Keep `frontend/src/styles/kovian-tokens.css` synchronized byte-for-byte with the canonical `products/design-system/tokens.css` in the KOVIAN control-plane repository. Use the official logo asset already in `frontend/public` without redrawing, recoloring, stretching or replacing it. Shared primary actions use the KOVIAN emerald palette; product-specific accents may remain secondary. Prefer system/local fonts, preserve accessible focus states and reduced-motion preferences, and keep interactive controls at least 44px high.
+
+
+Canonical identity reference: [KOVIAN Design System](https://github.com/kovacsruan-stack/kovian/blob/codex/kovian-gestao-dashboard-finance-2026-09-27/docs/design-system/KOVIAN_DESIGN_SYSTEM.md). The canonical logo is `products/design-system/kovian-icon.svg`; local product copies must remain byte-for-byte identical. Ecosystem links must use configured production URLs and must never point production users to local development ports.
