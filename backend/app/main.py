@@ -1,7 +1,9 @@
 import os
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware\n\nfrom .finance_routes import router as finance_router
+from fastapi.middleware.cors import CORSMiddleware
+
+from .finance_routes import router as finance_router
 
 app = FastAPI(
     title="KOVIAN Finance API",
@@ -9,8 +11,6 @@ app = FastAPI(
     description="Personal and business finance management.",
 )
 
-# Configure comma-separated, explicit frontend origins in the environment.
-# An empty value intentionally disables cross-origin browser access.
 cors_origins = [
     origin.strip()
     for origin in os.getenv("CORS_ORIGINS", "").split(",")
@@ -24,6 +24,8 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+app.include_router(finance_router)
 
 
 @app.get("/health", tags=["operations"])
