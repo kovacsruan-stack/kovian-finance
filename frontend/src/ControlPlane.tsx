@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, CheckCircle2, Download, FileCheck2, LockKeyhole, RefreshCw } from 'lucide-react'
-import { getReconciliationHistory, type ReconciliationRun } from './lib/api'
+import { getAccounts, getOwnerId, getReconciliationHistory, reconcileAccount, type FinanceAccount, type ReconciliationRun } from './lib/api'
 import { useTranslation } from 'react-i18next'
 
 type Tab = 'close' | 'recon' | 'exports'
@@ -22,8 +22,12 @@ export default function ControlPlane() {
   const { t } = useTranslation()
   const [tab, setTab] = useState<Tab>('close')
   const [runs, setRuns] = useState<ReconciliationRun[]>([])
+  const [accounts, setAccounts] = useState<FinanceAccount[]>([])
   const [loading, setLoading] = useState(true)
+  const [accountsLoading, setAccountsLoading] = useState(false)
+  const [reconcilingAccountId, setReconcilingAccountId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   async function loadReconciliation() {
     setLoading(true)
@@ -37,7 +41,41 @@ export default function ControlPlane() {
     }
   }
 
-  useEffect(() => { void loadReconciliation() }, [])
+  async function loadAccounts() {
+    const ownerId = getOwnerId()
+    if (!ownerId) {
+      setActionError(t('loginToLoadData'))
+      setAccounts([])
+      return
+    }
+    setAccountsLoading(true)
+    setActionError(null)
+    try {
+      setAccounts(await getAccounts(ownerId))
+    } catch (cause) {
+      setActionError(cause instanceof Error ? cause.message : t('reconciliationLoadError'))
+    } finally {
+      setAccountsLoading(false)
+    }
+  }
+
+  async function runReconciliation(accountId: string) {
+    setReconcilingAccountId(accountId)
+    setActionError(null)
+    try {
+      await reconcileAccount(accountId)
+      await loadReconciliation()
+    } catch (cause) {
+      setActionError(cause instanceof Error ? cause.message : t('reconciliationLoadError'))
+    } finally {
+      setReconcilingAccountId(null)
+    }
+  }
+
+  useEffect(() => {
+    void loadReconciliation()
+    void loadAccounts()
+  }, [])
 
   const exceptionCount = useMemo(
     () => runs.filter(run => Math.abs(run.difference) > 0.005).length,
@@ -82,10 +120,21 @@ export default function ControlPlane() {
       <div className="row">
         <RefreshCw />
         <div><b>{t('reconciliationHistory')}</b><span>{runs.length} {t('runs')}</span></div>
-        <button className="secondary" onClick={() => void loadReconciliation()} type="button" disabled={loading}><RefreshCw size={15}/>{t('refresh')}</button>
+        <button className="secondary" onClick={() => { void loadReconciliation(); void loadAccounts() }} type="button" disabled={loading || accountsLoading}><RefreshCw size={15}/>{t('refresh')}</button>
       </div>
 
-      {error && <div className="exception"><AlertTriangle/><div><b>{t('loadFailure')}</b><span>{error}</span></div></div>}
+      {actionError && <div className="exception" role="alert"><AlertTriangle/><div><b>{t('loadFailure')}</b><span>{actionError}</span></div></div>}
+      {accountsLoading && <p className="muted">{t('loading')}</p>}
+      {!accountsLoading && accounts.length === 0 && !actionError && <div className="exception"><AlertTriangle/><div><b>{t('noAccountsRegistered')}</b><span>{t('addFirstAccount')}</span></div></div>}
+      {accounts.map(account => <div className="exception" key={account.id}>
+        <LockKeyhole/>
+        <div><b>{account.name}</b><span>{account.currency} · {formatAmount(account.currentBalance)}</span></div>
+        <button className="secondary" type="button" onClick={() => void runReconciliation(account.id)} disabled={reconcilingAccountId !== null || accountsLoading}>
+          <RefreshCw size={15}/>{reconcilingAccountId === account.id ? t('loading') : t('newReview')}
+        </button>
+      </div>)}
+
+      {error && <div className="exception" role="alert"><AlertTriangle/><div><b>{t('loadFailure')}</b><span>{error}</span></div></div>}
       {!loading && !error && runs.length === 0 && <div className="exception"><CheckCircle2/><div><b>{t('noReconciliation')}</b><span>{t('runFirstReconciliation')}</span></div></div>}
 
       {runs.map(run => <div className="exception" key={run.id}>
