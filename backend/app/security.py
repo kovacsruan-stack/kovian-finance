@@ -27,6 +27,8 @@ def create_access_token(subject: str, *, expires_minutes: int = 30) -> str:
     secret = os.getenv("JWT_SECRET")
     if not secret or len(secret) < 32:
         raise RuntimeError("JWT_SECRET must be configured with at least 32 characters")
+    if expires_minutes < 1:
+        raise ValueError("Token lifetime must be at least one minute")
     if not subject.strip():
         raise ValueError("Token subject is required")
     now = datetime.now(timezone.utc)
