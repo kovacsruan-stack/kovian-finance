@@ -66,3 +66,8 @@ For user-facing changes, local browser QA is mandatory when a local environment 
 The planner UX foundation is based on the MIT-licensed `oofangoo/personal-finance-planner` project. KOVIAN Finance adapts its planning workflows while keeping Spring Boot/PostgreSQL as the authoritative financial system. See [docs/OPEN_SOURCE_FOUNDATION.md](docs/OPEN_SOURCE_FOUNDATION.md) and [docs/UPSTREAM_PERSONAL_FINANCE_PLANNER_MAPPING.md](docs/UPSTREAM_PERSONAL_FINANCE_PLANNER_MAPPING.md).
 
 Browser persistence is limited to UI preferences and transient workflow state; canonical financial records remain server-side.
+
+
+## KOVIAN shared identity
+
+This frontend follows the KOVIAN ecosystem design system. Keep `frontend/src/styles/kovian-tokens.css` synchronized byte-for-byte with the canonical `products/design-system/tokens.css` in the KOVIAN control-plane repository. Use the official logo asset already in `frontend/public` without redrawing, recoloring, stretching or replacing it. Shared primary actions use the KOVIAN emerald palette; product-specific accents may remain secondary. Prefer system/local fonts, preserve accessible focus states and reduced-motion preferences, and keep interactive controls at least 44px high.
