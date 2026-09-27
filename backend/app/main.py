@@ -1,7 +1,7 @@
 import os
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.cors import CORSMiddleware\n\nfrom .finance_routes import router as finance_router
 
 app = FastAPI(
     title="KOVIAN Finance API",
