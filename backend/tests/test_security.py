@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 import jwt
 import pytest
 
@@ -56,3 +58,26 @@ def test_token_with_invalid_access_claims_is_rejected(monkeypatch, payload):
     token = jwt.encode(payload, secret, algorithm="HS256")
     with pytest.raises(ValueError, match="Invalid access token"):
         decode_access_token(token)
+
+
+def test_expired_access_token_is_rejected(monkeypatch):
+    secret = "test-secret-that-is-at-least-32-characters-long"
+    monkeypatch.setenv("JWT_SECRET", secret)
+    token = jwt.encode(
+        {
+            "sub": "user-1",
+            "type": "access",
+            "iat": datetime.now(timezone.utc) - timedelta(minutes=2),
+            "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+        },
+        secret,
+        algorithm="HS256",
+    )
+    with pytest.raises(jwt.ExpiredSignatureError):
+        decode_access_token(token)
+
+
+def test_decode_rejects_missing_secret(monkeypatch):
+    monkeypatch.delenv("JWT_SECRET", raising=False)
+    with pytest.raises(RuntimeError, match="JWT_SECRET"):
+        decode_access_token("not.a.valid.jwt")
