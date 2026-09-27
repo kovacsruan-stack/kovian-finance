@@ -1,5 +1,5 @@
 """User-scoped account and transaction API."""
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from uuid import uuid4
 
@@ -43,7 +43,7 @@ class TransactionCreate(BaseModel):
     entry_type: str = Field(pattern="^(income|expense)$")
     currency: str = Field(default="BRL", pattern="^[A-Z]{3}$")
     category: str = Field(min_length=1, max_length=100)
-    due_date: datetime | None = None
+    due_date: date | None = None
 
 
 def account_json(a: Account) -> dict:
@@ -106,7 +106,7 @@ async def create_transaction(body: TransactionCreate, user_id: str = Depends(cur
     transaction = Transaction(
         id=str(uuid4()), user_id=user_id, account_id=account.id,
         description=description, amount=body.amount, entry_type=body.entry_type,
-        currency=body.currency, category=category, due_date=body.due_date.date() if body.due_date else None,
+        currency=body.currency, category=category, due_date=body.due_date,
         paid_at=None, is_confirmed=False, created_at=datetime.now(timezone.utc))
     db.add(transaction)
     await db.commit()
