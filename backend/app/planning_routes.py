@@ -10,21 +10,27 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_session
-from .models import Budget, FinancialGoal
+from .models import User, Budget, FinancialGoal
 from .security import decode_access_token
 
 router = APIRouter(prefix="/api/v1", tags=["financial planning"])
 bearer = HTTPBearer(auto_error=False)
 
 
-async def current_user(credentials: HTTPAuthorizationCredentials | None = Depends(bearer)) -> str:
+async def current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
+    db: AsyncSession = Depends(get_session),
+) -> str:
     if credentials is None:
         raise HTTPException(status_code=401, detail="Bearer token required")
     try:
         payload = decode_access_token(credentials.credentials)
     except Exception:
         raise HTTPException(status_code=401, detail="Invalid or expired access token")
-    return str(payload["sub"])
+    user = await db.scalar(select(User).where(User.id == str(payload["sub"])))
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=401, detail="User is unavailable")
+    return user.id
 
 
 class BudgetCreate(BaseModel):
