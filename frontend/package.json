@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "qa:chromium": "playwright test --project=chromium"
+    "qa:chromium": "playwright test --project=chromium",
+    "check": "npm run build && npm run lint && npm run test"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.103.2",
@@ -38,7 +39,6 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.70.1",
     "vite": "^7.3.6",
-    "vitest": "^5.0.1",
     "@playwright/test": "^1.63.0"
   },
   "engines": {
