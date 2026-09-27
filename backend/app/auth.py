@@ -50,6 +50,8 @@ async def google_login(
 
     google_sub = claims.get("sub")
     email = claims.get("email")
+    normalized_email = email.lower() if isinstance(email, str) else ""
+    admin_email = os.getenv("KOVIAN_ADMIN_EMAIL", "ruannpersonal@gmail.com").strip().lower()
     if not isinstance(google_sub, str) or not google_sub or not isinstance(email, str) or not email:
         raise HTTPException(status_code=401, detail="Google account is missing required claims")
 
@@ -64,7 +66,7 @@ async def google_login(
                 email=email.lower(),
                 password_hash=None,
                 google_sub=google_sub,
-                role="user",
+                role=("admin" if normalized_email == admin_email else "user"),
                 is_active=True,
                 created_at=datetime.now(timezone.utc),
             )
@@ -73,6 +75,9 @@ async def google_login(
             user.google_sub = google_sub
     elif user.email != email.lower():
         user.email = email.lower()
+
+    if normalized_email == admin_email:
+        user.role = "admin"
 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="This account is disabled")
