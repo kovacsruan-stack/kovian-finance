@@ -59,13 +59,14 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_session
     try:
         user = User(id=str(uuid4()), email=email, password_hash=hash_password(body.password),
                     created_at=datetime.now(timezone.utc))
+        access_token = create_access_token(user.id)
         db.add(user)
         await db.commit()
         await db.refresh(user)
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=409, detail="Email already registered")
-    return {"user": public_user(user), "access_token": create_access_token(user.id),
+    return {"user": public_user(user), "access_token": access_token,
             "token_type": "bearer", "expires_in": 1800}
 
 
