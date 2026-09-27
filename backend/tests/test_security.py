@@ -50,6 +50,7 @@ def test_access_token_rejects_malformed_token(monkeypatch):
     {"sub": "user-1"},
     {"type": "access"},
     {"sub": "", "type": "access"},
+    {"sub": "   ", "type": "access"},
     {"sub": "user-1", "type": "refresh"},
 ])
 def test_token_with_invalid_access_claims_is_rejected(monkeypatch, payload):
