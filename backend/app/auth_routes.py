@@ -19,13 +19,13 @@ bearer = HTTPBearer(auto_error=False)
 
 class RegisterRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    email: str = Field(min_length=3, max_length=254, pattern=r"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
+    email: str = Field(min_length=3, max_length=254, pattern=r"^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
     password: str = Field(min_length=12, max_length=256)
 
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    email: EmailStr
+    email: str = Field(min_length=3, max_length=254, pattern=r"^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
     password: str = Field(min_length=1, max_length=256)
 
 
