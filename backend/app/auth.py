@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import jwt
 from google.auth.exceptions import GoogleAuthError
 from google.auth.transport.requests import Request
 from google.oauth2 import id_token
@@ -13,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_session
 from .models import User
-from .security import create_access_token
+from .security import create_access_token, decode_access_token
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -89,3 +91,27 @@ async def google_login(
         "token_type": "bearer",
         "user": {"id": user.id, "email": user.email, "role": user.role},
     }
+
+
+_bearer = HTTPBearer(auto_error=False)
+
+
+@router.get("/me")
+async def current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Return the authenticated account from the product's own access token."""
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="Bearer token required", headers={"WWW-Authenticate": "Bearer"})
+    try:
+        claims = decode_access_token(credentials.credentials)
+    except (jwt.InvalidTokenError, ValueError):
+        raise HTTPException(status_code=401, detail="Invalid or expired access token", headers={"WWW-Authenticate": "Bearer"}) from None
+    user_id = claims.get("sub")
+    if not isinstance(user_id, str) or not user_id:
+        raise HTTPException(status_code=401, detail="Invalid access token subject", headers={"WWW-Authenticate": "Bearer"})
+    user = await session.get(User, user_id)
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=401, detail="Account not found or disabled", headers={"WWW-Authenticate": "Bearer"})
+    return {"id": user.id, "email": user.email, "role": user.role, "is_active": user.is_active}
