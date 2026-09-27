@@ -14,12 +14,28 @@ function Card({ icon: Icon, title, value, detail }: {
   return <article className="feature-card"><Icon size={20} /><span>{title}</span><strong>{value}</strong><small>{detail}</small></article>
 }
 
-function formatAmount(value: number) {
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(value)
+function formatAmount(value: number, currency = 'BRL') {
+  try {
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency, maximumFractionDigits: 2 }).format(value)
+  } catch {
+    return new Intl.NumberFormat('pt-BR', { style: 'decimal', maximumFractionDigits: 2 }).format(value)
+  }
+}
+
+function currentPeriod() {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), 1)
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const format = (date: Date) => new Intl.DateTimeFormat('pt-BR').format(date)
+  return {
+    month: new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(now),
+    dates: `${format(start)} → ${format(end)}`,
+  }
 }
 
 export default function ControlPlane() {
   const { t } = useTranslation()
+  const period = currentPeriod()
   const [tab, setTab] = useState<Tab>('close')
   const [runs, setRuns] = useState<ReconciliationRun[]>([])
   const [accounts, setAccounts] = useState<FinanceAccount[]>([])
@@ -93,7 +109,7 @@ export default function ControlPlane() {
     </div>
 
     <div className="feature-grid">
-      <Card icon={LockKeyhole} title={t('currentPeriod')} value={t('currentMonth')}
+      <Card icon={LockKeyhole} title={t('currentPeriod')} value={period.month}
         detail={runs[0] ? `${t('lastRun')} ${runs[0].status.toLowerCase()}` : t('noRunRecorded')} />
       <Card icon={RefreshCw} title={t('reconciliation')} value={loading ? '...' : String(exceptionCount)}
         detail={loading ? t('loading') : `${runs.length} ${t('runsRecorded')}`} />
@@ -107,7 +123,7 @@ export default function ControlPlane() {
     </div>
 
     {tab === 'close' && <div className="control-card">
-      <div><b>{t('currentMonth')}</b><span>{t('periodDates')}</span></div>
+      <div><b>{period.month}</b><span>{period.dates}</span></div>
       <div className="status-line"><CheckCircle2/>{t('operationalReview')}</div>
       <div className="check-list">
         <span>✓ {t('backendBalances')}</span>
@@ -128,7 +144,7 @@ export default function ControlPlane() {
       {!accountsLoading && accounts.length === 0 && !actionError && <div className="exception"><AlertTriangle/><div><b>{t('noAccountsRegistered')}</b><span>{t('addFirstAccount')}</span></div></div>}
       {accounts.map(account => <div className="exception" key={account.id}>
         <LockKeyhole/>
-        <div><b>{account.name}</b><span>{account.currency} · {formatAmount(account.currentBalance)}</span></div>
+        <div><b>{account.name}</b><span>{account.currency} · {formatAmount(account.currentBalance, account.currency)}</span></div>
         <button className="secondary" type="button" onClick={() => void runReconciliation(account.id)} disabled={reconcilingAccountId !== null || accountsLoading}>
           <RefreshCw size={15}/>{reconcilingAccountId === account.id ? t('loading') : t('newReview')}
         </button>
