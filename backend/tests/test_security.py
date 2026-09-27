@@ -42,3 +42,17 @@ def test_access_token_rejects_malformed_token(monkeypatch):
     monkeypatch.setenv("JWT_SECRET", "test-secret-that-is-at-least-32-characters-long")
     with pytest.raises(jwt.InvalidTokenError):
         decode_access_token("not.a.valid.jwt")
+
+
+@pytest.mark.parametrize("payload", [
+    {"sub": "user-1"},
+    {"type": "access"},
+    {"sub": "", "type": "access"},
+    {"sub": "user-1", "type": "refresh"},
+])
+def test_token_with_invalid_access_claims_is_rejected(monkeypatch, payload):
+    secret = "test-secret-that-is-at-least-32-characters-long"
+    monkeypatch.setenv("JWT_SECRET", secret)
+    token = jwt.encode(payload, secret, algorithm="HS256")
+    with pytest.raises(ValueError, match="Invalid access token"):
+        decode_access_token(token)
