@@ -38,6 +38,9 @@ public class TransferService {
         UUID ownerId=CurrentUser.ownerId();
         validate(fromAccountId,toAccountId,amount,description,idempotencyKey);
         BigDecimal normalized=amount.setScale(4,java.math.RoundingMode.HALF_UP);
+        if (normalized.signum() <= 0) {
+            throw new IllegalArgumentException("Amount must be at least 0.0001 after currency precision normalization");
+        }
         String requestHash=hash(fromAccountId+"|"+toAccountId+"|"+normalized.toPlainString()+"|"+description.trim());
         UUID proposedTransferId=UUID.randomUUID();
 
