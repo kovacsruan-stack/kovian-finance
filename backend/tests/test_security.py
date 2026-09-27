@@ -1,3 +1,4 @@
+import jwt
 import pytest
 
 from app.security import create_access_token, decode_access_token, hash_password, verify_password
@@ -27,3 +28,17 @@ def test_access_token_round_trip(monkeypatch):
     payload = decode_access_token(token)
     assert payload["sub"] == "user-1"
     assert payload["type"] == "access"
+
+
+def test_access_token_rejects_a_different_secret(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "first-test-secret-that-is-at-least-32-characters")
+    token = create_access_token("user-1")
+    monkeypatch.setenv("JWT_SECRET", "second-test-secret-that-is-at-least-32-characters")
+    with pytest.raises(jwt.InvalidTokenError):
+        decode_access_token(token)
+
+
+def test_access_token_rejects_malformed_token(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "test-secret-that-is-at-least-32-characters-long")
+    with pytest.raises(jwt.InvalidTokenError):
+        decode_access_token("not.a.valid.jwt")
