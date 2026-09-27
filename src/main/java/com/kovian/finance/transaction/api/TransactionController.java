@@ -5,11 +5,13 @@ import com.kovian.finance.account.repository.FinancialAccountRepository; import 
  public TransactionController(FinancialTransactionRepository t,FinancialAccountRepository a,TransactionCategoryRepository c,AuditService audit,OutboxEventService outbox,FinancialNotificationRules rules){transactions=t;accounts=a;categories=c;this.audit=audit;this.outbox=outbox;notificationRules=rules;}
  @PostMapping @Transactional ResponseEntity<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest r){
   UUID owner=CurrentUser.ownerId(); if(r.type()==TransactionType.TRANSFER)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transfers require the dedicated transfer workflow");
-  if(r.externalId()!=null&&transactions.existsByOwnerIdAndExternalId(owner,r.externalId()))throw new ResponseStatusException(HttpStatus.CONFLICT,"Transaction already imported");
+  String externalId = r.externalId() == null ? null : r.externalId().trim();
+  if (externalId != null && externalId.isEmpty()) externalId = null;
+  if(externalId!=null&&transactions.existsByOwnerIdAndExternalId(owner,externalId))throw new ResponseStatusException(HttpStatus.CONFLICT,"Transaction already imported");
   var account=accounts.findByIdAndOwnerId(r.accountId(),owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Account not found"));
   var category=categories.findByIdAndOwnerId(r.categoryId(),owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Category not found"));
   if(category.getKind()!=CategoryKind.valueOf(r.type().name()))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Category kind does not match transaction type");
-  var tx=new FinancialTransaction(owner,account,category,r.externalId(),r.description(),r.amount(),r.type(),r.occurredAt());
+  var tx=new FinancialTransaction(owner,account,category,externalId,r.description().trim(),r.amount(),r.type(),r.occurredAt());
   if(r.type()==TransactionType.INCOME)account.applyIncome(r.amount());else account.applyExpense(r.amount());
   var saved=transactions.save(tx); audit.record("TRANSACTION_CREATED","FinancialTransaction",saved.getId(),"type="+r.type()+",amount="+r.amount());
   outbox.record("FinancialTransaction",saved.getId(),KovianEventType.TRANSACTION_CREATED,Map.of("transactionId",saved.getId(),"accountId",saved.getAccount().getId(),"amount",saved.getAmount(),"type",saved.getTransactionType().name(),"occurredAt",saved.getOccurredAt()));
