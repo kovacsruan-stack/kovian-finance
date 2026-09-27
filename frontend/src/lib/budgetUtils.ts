@@ -13,8 +13,14 @@ export function periodStartFor(period: FinanceBudget['period'], reference = new 
   return new Date(start.getFullYear(), start.getMonth(), 1)
 }
 
+function parseDateOnly(value: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value)
+  if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+  return new Date(value)
+}
+
 export function periodBounds(budget: FinanceBudget): { from: Date; to: Date } {
-  const start = new Date(budget.periodStart)
+  const start = parseDateOnly(budget.periodStart)
   if (budget.period === 'WEEKLY') {
     const to = new Date(start)
     to.setDate(to.getDate() + 7)
@@ -35,23 +41,28 @@ export function budgetSpent(budget: FinanceBudget, transactions: FinanceTransact
   return transactions
     .filter(tx => tx.type === 'EXPENSE' && tx.status !== 'CANCELLED' && tx.categoryId === budget.categoryId)
     .filter(tx => {
-      const occurred = new Date(tx.occurredAt)
-      return occurred >= from && occurred < to
+      const occurred = parseDateOnly(tx.occurredAt)
+      return Number.isFinite(occurred.getTime()) && occurred >= from && occurred < to
     })
-    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0)
+    .reduce((sum, tx) => {
+      const amount = Number(tx.amount)
+      return Number.isFinite(amount) && amount > 0 ? sum + amount : sum
+    }, 0)
 }
 
 export function budgetPercent(spent: number, limit: number): number {
-  if (limit <= 0) return 0
-  return Math.round((spent / limit) * 100)
+  if (!Number.isFinite(spent) || !Number.isFinite(limit) || limit <= 0) return 0
+  return Math.max(0, Math.round((spent / limit) * 100))
 }
 
 export function budgetRemaining(spent: number, limit: number): number {
+  if (!Number.isFinite(spent) || !Number.isFinite(limit)) return 0
   return Math.max(0, limit - spent)
 }
 
 export function categoryTree(categories: FinanceCategory[]): FinanceCategory[] {
-  const roots = categories.filter(category => !category.parentId)
-  const children = categories.filter(category => category.parentId)
+  const ids = new Set(categories.map(category => category.id))
+  const roots = categories.filter(category => !category.parentId || !ids.has(category.parentId))
+  const children = categories.filter(category => category.parentId && ids.has(category.parentId))
   return roots.flatMap(root => [root, ...children.filter(child => child.parentId === root.id)])
 }
