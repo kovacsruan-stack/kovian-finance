@@ -1,5 +1,5 @@
 """Initial SQLAlchemy persistence models for Finance."""
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -31,7 +31,7 @@ class Transaction(Base):
     entry_type: Mapped[str] = mapped_column(String(20), nullable=False, index=True)
     currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
     category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
-    due_date: Mapped[datetime.date | None] = mapped_column(Date)
+    due_date: Mapped[date | None] = mapped_column(Date)
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     recurrence_rule: Mapped[str | None] = mapped_column(String(100))
