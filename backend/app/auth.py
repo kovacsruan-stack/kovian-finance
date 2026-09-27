@@ -77,8 +77,8 @@ async def google_login(
     if not user.is_active:
         raise HTTPException(status_code=403, detail="This account is disabled")
 
-    await session.commit()
     access_token = create_access_token(str(user.id))
+    await session.commit()
     return {
         "access_token": access_token,
         "token_type": "bearer",
