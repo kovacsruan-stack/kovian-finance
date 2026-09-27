@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -19,7 +19,7 @@ bearer = HTTPBearer(auto_error=False)
 
 class RegisterRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    email: EmailStr
+    email: str = Field(min_length=3, max_length=254, pattern=r"^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
     password: str = Field(min_length=12, max_length=256)
 
 
