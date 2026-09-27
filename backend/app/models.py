@@ -1,7 +1,7 @@
 """Initial SQLAlchemy persistence models for Finance."""
 from datetime import date, datetime
 from decimal import Decimal
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Numeric, String
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -36,3 +36,30 @@ class Transaction(Base):
     is_confirmed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     recurrence_rule: Mapped[str | None] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class Budget(Base):
+    __tablename__ = "budgets"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
+    category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
+    amount_limit: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
+    period: Mapped[str] = mapped_column(String(20), nullable=False, default="monthly")
+    starts_on: Mapped[date] = mapped_column(Date, nullable=False)
+    ends_on: Mapped[date | None] = mapped_column(Date)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+class FinancialGoal(Base):
+    __tablename__ = "financial_goals"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    name: Mapped[str] = mapped_column(String(160), nullable=False)
+    target_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
+    current_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=Decimal("0"))
+    currency: Mapped[str] = mapped_column(String(3), nullable=False, default="BRL")
+    target_date: Mapped[date | None] = mapped_column(Date)
+    priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
