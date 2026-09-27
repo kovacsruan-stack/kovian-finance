@@ -56,6 +56,7 @@ class Budget(Base):
     __tablename__ = "budgets"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     category: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     amount_limit: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
@@ -70,6 +71,7 @@ class FinancialGoal(Base):
     __tablename__ = "financial_goals"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
     name: Mapped[str] = mapped_column(String(160), nullable=False)
     target_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     current_amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False, default=Decimal("0"))
