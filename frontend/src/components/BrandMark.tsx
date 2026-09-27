@@ -11,7 +11,7 @@ export default function BrandMark({ showWordmark = true, productName = 'FINANCE'
   return (
     <span className="brand-mark-lockup" data-brand="kovian">
       <img
-        src="/kovian-icon.svg"
+        src={`${import.meta.env.BASE_URL}kovian-icon.svg`}
         alt="KOVIAN"
         className="brand-mark-image"
         style={{ width: size, height: size }}
