@@ -77,8 +77,11 @@ async def create_account(body: AccountCreate, user_id: str = Depends(current_use
     name = body.name.strip()
     if not name:
         raise HTTPException(status_code=422, detail="Account name must not be blank")
+    account_type = body.account_type.strip()
+    if not account_type:
+        raise HTTPException(status_code=422, detail="Account type must not be blank")
     account = Account(id=str(uuid4()), user_id=user_id, name=name,
-                      account_type=body.account_type.strip(), currency=body.currency,
+                      account_type=account_type, currency=body.currency,
                       opening_balance=body.opening_balance, is_active=True,
                       created_at=datetime.now(timezone.utc))
     db.add(account)
@@ -143,8 +146,6 @@ async def financial_summary(user_id: str = Depends(current_user), db: AsyncSessi
     transactions_result = await db.execute(select(Transaction).where(
         Transaction.user_id == user_id, Transaction.is_confirmed.is_(True)))
     transactions = transactions_result.scalars().all()
-    balances = {a.currency: sum((a.opening_balance for a in accounts if a.currency == a.currency), Decimal("0"))
-                for a in []}
     currencies = {a.currency for a in accounts} | {t.currency for t in transactions}
     summary = {}
     for currency in sorted(currencies):

@@ -22,6 +22,11 @@ def test_amount_must_be_positive():
         LedgerEntryCreate(**valid_entry(amount="0.00"))
 
 
+def test_negative_amount_is_rejected():
+    with pytest.raises(ValidationError):
+        LedgerEntryCreate(**valid_entry(amount="-0.01"))
+
+
 def test_amount_rejects_more_than_two_decimal_places():
     with pytest.raises(ValidationError):
         LedgerEntryCreate(**valid_entry(amount="10.123"))
@@ -30,6 +35,11 @@ def test_amount_rejects_more_than_two_decimal_places():
 def test_currency_must_be_three_uppercase_letters():
     with pytest.raises(ValidationError):
         LedgerEntryCreate(**valid_entry(currency="brl"))
+
+
+def test_invalid_due_date_is_rejected():
+    with pytest.raises(ValidationError):
+        LedgerEntryCreate(**valid_entry(due_date="not-a-date"))
 
 
 def test_entry_type_is_restricted():
