@@ -33,4 +33,31 @@ class TransferServiceRequestValidationTest {
                     UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("10.00"), "Transfer without key", " "));
         }
     }
+
+    @Test
+    void rejectsNullAmountBeforePersistence() {
+        try (MockedStatic<CurrentUser> currentUser = mockStatic(CurrentUser.class)) {
+            currentUser.when(CurrentUser::ownerId).thenReturn(UUID.randomUUID());
+            assertThrows(IllegalArgumentException.class, () -> service.transfer(
+                    UUID.randomUUID(), UUID.randomUUID(), null, "Transfer", "null-amount-key"));
+        }
+    }
+
+    @Test
+    void rejectsBlankDescriptionBeforePersistence() {
+        try (MockedStatic<CurrentUser> currentUser = mockStatic(CurrentUser.class)) {
+            currentUser.when(CurrentUser::ownerId).thenReturn(UUID.randomUUID());
+            assertThrows(IllegalArgumentException.class, () -> service.transfer(
+                    UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("10.00"), "   ", "blank-description-key"));
+        }
+    }
+
+    @Test
+    void rejectsOverlongIdempotencyKeyBeforePersistence() {
+        try (MockedStatic<CurrentUser> currentUser = mockStatic(CurrentUser.class)) {
+            currentUser.when(CurrentUser::ownerId).thenReturn(UUID.randomUUID());
+            assertThrows(IllegalArgumentException.class, () -> service.transfer(
+                    UUID.randomUUID(), UUID.randomUUID(), new BigDecimal("10.00"), "Transfer", "k".repeat(201)));
+        }
+    }
 }
