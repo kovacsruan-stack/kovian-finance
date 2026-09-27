@@ -3,7 +3,7 @@ export type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, Fina
 import type { FinanceAccount, FinanceTransaction, FinanceGoal, FinanceCard, FinanceInvoice, FinancePurchase, FinanceCategory, FinanceBudget, FinanceRecurring, FinanceAnalytics, FinanceAsset, FinanceLiability, FinanceTransfer, ReconciliationRun } from './financeTypes'
 import { cashFlowForecastListSchema } from './forecastSchemas'
 
-import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeSnapshotListSchema, financeTransferSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeAccountSchema, financeTransactionListSchema, financeTransactionSchema, financeGoalListSchema, financeGoalSchema, financeCardListSchema, financeCardSchema, financeInvoiceListSchema, financePurchaseSchema, financePurchaseListSchema, financeCategoryListSchema, financeCategorySchema, financeBudgetListSchema, financeBudgetSchema, financeRecurringListSchema, financeRecurringSchema, reconciliationRunListSchema, financeAnalyticsSchema } from './apiSchemas'
+import { financeImportSchema, financeImportListSchema, financeImportErrorListSchema, financeNotificationListSchema, financeDebtListSchema, financeSnapshotListSchema, financeTransferSchema, financeAssetListSchema, financeLiabilityListSchema, financeAccountListSchema, financeAccountSchema, financeTransactionListSchema, financeTransactionSchema, financeGoalListSchema, financeGoalSchema, financeCardListSchema, financeCardSchema, financeInvoiceListSchema, financePurchaseSchema, financePurchaseListSchema, financeCategoryListSchema, financeCategorySchema, financeBudgetListSchema, financeBudgetSchema, financeRecurringListSchema, financeRecurringSchema, reconciliationRunListSchema, reconciliationRunSchema, financeAnalyticsSchema } from './apiSchemas'
 
 let fallbackRequestId = 0
 
@@ -157,7 +157,7 @@ export function getReconciliationHistory() {
 export function reconcileAccount(accountId: string) {
   return post<ReconciliationRun>(`/reconciliation/accounts/${encodeURIComponent(accountId)}`, {}, {
     parse(value: unknown) {
-      return reconciliationRunListSchema.element.parse(value)
+      return reconciliationRunSchema.parse(value)
     },
   })
 }
