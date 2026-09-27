@@ -1,15 +1,25 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="KOVIAN Finance API",
     version="0.1.0",
-    description="Personal and business finance management API.",
+    description="Personal and business finance management.",
 )
+
+# Configure comma-separated, explicit frontend origins in the environment.
+# An empty value intentionally disables cross-origin browser access.
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv("CORS_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[],  # Configure explicit frontend origins through environment settings.
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
