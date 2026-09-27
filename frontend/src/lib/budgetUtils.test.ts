@@ -49,7 +49,7 @@ describe('budgetUtils', () => {
       { id: 'other', name: 'Other', kind: 'INCOME' as const, parentId: null },
       { id: 'orphan', name: 'Orphan', kind: 'EXPENSE' as const, parentId: 'missing-parent' },
     ]
-    expect(categoryTree(categories).map(category => category.id)).toEqual(['child' === 'root' ? 'child' : 'root', 'child', 'other', 'orphan'])
+    expect(categoryTree(categories).map(category => category.id)).toEqual(['root', 'child', 'other', 'orphan'])
   })
 
 })
