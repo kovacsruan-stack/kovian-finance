@@ -154,6 +154,14 @@ export function getReconciliationHistory() {
   return get('/reconciliation', reconciliationRunListSchema)
 }
 
+export function reconcileAccount(accountId: string) {
+  return post<ReconciliationRun>(`/reconciliation/accounts/${encodeURIComponent(accountId)}`, {}, {
+    parse(value: unknown) {
+      return reconciliationRunListSchema.element.parse(value)
+    },
+  })
+}
+
 export function getCards(ownerId: string) {
   return get(`/cards?ownerId=${encodeURIComponent(ownerId)}`, financeCardListSchema)
 }
