@@ -37,6 +37,7 @@ public class TransferService {
                                    String description, String idempotencyKey) {
         UUID ownerId=CurrentUser.ownerId();
         validate(fromAccountId,toAccountId,amount,description,idempotencyKey);
+        description=description.trim();
         BigDecimal normalized=amount.setScale(4,java.math.RoundingMode.HALF_UP);
         if (normalized.signum() <= 0) {
             throw new IllegalArgumentException("Amount must be at least 0.0001 after currency precision normalization");
