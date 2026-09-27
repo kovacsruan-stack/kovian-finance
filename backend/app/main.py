@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .finance_routes import router as finance_router
 
+from .auth_routes import router as auth_router
+
 app = FastAPI(
     title="KOVIAN Finance API",
     version="0.1.0",
@@ -27,6 +29,8 @@ app.add_middleware(
 
 app.include_router(finance_router)
 
+
+app.include_router(auth_router)
 
 @app.get("/health", tags=["operations"])
 def health() -> dict[str, str]:
