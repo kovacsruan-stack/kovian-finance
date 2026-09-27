@@ -3,6 +3,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .auth import router as auth_router
+
 app = FastAPI(
     title="KOVIAN Finance API",
     version="0.1.0",
@@ -24,6 +26,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
+
+app.include_router(auth_router)
 
 
 @app.get("/health", tags=["operations"])
