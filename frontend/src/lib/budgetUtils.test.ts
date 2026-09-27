@@ -24,13 +24,32 @@ describe('budgetUtils', () => {
     expect(budgetSpent(budget, transactions)).toBe(100)
   })
 
+  it('interprets date-only budget and transaction values as local calendar dates', () => {
+    const budget = { id: 'b', categoryId: 'food', period: 'MONTHLY' as const, periodStart: '2026-09-01', limitAmount: 500 }
+    const transactions = [
+      { id: 'inside', accountId: 'a', categoryId: 'food', description: 'Inside', amount: 75, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-30' },
+      { id: 'outside', accountId: 'a', categoryId: 'food', description: 'Outside', amount: 90, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-10-01' },
+      { id: 'invalid', accountId: 'a', categoryId: 'food', description: 'Invalid date', amount: 25, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: 'not-a-date' },
+      { id: 'negative', accountId: 'a', categoryId: 'food', description: 'Invalid amount', amount: -20, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-12' },
+    ]
+    expect(budgetSpent(budget, transactions)).toBe(75)
+  })
+
+  it('returns safe values for invalid budget inputs', () => {
+    expect(budgetPercent(Number.NaN, 100)).toBe(0)
+    expect(budgetPercent(10, 0)).toBe(0)
+    expect(budgetPercent(-10, 100)).toBe(0)
+    expect(budgetRemaining(Number.NaN, 100)).toBe(0)
+  })
+
   it('keeps category roots followed by their direct children', () => {
     const categories = [
       { id: 'child', name: 'Child', kind: 'EXPENSE' as const, parentId: 'root' },
       { id: 'root', name: 'Root', kind: 'EXPENSE' as const, parentId: null },
       { id: 'other', name: 'Other', kind: 'INCOME' as const, parentId: null },
+      { id: 'orphan', name: 'Orphan', kind: 'EXPENSE' as const, parentId: 'missing-parent' },
     ]
-    expect(categoryTree(categories).map(category => category.id)).toEqual(['root', 'child', 'other'])
+    expect(categoryTree(categories).map(category => category.id)).toEqual(['child' === 'root' ? 'child' : 'root', 'child', 'other', 'orphan'])
   })
 
 })
