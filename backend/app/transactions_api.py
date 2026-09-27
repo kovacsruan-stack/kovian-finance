@@ -6,7 +6,7 @@ from decimal import Decimal
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,6 +28,14 @@ class TransactionCreate(BaseModel):
     category: str = Field(min_length=1, max_length=100)
     due_date: date | None = None
     is_confirmed: bool = False
+
+    @field_validator("description", "category")
+    @classmethod
+    def normalize_required_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Field cannot be blank")
+        return value
 
 
 async def _user_id(credentials: HTTPAuthorizationCredentials | None = Depends(_bearer)) -> str:
@@ -64,7 +72,7 @@ async def create_transaction(body: TransactionCreate, owner: str = Depends(_user
     if body.currency != account.currency:
         raise HTTPException(status_code=422, detail="Transaction currency must match account currency")
     now = datetime.now(timezone.utc)
-    row = Transaction(id=str(uuid.uuid4()), account_id=account.id, description=body.description.strip(), amount=body.amount, entry_type=body.entry_type, currency=body.currency, category=body.category.strip(), due_date=body.due_date, paid_at=now if body.is_confirmed else None, is_confirmed=body.is_confirmed, recurrence_rule=None, created_at=now)
+    row = Transaction(id=str(uuid.uuid4()), account_id=account.id, description=body.description, amount=body.amount, entry_type=body.entry_type, currency=body.currency, category=body.category, due_date=body.due_date, paid_at=now if body.is_confirmed else None, is_confirmed=body.is_confirmed, recurrence_rule=None, created_at=now)
     session.add(row)
     await session.commit()
     return _serialize(row)
