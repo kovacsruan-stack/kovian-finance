@@ -24,3 +24,15 @@ Protected routes require `Authorization: Bearer <token>`. Amounts are accepted a
 ## Migration safety
 
 The initial migration creates missing tables. If a legacy table exists without required ownership columns, migration stops instead of guessing record ownership. Review and assign legacy data before retrying. Automatic destructive downgrades are disabled.
+
+## Pre-release validation
+
+Run these checks from `backend/` against a disposable PostgreSQL database before deploying:
+
+1. `pytest -q` — run the backend test suite.
+2. `alembic upgrade head` — verify migrations on an empty database and on a reviewed copy of any legacy schema.
+3. Start the API and verify `GET /health`, registration, login, `GET /api/v1/auth/me`, and authorization failures without a token.
+4. Set explicit production `CORS_ORIGINS` and a unique, high-entropy `JWT_SECRET`; never reuse development secrets.
+5. Verify transaction totals, currency separation, ownership isolation, and decimal rounding with representative edge cases before importing or reconciling real financial data.
+
+Do not treat a successful migration or liveness response as proof of production readiness. Financial invariants, backup/restore, external connectors, security, performance and end-to-end validation remain release gates.
