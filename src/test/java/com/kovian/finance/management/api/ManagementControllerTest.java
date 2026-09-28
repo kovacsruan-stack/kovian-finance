@@ -51,7 +51,7 @@ class ManagementControllerTest {
         var response = controller.create("students",
                 new ManagementController.RecordRequest(Map.of("name", "Aluno"), "legacy-123"));
 
-        assertEquals(ownerId, response.id() == null ? null : captureSavedOwner());
+        assertEquals(ownerId, captureSavedOwner());
         assertEquals("legacy-123", response.sourceId());
         assertEquals("Aluno", response.data().get("name"));
         verify(repository).save(any(ManagementRecord.class));
