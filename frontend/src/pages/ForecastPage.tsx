@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CalendarRange, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
+import { CalendarRange, Download, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { getForecastCashFlow, getOwnerId } from '../lib/api'
 import type { CashFlowForecast } from '../lib/forecastTypes'
@@ -7,6 +7,24 @@ import { useTranslation } from 'react-i18next'
 
 const money = (value: number) => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency: 'BRL' })
 const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
+function exportForecastCsv(data: CashFlowForecast[]) {
+  const columns = ['date', 'income', 'expense', 'netCashFlow', 'projectedBalance'] as const
+  const escape = (value: string | number) => {
+    const text = String(value)
+    return /[;\"\n\r]/.test(text) ? '\"' + text.replace(/\"/g, '\"\"') + '\"' : text
+  }
+  const rows = [columns.join(';'), ...data.map(row => columns.map(column => escape(row[column])).join(';'))]
+  const blob = new Blob(['\uFEFF', rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.download = 'kovian-finance-projecao-' + (data[0]?.date ?? localDateKey()) + '-' + (data.at(-1)?.date ?? '') + '.csv'
+  document.body.appendChild(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
+}
 
 function BalanceChart({ data }: { data: CashFlowForecast[] }) {
   const points = useMemo(() => {
@@ -52,7 +70,7 @@ export default function ForecastPage() {
   const expense = data.reduce((sum, row) => sum + row.expense, 0)
   const showData = !query.isLoading && !query.isError && hasFiniteData && data.length > 0
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><label className="secondary"><CalendarRange size={16} /><select value={days} onChange={event => setDays(Number(event.target.value) as 30 | 90 | 180 | 365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount', { count: 30 })}</option><option value={90}>{t('daysCount', { count: 90 })}</option><option value={180}>{t('daysCount', { count: 180 })}</option><option value={365}>{t('daysCount', { count: 365 })}</option></select></label></section>
+    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><div className="forecast-actions"><button type="button" className="secondary" onClick={() => exportForecastCsv(data)} disabled={!showData}><Download size={16} /> Exportar CSV</button><label className="secondary"><CalendarRange size={16} /><select value={days} onChange={event => setDays(Number(event.target.value) as 30 | 90 | 180 | 365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount', { count: 30 })}</option><option value={90}>{t('daysCount', { count: 90 })}</option><option value={180}>{t('daysCount', { count: 180 })}</option><option value={365}>{t('daysCount', { count: 365 })}</option></select></label></div></section>
     {!ownerId && <div className="notice">{t('loginToLoadData')}</div>}
     {query.isError && <div className="notice" role="alert">{t('forecastError')}</div>}
     <div className="stat-grid"><article className="stat-card"><TrendingUp size={17} /><span>{t('projectedIncome')}</span><strong>{showData ? money(income) : '—'}</strong></article><article className="stat-card"><TrendingDown size={17} /><span>{t('projectedExpense')}</span><strong>{showData ? money(expense) : '—'}</strong></article><article className="stat-card"><Wallet size={17} /><span>{t('projectedEndingBalance')}</span><strong>{showData ? money(ending) : '—'}</strong></article></div>
