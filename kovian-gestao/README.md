@@ -52,6 +52,6 @@ A área **Aulas** usa os controles de agenda inspirados no KOVIAN Fitness:
 - Capacidade configurável de 1 a 200 participantes.
 - Dias de recorrência (SEG, TER, QUA, QUI, SEX, SAB, DOM), intervalo de 1 a 52 semanas e data final opcional.
 - Ação **Gerar recorrência** na aula-modelo. Sem data final, a janela padrão é de 180 dias; cada operação cria no máximo 100 sessões e não ultrapassa 366 dias.
-- A geração ignora duplicidades e horários conflitantes para o mesmo aluno/profissional, além de respeitar a capacidade configurada para o mesmo horário, modalidade, profissional e local.
+- A geração verifica duplicidades, conflitos de aluno/profissional/local e capacidade com base nos registros retornados pela API. O armazenamento atual não oferece reserva transacional; por isso, operações simultâneas ainda podem ultrapassar a capacidade ou criar conflitos, e esse controle não deve ser tratado como garantia de produção.
 
 A recorrência é gerada sob demanda, não em segundo plano. A agenda do Finance mantém a visão financeira e agora permite selecionar um dia e filtrar entradas, saídas, transferências e recorrências financeiras. A sincronização automática de aulas da Gestão para o calendário financeiro ainda exige uma integração de eventos dedicada; não confundir a visualização financeira com um calendário compartilhado.
