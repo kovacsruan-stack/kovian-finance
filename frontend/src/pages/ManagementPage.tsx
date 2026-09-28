@@ -102,6 +102,9 @@ export default function ManagementPage() {
       }
       if (resource === 'students' && !String(data.name ?? '').trim()) throw new Error('Informe o nome do aluno.')
       if (resource === 'modalities' && !String(data.name ?? '').trim()) throw new Error('Informe o nome da modalidade.')
+      if (resource === 'expenses' && !String(data.description ?? '').trim()) throw new Error('Informe a descrição da despesa.')
+      if (resource === 'expenses' && (data.amount == null || data.amount === '' || Number(data.amount) <= 0)) throw new Error('Informe um valor válido para a despesa.')
+      if (resource === 'waitlist' && !String(data.name ?? '').trim()) throw new Error('Informe o nome da pessoa.')
       if ((resource === 'lessons' || resource === 'payments') && !form.studentId) throw new Error('Selecione um aluno.')
       return editing
         ? updateManagementRecord(resource, editing.id, data)
@@ -222,7 +225,7 @@ export default function ManagementPage() {
               ))}
             </select>
           ) : (
-            <input type={type} required={key === 'name' || key === 'date' || key === 'amount' || key === 'dueDate'}
+            <input type={type} required={key === 'name' || key === 'description' && resource === 'expenses' || key === 'date' && resource === 'expenses' || key === 'amount' && resource === 'expenses' || key === 'dueDate'}
               min={type === 'number' ? '0' : undefined} step={type === 'number' ? '0.01' : undefined}
               value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />
           )}
