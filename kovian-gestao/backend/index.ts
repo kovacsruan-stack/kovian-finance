@@ -74,10 +74,10 @@ function validateLessonSchedule(record: Record<string, unknown>): string | null 
   const time = String(record.time ?? '').trim();
   if (!String(record.student ?? '').trim()) return 'Selecione o aluno.';
   if (!String(record.modality ?? '').trim()) return 'Selecione a modalidade.';
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || Number.isNaN(Date.parse(date + 'T12:00:00Z'))) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date + 'T12:00:00Z'))) {
     return 'Informe uma data válida para a aula.';
   }
-  if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return 'Informe um horário válido.';
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return 'Informe um horário válido.';
   const duration = Number(record.durationMinutes ?? 60);
   if (!Number.isInteger(duration) || duration < 15 || duration > 240) return 'A duração deve estar entre 15 e 240 minutos.';
   const capacity = Number(record.capacity ?? 1);
@@ -85,7 +85,7 @@ function validateLessonSchedule(record: Record<string, unknown>): string | null 
   const interval = Number(record.recurrenceIntervalWeeks ?? 1);
   if (!Number.isInteger(interval) || interval < 1 || interval > 52) return 'A recorrência deve ser de 1 a 52 semanas.';
   const repeatUntil = String(record.repeatUntil ?? '').trim();
-  if (repeatUntil && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(repeatUntil) || repeatUntil < date)) {
+  if (repeatUntil && (!/^\d{4}-\d{2}-\d{2}$/.test(repeatUntil) || repeatUntil < date)) {
     return 'A data final da recorrência deve ser igual ou posterior à primeira aula.';
   }
   const days = String(record.daysOfWeek ?? '').trim();
@@ -270,8 +270,8 @@ function parseScheduleDays(value: unknown, fallbackDate: string): number[] | nul
     const day = new Date(fallbackDate + 'T12:00:00Z').getUTCDay();
     return [day];
   }
-  const tokens = raw.split(/[,;|/\\s]+/).filter(Boolean).map(token =>
-    token.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase()
+  const tokens = raw.split(/[,;| ]+/).filter(Boolean).map(token =>
+    token.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
   );
   const parsed = tokens.map(token => aliases[token]);
   if (!parsed.length || parsed.some(day => day === undefined)) return null;
