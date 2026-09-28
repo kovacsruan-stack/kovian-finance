@@ -115,3 +115,11 @@ A inspeção do cliente confirma autenticação por JWT e endpoints de agenda, m
 - Não publicar nem alterar produção.
 - Não afirmar que os módulos já compartilham sessão ou banco.
 - Não migrar dados reais antes dos critérios de aceite.
+
+## Atualização de implementação — 28/09/2026
+
+- A rota `/gestao` agora apresenta estados explícitos de carregamento, aviso após demora, ação de nova tentativa e alternativa de abrir o módulo em outra aba. A ação de recarga remonta o `iframe`, sem tentar acessar diretamente o `contentWindow` de outra origem.
+- O módulo Gestão e a Agenda Fitness foram incluídos na busca rápida do shell Finance.
+- O receptor de pagamentos usa modelos Pydantic separados para o envelope e os detalhes do evento, rejeita campos desconhecidos no nível interno, exige UUIDs no envelope e timestamps com fuso horário. A descrição é opcional no contrato e recebe o padrão “Mensalidade” quando ausente.
+- Foram adicionados testes de interface para carregamento/recuperação do módulo e testes de contrato para referências obrigatórias, campos internos inesperados, timestamps sem fuso e descrição opcional.
+- Esses commits ainda precisam de execução verificável dos workflows. A incorporação do Gestão permanece baseada em `iframe`; não é correto chamá-la de migração nativa enquanto a autenticação e a API de dados do AppDeploy não tiverem sido substituídas por uma integração suportada.
