@@ -9,7 +9,7 @@ on:
       - "kovian-gestao/package.json"
       - ".github/workflows/gestao-finance-integration.yml"
   push:
-    branches: [main]
+    branches: [main, feat/gestao-integration-assets-2026-09-28]
     paths:
       - "kovian-gestao/src/finance-event.js"
       - "kovian-gestao/tests/finance-event.test.mjs"
