@@ -10,7 +10,7 @@ export default function GestaoPage() {
   const [slow, setSlow] = useState(false)
 
   useEffect(() => {
-    setLoaded(false)
+    if (loaded) return
     setSlow(false)
     const timeout = window.setTimeout(() => setSlow(true), 12000)
     return () => window.clearTimeout(timeout)
