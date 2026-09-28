@@ -255,3 +255,12 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .budget-row{border-top-color:var(--line)}
 .language-switcher{background:#ffffff!important;border-color:var(--line)!important;box-shadow:none}
 .language-switcher-trigger{background:#ffffff;color:var(--muted)}
+
+
+/* Calendar interaction and agenda controls */
+.calendar-filters{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.calendar-filter{font-size:11px;padding:7px 10px}
+.calendar-filter[aria-pressed="false"]{opacity:.55}
+.calendar-cell[role="button"]{cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.calendar-cell[role="button"]:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.calendar-cell-selected{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
