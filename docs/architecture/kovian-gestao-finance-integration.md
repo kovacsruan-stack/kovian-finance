@@ -15,7 +15,7 @@ Entregar um único produto chamado **KOVIAN Gestão**, com os módulos Operaçã
 
 O Finance possui uma implementação inicial de ingestão de pagamentos na PR #34 do repositório `kovian-finance`. Ela inclui validação do evento, autenticação Finance e modo de serviço configurável, mapeamento de proprietário no servidor, verificação da conta, conversão de centavos e idempotência no banco.
 
-O produtor de eventos e a ação de sincronização foram implementados na PR #36 do repositório `kovian-finance`: o backend do Gestão envia pagamentos confirmados ao endpoint da PR #34, preservando o ID do evento para retries e sem expor o token ao navegador. A integração ainda não está operacional em produção: faltam provisionar os segredos e os mapas de proprietário/conta nos dois ambientes, executar testes de API e banco, e validar o fluxo ponta a ponta. As PRs #34 e #36 permanecem draft e não foram mescladas.
+O produtor de eventos e a ação de sincronização foram implementados na PR #36 do repositório `kovian-finance`: o backend do Gestão envia pagamentos confirmados ao endpoint da PR #34, preservando o ID do evento para retries e sem expor o token ao navegador. A integração ainda não está operacional em produção: o endpoint receptor desta PR está no serviço Python/FastAPI (`backend/app/main.py`), distinto do backend Java/Spring Boot da raiz. É necessário implantar o serviço FastAPI com o Dockerfile de `backend/`, provisionar os segredos e mapas de proprietário/conta nos dois ambientes, executar testes de API e banco, e validar o fluxo ponta a ponta. As PRs #34 e #36 permanecem draft e não foram mescladas.
 
 ## Arquitetura alvo
 
