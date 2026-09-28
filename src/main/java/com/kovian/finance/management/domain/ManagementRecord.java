@@ -1,6 +1,5 @@
 package com.kovian.finance.management.domain;
 
-import com.kovian.finance.security.CurrentUser;
 import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
