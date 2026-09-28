@@ -136,7 +136,7 @@ async def archive_record(
     return {"archived": True, "id": record.id}
 
 
-@router.post("/import-batch")
+@router.post("/{resource}/import-batch")
 async def import_batch(
     body: ImportBatch,
     user_id: str = Depends(current_user),
