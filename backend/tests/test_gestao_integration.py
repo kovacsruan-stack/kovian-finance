@@ -154,7 +154,7 @@ def test_payment_import_returns_existing_transaction_for_same_event():
     )
     transaction = SimpleNamespace(
         id=imported.transaction_id,
-        auth={"mode": "user", "user_id": user_id},
+        user_id=user_id,
         account_id=account_id,
         amount=Decimal("125.00"),
         paid_at=event.payload.paidAt,
@@ -172,7 +172,7 @@ def test_payment_import_returns_existing_transaction_for_same_event():
             event=event,
             response=response,
             account_id=account_id,
-            user_id=user_id,
+            auth={"mode": "user", "user_id": user_id},
             db=db,
         )
     )
