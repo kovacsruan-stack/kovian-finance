@@ -1,0 +1,40 @@
+name: Gestão Finance integration contract tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "kovian-gestao/src/finance-event.js"
+      - "kovian-gestao/tests/finance-event.test.mjs"
+      - "kovian-gestao/package.json"
+      - ".github/workflows/gestao-finance-integration.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kovian-gestao/src/finance-event.js"
+      - "kovian-gestao/tests/finance-event.test.mjs"
+      - "kovian-gestao/package.json"
+      - ".github/workflows/gestao-finance-integration.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gestao-finance-contract-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  event-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Test Gestão → Finance event contract
+        working-directory: kovian-gestao
+        run: node --test tests/finance-event.test.mjs
