@@ -78,7 +78,7 @@ async def ingest_payment(
             expected_owner, account.id, amount, "income", currency
         ):
             raise HTTPException(status_code=409, detail="Event ID conflicts with an existing transaction")
-        return {"status": "already_processed", "transactionId": existing.id, "eventId": body.id}
+        return {"status": "synced", "transaction": {"id": existing.id}, "duplicate": True, "eventId": body.id}
 
     transaction = Transaction(
         id=body.id, user_id=expected_owner, account_id=account.id,
@@ -97,4 +97,4 @@ async def ingest_payment(
         ):
             return {"status": "already_processed", "transactionId": existing.id, "eventId": body.id}
         raise HTTPException(status_code=409, detail="Payment event could not be processed safely")
-    return {"status": "processed", "transactionId": transaction.id, "eventId": body.id}
+    return {"status": "synced", "transaction": {"id": transaction.id}, "duplicate": False, "eventId": body.id}
