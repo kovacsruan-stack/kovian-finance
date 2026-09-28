@@ -79,3 +79,37 @@ class FinancialGoal(Base):
     target_date: Mapped[date | None] = mapped_column(Date)
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+
+from sqlalchemy import JSON, UniqueConstraint
+
+
+class ManagementRecord:
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    source_id: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    data: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ManagementStudent(ManagementRecord, Base):
+    __tablename__ = "management_students"
+    __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_students_owner_source"),)
+
+
+class ManagementModality(ManagementRecord, Base):
+    __tablename__ = "management_modalities"
+    __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_modalities_owner_source"),)
+
+
+class ManagementLesson(ManagementRecord, Base):
+    __tablename__ = "management_lessons"
+    __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_lessons_owner_source"),)
+
+
+class ManagementPayment(ManagementRecord, Base):
+    __tablename__ = "management_payments"
+    __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_payments_owner_source"),)
