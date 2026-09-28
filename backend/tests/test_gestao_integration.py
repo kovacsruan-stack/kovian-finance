@@ -27,7 +27,7 @@ def test_gestao_payment_event_accepts_supported_version():
     event = PaymentPayload.model_validate(valid_event())
     assert event.version == 1
     assert event.type == "MANAGEMENT_PAYMENT_PAID.v1"
-    assert event.payload["amountMinor"] == 12500
+    assert event.payload.amountMinor == 12500
 
 
 def test_gestao_payment_event_rejects_unknown_top_level_fields():
@@ -132,3 +132,36 @@ def test_gestao_payment_ingestion_rejects_invalid_token(integration_client):
         headers={"Authorization": "Bearer wrong-token"},
     )
     assert response.status_code == 401
+
+def test_gestao_payment_event_rejects_missing_payment_reference():
+    data = valid_event()
+    del data["payload"]["paymentRef"]
+    with pytest.raises(ValidationError):
+        PaymentPayload.model_validate(data)
+
+
+def test_gestao_payment_event_rejects_unknown_nested_fields():
+    data = valid_event()
+    data["payload"]["internalNote"] = "must not be accepted"
+    with pytest.raises(ValidationError):
+        PaymentPayload.model_validate(data)
+
+
+def test_gestao_payment_event_rejects_timezone_naive_timestamps():
+    data = valid_event()
+    data["occurredAt"] = "2026-09-28T12:00:00"
+    with pytest.raises(ValidationError):
+        PaymentPayload.model_validate(data)
+
+    data = valid_event()
+    data["payload"]["paidAt"] = "2026-09-28T12:00:00"
+    with pytest.raises(ValidationError):
+        PaymentPayload.model_validate(data)
+
+
+def test_gestao_payment_event_allows_optional_description():
+    data = valid_event()
+    del data["payload"]["description"]
+    event = PaymentPayload.model_validate(data)
+    assert event.payload.description == "Mensalidade"
+
