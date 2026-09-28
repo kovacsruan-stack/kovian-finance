@@ -94,7 +94,8 @@ async function syncPaymentWithFinance(
     throw new Error('O valor do pagamento é inválido para lançamento financeiro.');
   }
   const paidDate = String(payment.paidDate ?? '').trim();
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(paidDate) || Number.isNaN(Date.parse(paidDate + 'T12:00:00Z'))) {
+  const parsedPaidDate = new Date(paidDate + 'T12:00:00Z');
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(paidDate) || Number.isNaN(parsedPaidDate.getTime()) || parsedPaidDate.toISOString().slice(0, 10) !== paidDate) {
     throw new Error('Informe uma data de pagamento válida antes de sincronizar.');
   }
 
