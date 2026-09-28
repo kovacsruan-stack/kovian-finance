@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .auth_routes import router as auth_router
 from .finance_routes import router as finance_router
+from .integration_routes import router as integration_router
 from .planning_routes import router as planning_router
 
 app = FastAPI(
@@ -29,6 +30,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(finance_router)
+app.include_router(integration_router)
 app.include_router(planning_router)
 
 
