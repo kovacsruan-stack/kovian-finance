@@ -136,13 +136,16 @@ async def archive_record(
     return {"archived": True, "id": record.id}
 
 
-@router.post("/{resource}/import-batch")
+@router.post("/import-batch/{resource}")
 async def import_batch(
+    resource: str,
     body: ImportBatch,
     user_id: str = Depends(current_user),
     db: AsyncSession = Depends(get_session),
 ):
-    model = model_for(body.resource)
+    if body.resource != resource:
+        raise HTTPException(status_code=422, detail="Resource in path and body must match")
+    model = model_for(resource)
     source_ids = [item.source_id for item in body.records]
     if len(source_ids) != len(set(source_ids)):
         raise HTTPException(status_code=422, detail="Duplicate source IDs in import batch")
@@ -170,7 +173,7 @@ async def import_batch(
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=409, detail="Import conflicted with existing source IDs")
-    return {"resource": body.resource, "inserted": inserted, "updated": updated, "unchanged": unchanged}
+    return {"resource": resource, "inserted": inserted, "updated": updated, "unchanged": unchanged}
 
 
 @router.get("/health")
