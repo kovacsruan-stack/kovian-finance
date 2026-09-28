@@ -5,7 +5,7 @@
 O repositório contém duas aplicações de backend distintas:
 
 - O backend principal Java/Spring Boot, iniciado pelo `Dockerfile` da raiz.
-- O serviço Python/FastAPI deste diretório (`backend/Dockerfile`), que inclui a API de ingestão de pagamentos do Gestão quando a PR de integração estiver incorporada.
+- O serviço Python/FastAPI deste diretório (`backend/Dockerfile`), que inclui a API de ingestão autenticada de pagamentos do Gestão.
 
 A variável `KOVIAN_FINANCE_API_URL` do Gestão deve apontar para a origem pública **deste serviço FastAPI**, e não para o frontend, nem automaticamente para a origem do backend Java. O endpoint de ingestão é `POST /api/v1/integrations/gestao/payments?account_id=...`.
 
@@ -38,11 +38,12 @@ Revise as migrações e faça backup antes de aplicá-las a uma base com dados r
 
 Configure no gerenciador de segredos do serviço Finance:
 
-- `GESTAO_INTEGRATION_TOKEN`: segredo aleatório de alta entropia, com pelo menos 32 caracteres.
-- `GESTAO_OWNER_MAP`: objeto JSON que mapeia o UUID do proprietário no Gestão ao ID do usuário Finance.
-- `GESTAO_ACCOUNT_MAP`: objeto JSON que mapeia o UUID do proprietário no Gestão ao UUID da conta Finance autorizada.
+- `KOVIAN_FINANCE_INTEGRATION_TOKEN`: segredo aleatório de alta entropia, com pelo menos 32 caracteres.
+- `KOVIAN_FINANCE_OWNER_ID`: ID do usuário Finance autorizado a receber os eventos.
 
-No backend do Gestão, configure o mesmo token em `KOVIAN_FINANCE_INTEGRATION_TOKEN`, além de `KOVIAN_FINANCE_API_URL`, `KOVIAN_FINANCE_OWNER_ID` e `KOVIAN_FINANCE_ACCOUNT_ID`.
+A conta Finance é informada por `account_id` na chamada e o endpoint confirma no banco que ela pertence ao proprietário configurado e está ativa.
+
+No backend do Gestão, configure o mesmo token em `KOVIAN_FINANCE_INTEGRATION_TOKEN`, além de `KOVIAN_FINANCE_API_URL`, `KOVIAN_FINANCE_OWNER_ID` e `KOVIAN_FINANCE_ACCOUNT_ID`. O valor de `KOVIAN_FINANCE_OWNER_ID` deve ser o mesmo ID de usuário Finance configurado no serviço Finance, e a conta precisa pertencer a esse usuário.
 
 Nunca inclua segredos reais em arquivos versionados, imagens públicas, frontend ou logs.
 
