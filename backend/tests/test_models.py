@@ -1,10 +1,10 @@
-from app.models import Account, Base, Budget, FinancialGoal, Transaction, User
+from app.models import Account, Base, Budget, FinancialGoal, ManagementStudent, ManagementModality, ManagementLesson, ManagementPayment, Transaction, User
 
 
 def test_model_metadata_registers_unique_tables():
     tables = Base.metadata.tables
-    assert {"users", "accounts", "transactions", "budgets", "financial_goals"} <= set(tables)
-    assert len(tables) == 5
+    assert {"users", "accounts", "transactions", "budgets", "financial_goals", "management_students", "management_modalities", "management_lessons", "management_payments"} <= set(tables)
+    assert len(tables) == 9
 
 
 def test_transactions_reference_accounts():
@@ -17,3 +17,12 @@ def test_financial_amount_columns_use_decimal_numeric_types():
     assert str(Transaction.__table__.c.amount.type) == "NUMERIC(14, 2)"
     assert str(FinancialGoal.__table__.c.target_amount.type) == "NUMERIC(14, 2)"
     assert str(Budget.__table__.c.amount_limit.type) == "NUMERIC(14, 2)"
+
+
+def test_management_records_are_owner_scoped_and_keep_source_identity():
+    for model in (ManagementStudent, ManagementModality, ManagementLesson, ManagementPayment):
+        assert model.__table__.c.user_id.foreign_keys
+        assert model.__table__.c.source_id is not None
+        assert model.__table__.c.data is not None
+        assert model.__table__.c.is_archived is not None
+        assert any(isinstance(constraint, __import__("sqlalchemy").UniqueConstraint) for constraint in model.__table__.constraints)
