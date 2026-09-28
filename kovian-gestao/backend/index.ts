@@ -277,7 +277,7 @@ function parseScheduleDays(value: unknown, fallbackDate: string): number[] | nul
     const day = new Date(fallbackDate + 'T12:00:00Z').getUTCDay();
     return [day];
   }
-  const tokens = raw.split(/[,;|\\s]+/).filter(Boolean).map(token =>
+  const tokens = raw.split(/[,;|\s]+/).filter(Boolean).map(token =>
     token.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
   );
   const parsed = tokens.map(token => aliases[token]);
