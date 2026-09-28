@@ -226,3 +226,49 @@ def test_service_token_can_import_only_for_server_mapped_owner(monkeypatch):
     assert result["duplicate"] is False
     assert db.add_all.call_args.args[0][0].user_id == user_id
     assert db.commit.await_count == 1
+
+
+
+def test_service_token_rejects_unmapped_owner(monkeypatch):
+    monkeypatch.setenv("GESTAO_OWNER_MAP", "{}")
+    event = PaymentEvent.model_validate(valid_event())
+    db = Mock()
+    db.scalar = AsyncMock()
+    response = SimpleNamespace(status_code=201)
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(
+            import_gestao_payment(
+                event=event,
+                response=response,
+                account_id=str(uuid4()),
+                auth={"mode": "service"},
+                db=db,
+            )
+        )
+
+    assert exc.value.status_code == 403
+    db.scalar.assert_not_awaited()
+    db.commit.assert_not_called()
+
+
+def test_service_token_rejects_malformed_owner_map(monkeypatch):
+    monkeypatch.setenv("GESTAO_OWNER_MAP", "not-json")
+    event = PaymentEvent.model_validate(valid_event())
+    db = Mock()
+    db.scalar = AsyncMock()
+    response = SimpleNamespace(status_code=201)
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(
+            import_gestao_payment(
+                event=event,
+                response=response,
+                account_id=str(uuid4()),
+                auth={"mode": "service"},
+                db=db,
+            )
+        )
+
+    assert exc.value.status_code == 503
+    db.scalar.assert_not_awaited()
