@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Entregar um único produto chamado **KOVIAN Gestão**, com os módulos Operação e Financeiro na mesma experiência. O Finance continua sendo a fonte de verdade para contas, transações, cartões, orçamento, dívidas, patrimônio e previsões. O Gestão continua sendo a fonte de verdade para alunos, modalidades, aulas e pagamentos de mensalidades.
+Entregar um único produto chamado **KOVIAN Finance**, com os módulos Operação e Financeiro na mesma experiência. O Finance continua sendo a fonte de verdade para contas, transações, cartões, orçamento, dívidas, patrimônio e previsões. O Gestão continua sendo a fonte de verdade para alunos, modalidades, aulas e pagamentos de mensalidades.
 
 ## Estado atual confirmado
 
@@ -21,9 +21,9 @@ O produtor de eventos e a ação de sincronização foram implementados na PR #3
 
 O produtor Gestão e o receptor Finance usam nomes de variáveis diferentes para partes da configuração. No Gestão, configure `KOVIAN_FINANCE_API_URL`, `KOVIAN_FINANCE_INTEGRATION_TOKEN`, `KOVIAN_FINANCE_OWNER_ID` e `KOVIAN_FINANCE_ACCOUNT_ID`. No Finance, configure `GESTAO_INTEGRATION_TOKEN`, `GESTAO_OWNER_MAP` e `GESTAO_ACCOUNT_MAP`. O token deve ter o mesmo valor secreto nos dois serviços; o UUID de proprietário do Gestão deve mapear para o ID de usuário Finance em `GESTAO_OWNER_MAP`, e para a conta Finance aprovada em `GESTAO_ACCOUNT_MAP`. O `account_id` enviado pelo Gestão precisa corresponder a esse mapeamento. Não colocar esses valores no frontend.
 
-## Agenda inspirada no KOVIAN Fitness
+## Calendário do KOVIAN Fitness e referência visual FitHub
 
-A área de aulas do Gestão recebeu campos de agenda inspirados no Fitness: duração, profissional, local/sala, capacidade, dias da semana, intervalo semanal e data final. A ação de recorrência gera sessões sob demanda, limita cada operação a 100 novas aulas e uma janela máxima de 366 dias, e verifica duplicidades e conflitos nos registros retornados pela API. Como o armazenamento atual não oferece reserva transacional, ainda não há garantia contra conflitos ou excedentes de capacidade em operações simultâneas.
+A área de aulas do Gestão recebeu campos de agenda alinhados ao calendário do KOVIAN Fitness: duração, profissional, local/sala, capacidade, dias da semana, intervalo semanal e data final. A ação de recorrência gera sessões sob demanda, limita cada operação a 100 novas aulas e uma janela máxima de 366 dias, e verifica duplicidades e conflitos nos registros retornados pela API. Como o armazenamento atual não oferece reserva transacional, ainda não há garantia contra conflitos ou excedentes de capacidade em operações simultâneas.
 
 O calendário do Finance continua sendo um calendário financeiro. Ele agora permite selecionar um dia e filtrar entradas, saídas, transferências e recorrências financeiras. **As sessões da agenda do Gestão ainda não são exibidas no calendário do Finance**: isso exige um contrato e um fluxo autenticado de eventos de agenda, além de regras de sincronização e cancelamento. Não reutilizar o token de usuário do Finance no Gestão nem expor credenciais de serviço no navegador.
 
@@ -71,7 +71,7 @@ O evento não deve carregar nome, telefone, e-mail ou observações do aluno. Ca
 
 ## Direção visual
 
-Usar uma experiência de dashboard de gestão fitness: navegação lateral no desktop, navegação compacta no celular, hierarquia visual clara, cartões de indicadores, listas/tabelas responsivas e ações primárias consistentes. A referência FitHub é inspiração de organização e fluxo, não para copiar código, marca ou assets.
+Usar uma experiência de dashboard de gestão fitness: navegação lateral no desktop, navegação compacta no celular, hierarquia visual clara, cartões de indicadores, listas/tabelas responsivas e ações primárias consistentes. O FitHub é exclusivamente uma referência visual para layout, navegação e organização do frontend. O calendário funcional de origem é o do KOVIAN Fitness. Não copiar código, marca ou assets do FitHub.
 
 ## Fora do escopo desta etapa
 
