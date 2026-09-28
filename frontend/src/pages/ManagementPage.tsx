@@ -193,15 +193,26 @@ export default function ManagementPage() {
             <select value={form[key] ?? 'Pendente'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
               {['Pendente', 'Pago', 'Atrasado', 'Cancelado'].map(status => <option key={status} value={status}>{status}</option>)}
             </select>
-          ) : key === 'modality' && (resource === 'students' || resource === 'lessons') ? (
+          ) : key === 'modality' && resource === 'students' ? (
+            <>
+              <input list="management-modalities" value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />
+              <datalist id="management-modalities">
+                {(modalitiesQuery.data ?? []).filter(item => !item.archived).map(item => (
+                  <option key={item.id} value={String(item.data.name ?? '')} />
+                ))}
+              </datalist>
+            </>
+          ) : key === 'modality' && resource === 'lessons' ? (
             <select value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
               <option value="">Selecione uma modalidade</option>
+              {form[key] && !(modalitiesQuery.data ?? []).some(item => !item.archived && String(item.data.name ?? '') === form[key]) && <option value={form[key]}>{form[key]}</option>}
               {(modalitiesQuery.data ?? []).filter(item => !item.archived).map(item => (
                 <option key={item.id} value={String(item.data.name ?? '')}>{String(item.data.name ?? 'Modalidade')}</option>
               ))}
             </select>
           ) : (
-            <input type={type} min={type === 'number' ? '0' : undefined} step={type === 'number' ? '0.01' : undefined}
+            <input type={type} required={key === 'name' || key === 'date' || key === 'amount' || key === 'dueDate'}
+              min={type === 'number' ? '0' : undefined} step={type === 'number' ? '0.01' : undefined}
               value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />
           )}
         </label>)}
