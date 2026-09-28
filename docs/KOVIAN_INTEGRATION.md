@@ -9,7 +9,7 @@ Finance consumes the canonical ecosystem subject identifier while retaining owne
 
 The Finance API now exposes `POST /api/v1/integrations/gestao/payments?account_id={account_id}`.
 
-- Requires a valid Finance Bearer token. The event `ownerId` must match the authenticated Finance user.
+- Supports a Finance Bearer token for interactive calls or the configured service Bearer token with server-side owner and account mappings.
 - Accepts the versioned `MANAGEMENT_PAYMENT_PAID.v1` event shape, rejects unknown fields, and requires timezone-aware timestamps.
 - Currently accepts BRL only and converts integer cents to a decimal amount without floating-point arithmetic.
 - Requires an active account owned by the authenticated user and matching the event currency.
