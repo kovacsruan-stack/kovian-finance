@@ -175,7 +175,15 @@ async def import_gestao_payment(
                 )
             )
             if winner_transaction is not None:
-                return _transaction_response(winner_transaction, duplicate=True)
+                expected_amount = Decimal(event.payload.amountMinor) / Decimal(100)
+                if (
+                    winner.payment_ref == event.payload.paymentRef
+                    and winner.student_ref == event.payload.studentRef
+                    and winner_transaction.amount == expected_amount
+                    and winner_transaction.account_id == account_id
+                    and winner_transaction.paid_at == event.payload.paidAt
+                ):
+                    return _transaction_response(winner_transaction, duplicate=True)
         raise HTTPException(status_code=409, detail="Payment event conflicts with an existing import")
     await db.refresh(transaction)
     return _transaction_response(transaction, duplicate=False)
