@@ -1,0 +1,162 @@
+[
+  {
+    "name": "Admin enters with Google and sees the private dashboard",
+    "sanity": true,
+    "viewport": "desktop",
+    "covers": [
+      "Google authentication",
+      "admin email authorization",
+      "protected dashboard",
+      "private data access"
+    ],
+    "description": "Verifies the authorized administrator can sign in and access the protected KOVIAN Gestão dashboard.",
+    "steps": [
+      "Open KOVIAN Gestão",
+      "Choose Entrar com Google",
+      "Authenticate as ruannpersonal@gmail.com"
+    ],
+    "expected": "The admin dashboard opens and displays the management sections; unauthorized accounts cannot access protected data."
+  },
+  {
+    "name": "Create and edit a student from mobile",
+    "viewport": "mobile",
+    "covers": [
+      "student creation",
+      "student editing",
+      "mobile form inputs",
+      "database persistence"
+    ],
+    "description": "Verifies mobile-friendly date and numeric inputs and that edited student data persists.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Alunos and create a student named Ana Teste",
+      "Edit Ana Teste and change the monthly fee",
+      "Save and refresh the list"
+    ],
+    "expected": "The edited monthly fee remains saved and the student can be found in the compact list."
+  },
+  {
+    "name": "Reject a student without a name",
+    "viewport": "mobile",
+    "covers": [
+      "required-field validation",
+      "mobile form behavior",
+      "invalid write guardrail"
+    ],
+    "description": "Verifies the form allows optional student details but requires a name.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Alunos and choose Novo cadastro",
+      "Leave Nome empty and save"
+    ],
+    "expected": "A required-name message is displayed and no student record is created."
+  },
+  {
+    "name": "Start a payment from a student row",
+    "viewport": "mobile",
+    "covers": [
+      "student-to-payment workflow",
+      "payment prefill",
+      "payment status selection"
+    ],
+    "description": "Verifies the payment shortcut pre-fills the selected student, fee, due date and pending status without recording payment automatically.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Alunos",
+      "Choose Pagamento for Ana Teste"
+    ],
+    "expected": "The payment form opens with the student and monthly fee prefilled, status Pendente, and requires explicit saving."
+  },
+  {
+    "name": "Export the filtered records to CSV",
+    "viewport": "mobile",
+    "covers": [
+      "CSV export",
+      "active search and filters",
+      "local data portability"
+    ],
+    "description": "Verifies the user can export the currently filtered records as a UTF-8 CSV file from a mobile device.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Alunos and search for a student",
+      "Choose Exportar CSV"
+    ],
+    "expected": "A CSV file downloads with the visible filtered records and Portuguese column labels."
+  },
+  {
+    "name": "Generate monthly charges without duplicates",
+    "viewport": "mobile",
+    "covers": [
+      "monthly billing generation",
+      "active-student filtering",
+      "duplicate prevention",
+      "payment persistence"
+    ],
+    "description": "Verifies the administrator can generate monthly pending charges and safely repeat the operation without duplicate charges for the same student and due month.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Pagamentos",
+      "Choose Gerar mensalidades do mês and confirm",
+      "Run the same action again for the same month"
+    ],
+    "expected": "Eligible active students receive one pending charge for the selected month; the second run creates no duplicate charges."
+  },
+  {
+    "name": "Delete a student with confirmation",
+    "viewport": "desktop",
+    "covers": [
+      "student deletion",
+      "destructive action confirmation",
+      "database delete"
+    ],
+    "description": "Verifies deleting a student requires confirmation and removes the record from the list.",
+    "setup": [
+      "Sign in as the authorized administrator",
+      "Create a student named Excluir Teste"
+    ],
+    "steps": [
+      "Choose Excluir for Excluir Teste",
+      "Confirm the deletion",
+      "Refresh the list"
+    ],
+    "expected": "Excluir Teste no longer appears in the student list."
+  },
+  {
+    "name": "Select a modality from the catalog on mobile",
+    "viewport": "mobile",
+    "covers": [
+      "modality catalog",
+      "student editing",
+      "select control",
+      "mobile form"
+    ],
+    "description": "Verifies that the modality field uses the catalog selector rather than free-text entry and preserves an existing value when editing.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Alunos and choose Novo cadastro",
+      "Open Modalidade and select an option",
+      "Save, reopen the student and verify the selected modality"
+    ],
+    "expected": "The modality is selected from available catalog entries and remains saved after reopening the record."
+  },
+  {
+    "name": "Selecting a student fills payment details and lesson modality",
+    "viewport": "mobile",
+    "covers": [
+      "registered student selector",
+      "payment amount prefill",
+      "due date default",
+      "lesson modality prefill"
+    ],
+    "description": "Verifies that selecting an existing student speeds up payment and lesson entry without removing the ability to review fields before saving.",
+    "steps": [
+      "Sign in as the authorized administrator",
+      "Open Pagamentos and choose Novo cadastro",
+      "Select an existing student",
+      "Verify the monthly fee is copied into Valor and a due date is suggested when empty",
+      "Open Aulas and choose Novo cadastro",
+      "Select a student who has a modality assigned"
+    ],
+    "expected": "Payment fields are prefilled from the selected student, and the lesson modality is filled from that student's record; the administrator can review and change values before saving."
+  }
+]
