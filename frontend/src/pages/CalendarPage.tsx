@@ -62,6 +62,12 @@ export default function CalendarPage() {
     enabled: Boolean(ownerId),
     staleTime: 30_000,
   })
+  const expenses = useQuery({
+    queryKey: ['finance', 'calendar', 'management', 'expenses', ownerId],
+    queryFn: () => getManagementRecords('expenses'),
+    enabled: Boolean(ownerId),
+    staleTime: 30_000,
+  })
   const payments = useQuery({
     queryKey: ['finance', 'calendar', 'management', 'payments', ownerId],
     queryFn: () => getManagementRecords('payments'),
@@ -106,6 +112,21 @@ export default function CalendarPage() {
         kind: 'LESSON' as const,
       }]
     })
+    const managementExpenseEvents = (expenses.data ?? []).flatMap(item => {
+      if (item.archived) return []
+      const data = item.data
+      const date = String(data.date ?? data.expenseDate ?? data.occurredAt ?? '').slice(0, 10)
+      if (!date || date < from || date >= to) return []
+      const amount = Number(String(data.amount ?? '0').replace(',', '.'))
+      return [{
+        id: 'management-expense:' + item.id,
+        date,
+        title: (eventLanguageIsPortuguese ? 'Despesa · ' : 'Expense · ') + String(data.description ?? data.name ?? 'Despesa'),
+        amount: Number.isFinite(amount) ? amount : 0,
+        currency: 'BRL',
+        kind: 'EXPENSE' as const,
+      }]
+    })
     const paymentEvents = (payments.data ?? []).flatMap(item => {
       const data = item.data
       const paid = /^(pago|paid)$/i.test(String(data.status ?? ''))
@@ -121,8 +142,8 @@ export default function CalendarPage() {
         kind: 'PAYMENT' as const,
       }]
     })
-    return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents].sort((a, b) => a.date.localeCompare(b.date))
-  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, from, to, eventLanguageIsPortuguese])
+    return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents, ...managementExpenseEvents].sort((a, b) => a.date.localeCompare(b.date))
+  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, expenses.data, from, to, eventLanguageIsPortuguese])
 
   const visibleEvents = useMemo(() => events.filter(event => {
     const matchesKind = kindFilter === 'ALL' || event.kind === kindFilter
@@ -146,7 +167,7 @@ export default function CalendarPage() {
   const label = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   const monthEvents = visibleEvents.filter(event => event.date.startsWith(from.slice(0, 7)))
   const selectedEvents = byDay[selectedDate] ?? []
-  const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading || lessons.isLoading || payments.isLoading
+  const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading || lessons.isLoading || payments.isLoading || expenses.isLoading
   const today = iso(new Date())
 
   const moveMonth = (delta: number) => {
@@ -174,7 +195,7 @@ export default function CalendarPage() {
       </div>
     </section>
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
-    {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
+    {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError || expenses.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
         <strong>{label.charAt(0).toUpperCase() + label.slice(1)}</strong>
