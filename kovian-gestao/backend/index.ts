@@ -101,12 +101,15 @@ async function syncPaymentWithFinance(
   const eventId = typeof payment.financeEventId === 'string' && validUuid(payment.financeEventId)
     ? payment.financeEventId
     : crypto.randomUUID();
+  const occurredAt = typeof payment.financeOccurredAt === 'string' && !Number.isNaN(Date.parse(payment.financeOccurredAt))
+    ? new Date(payment.financeOccurredAt).toISOString()
+    : new Date().toISOString();
   const event = {
     id: eventId,
     type: 'MANAGEMENT_PAYMENT_PAID.v1',
     version: 1,
     ownerId,
-    occurredAt: new Date().toISOString(),
+    occurredAt,
     correlationId: eventId,
     payload: {
       paymentRef: paymentId,
@@ -121,6 +124,8 @@ async function syncPaymentWithFinance(
   await persistPayment(paymentId, {
     ...payment,
     financeEventId: eventId,
+    financeStudentRef: studentRef,
+    financeOccurredAt: occurredAt,
     financeSyncStatus: 'pending',
     financeSyncError: '',
   });
@@ -151,6 +156,8 @@ async function syncPaymentWithFinance(
       await persistPayment(paymentId, {
         ...payment,
         financeEventId: eventId,
+        financeStudentRef: studentRef,
+        financeOccurredAt: occurredAt,
         financeSyncStatus: 'pending',
         financeSyncError: detail.slice(0, 300),
       });
@@ -164,6 +171,8 @@ async function syncPaymentWithFinance(
     await persistPayment(paymentId, {
       ...payment,
       financeEventId: eventId,
+      financeStudentRef: studentRef,
+      financeOccurredAt: occurredAt,
       financeSyncStatus: 'synced',
       financeTransactionId: transactionId ?? '',
       financeSyncedAt: new Date().toISOString(),
