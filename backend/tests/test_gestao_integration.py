@@ -45,6 +45,8 @@ def test_gestao_payment_event_accepts_contract_shape():
         {"amountMinor": -1},
         {"currency": "R$"},
         {"paymentRef": ""},
+        {"paymentRef": "   "},
+        {"studentRef": "  "},
         {"unexpected": "personal data"},
     ],
 )
