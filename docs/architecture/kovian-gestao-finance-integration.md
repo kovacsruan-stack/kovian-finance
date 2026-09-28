@@ -19,7 +19,7 @@ O produtor de eventos e a ação de sincronização foram implementados na PR #3
 
 ## Agenda inspirada no KOVIAN Fitness
 
-A área de aulas do Gestão recebeu campos de agenda inspirados no Fitness: duração, profissional, local/sala, capacidade, dias da semana, intervalo semanal e data final. A ação de recorrência gera sessões sob demanda, limita cada operação a 100 novas aulas e uma janela máxima de 366 dias, e ignora duplicidades e conflitos de horário identificáveis.
+A área de aulas do Gestão recebeu campos de agenda inspirados no Fitness: duração, profissional, local/sala, capacidade, dias da semana, intervalo semanal e data final. A ação de recorrência gera sessões sob demanda, limita cada operação a 100 novas aulas e uma janela máxima de 366 dias, e verifica duplicidades e conflitos nos registros retornados pela API. Como o armazenamento atual não oferece reserva transacional, ainda não há garantia contra conflitos ou excedentes de capacidade em operações simultâneas.
 
 O calendário do Finance continua sendo um calendário financeiro. Ele agora permite selecionar um dia e filtrar entradas, saídas, transferências e recorrências financeiras. **As sessões da agenda do Gestão ainda não são exibidas no calendário do Finance**: isso exige um contrato e um fluxo autenticado de eventos de agenda, além de regras de sincronização e cancelamento. Não reutilizar o token de usuário do Finance no Gestão nem expor credenciais de serviço no navegador.
 
