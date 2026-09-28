@@ -64,6 +64,11 @@ export default function ManagementPage() {
     queryFn: () => getManagementRecords('students'),
     enabled: resource === 'lessons' || resource === 'payments',
   })
+  const modalitiesQuery = useQuery({
+    queryKey: ['finance', 'management', 'modalities', false],
+    queryFn: () => getManagementRecords('modalities'),
+    enabled: resource === 'students' || resource === 'lessons',
+  })
   const save = useMutation({
     mutationFn: () => {
       const data: Record<string, unknown> = { ...form }
@@ -152,8 +157,17 @@ export default function ManagementPage() {
         </label>}
         {fields.map(([key, label, type]) => <label key={key}>
           {label}
-          <input type={type} min={type === 'number' ? '0' : undefined} step={type === 'number' ? '0.01' : undefined}
-            value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />
+          {key === 'modality' && (resource === 'students' || resource === 'lessons') ? (
+            <select value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
+              <option value="">Selecione uma modalidade</option>
+              {(modalitiesQuery.data ?? []).filter(item => !item.archived).map(item => (
+                <option key={item.id} value={String(item.data.name ?? '')}>{String(item.data.name ?? 'Modalidade')}</option>
+              ))}
+            </select>
+          ) : (
+            <input type={type} min={type === 'number' ? '0' : undefined} step={type === 'number' ? '0.01' : undefined}
+              value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />
+          )}
         </label>)}
       </div>
       <div className="form-actions">
