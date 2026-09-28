@@ -92,6 +92,22 @@ async function syncPaymentWithFinance(
   if (!financeUrl || integrationToken.length < 32 || !validUuid(ownerId) || !accountId.trim()) {
     throw new Error('Integração não configurada no backend. Configure URL, token, proprietário e conta do Finance.');
   }
+  let parsedFinanceUrl: URL;
+  try {
+    parsedFinanceUrl = new URL(financeUrl);
+  } catch {
+    throw new Error('A URL da API Finance está inválida.');
+  }
+  const localHttpHost = ['localhost', '127.0.0.1', '[::1]'].includes(parsedFinanceUrl.hostname);
+  if (
+    (parsedFinanceUrl.protocol !== 'https:' && !(parsedFinanceUrl.protocol === 'http:' && localHttpHost)) ||
+    parsedFinanceUrl.username ||
+    parsedFinanceUrl.password ||
+    parsedFinanceUrl.search ||
+    parsedFinanceUrl.hash
+  ) {
+    throw new Error('A API Finance precisa usar HTTPS e uma URL sem credenciais, query ou fragmento.');
+  }
 
   let studentRef = String(payment.financeStudentRef ?? payment.studentId ?? '').trim();
   if (!studentRef) {
