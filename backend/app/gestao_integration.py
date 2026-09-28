@@ -95,6 +95,6 @@ async def ingest_payment(
         if existing is not None and (existing.user_id, existing.account_id, existing.amount, existing.entry_type, existing.currency) == (
             expected_owner, account.id, amount, "income", currency
         ):
-            return {"status": "already_processed", "transactionId": existing.id, "eventId": body.id}
+            return {"status": "synced", "transaction": {"id": existing.id}, "duplicate": True, "eventId": body.id}
         raise HTTPException(status_code=409, detail="Payment event could not be processed safely")
     return {"status": "synced", "transaction": {"id": transaction.id}, "duplicate": False, "eventId": body.id}
