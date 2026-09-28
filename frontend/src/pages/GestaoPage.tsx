@@ -14,7 +14,7 @@ export default function GestaoPage() {
     setSlow(false)
     const timeout = window.setTimeout(() => setSlow(true), 12000)
     return () => window.clearTimeout(timeout)
-  }, [reloadKey])
+  }, [reloadKey, loaded])
 
   const refresh = () => {
     setLoaded(false)
