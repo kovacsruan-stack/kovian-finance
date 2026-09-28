@@ -26,12 +26,11 @@ router = APIRouter(prefix="/api/v1/integrations/gestao", tags=["integrations"])
 bearer = HTTPBearer(auto_error=False)
 
 
-async def integration_user(
-    event_owner_id: UUID,
+async def integration_auth(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
     db: AsyncSession = Depends(get_session),
-) -> str:
-    """Resolve either an interactive Finance user or a mapped Gestão service identity."""
+) -> dict[str, str]:
+    """Authenticate either an interactive Finance user or the configured service."""
     if credentials is None:
         raise HTTPException(status_code=401, detail="Bearer token required")
 
@@ -39,19 +38,7 @@ async def integration_user(
     if service_token and secrets.compare_digest(credentials.credentials, service_token):
         if len(service_token) < 32:
             raise HTTPException(status_code=503, detail="Integration service token is misconfigured")
-        try:
-            owner_map = json.loads(os.getenv("GESTAO_OWNER_MAP", "{}"))
-        except json.JSONDecodeError:
-            raise HTTPException(status_code=503, detail="Integration owner mapping is misconfigured")
-        if not isinstance(owner_map, dict):
-            raise HTTPException(status_code=503, detail="Integration owner mapping is misconfigured")
-        mapped_user_id = owner_map.get(str(event_owner_id))
-        if not isinstance(mapped_user_id, str) or not mapped_user_id.strip():
-            raise HTTPException(status_code=403, detail="Gestão owner is not linked to Finance")
-        user = await db.scalar(select(User).where(User.id == mapped_user_id))
-        if user is None or not user.is_active:
-            raise HTTPException(status_code=403, detail="Mapped Finance user is unavailable")
-        return user.id
+        return {"mode": "service"}
 
     try:
         payload = decode_access_token(credentials.credentials)
@@ -60,8 +47,7 @@ async def integration_user(
     user = await db.scalar(select(User).where(User.id == str(payload["sub"])))
     if user is None or not user.is_active:
         raise HTTPException(status_code=401, detail="User is unavailable")
-    return user.id
-
+    return {"mode": "user", "user_id": user.id}
 
 class PaymentPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -136,15 +122,31 @@ async def import_gestao_payment(
     event: PaymentEvent,
     response: Response,
     account_id: str = Query(min_length=1, max_length=36),
-    user_id: str = Depends(integration_user),
+    auth: dict[str, str] = Depends(integration_auth),
     db: AsyncSession = Depends(get_session),
 ):
     """Import one confirmed payment; repeated deliveries never create another entry."""
     _require_aware(event.occurredAt, "occurredAt")
     _require_aware(event.payload.paidAt, "payload.paidAt")
 
-    if str(event.ownerId) != user_id:
-        raise HTTPException(status_code=403, detail="Event owner does not match authenticated user")
+    if auth["mode"] == "service":
+        try:
+            owner_map = json.loads(os.getenv("GESTAO_OWNER_MAP", "{}"))
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=503, detail="Integration owner mapping is misconfigured")
+        if not isinstance(owner_map, dict):
+            raise HTTPException(status_code=503, detail="Integration owner mapping is misconfigured")
+        mapped_user_id = owner_map.get(str(event.ownerId))
+        if not isinstance(mapped_user_id, str) or not mapped_user_id.strip():
+            raise HTTPException(status_code=403, detail="Gestão owner is not linked to Finance")
+        mapped_user = await db.scalar(select(User).where(User.id == mapped_user_id))
+        if mapped_user is None or not mapped_user.is_active:
+            raise HTTPException(status_code=403, detail="Mapped Finance user is unavailable")
+        user_id = mapped_user.id
+    else:
+        user_id = auth["user_id"]
+        if str(event.ownerId) != user_id:
+            raise HTTPException(status_code=403, detail="Event owner does not match authenticated user")
     if event.payload.currency != "BRL":
         raise HTTPException(status_code=422, detail="Only BRL Gestão payments are supported")
 
