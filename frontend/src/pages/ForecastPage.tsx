@@ -12,8 +12,9 @@ function exportForecastCsv(data: CashFlowForecast[]) {
   const columns = ['date', 'income', 'expense', 'netCashFlow', 'projectedBalance'] as const
   const escape = (value: string | number) => {
     // Prevent spreadsheet formula execution for text fields exported from the service.
-    const raw = typeof value === 'string' && /^[\\t\\r\\n ]*[=+@-]/.test(value) ? `'${value}` : String(value)
-    return /[;\\\"\\n\\r]/.test(raw) ? '\\\"' + raw.replace(/\\\"/g, '\\\"\\\"') + '\\\"' : raw
+    const first = typeof value === 'string' ? value.trimStart()[0] : undefined
+    const raw = typeof value === 'string' && first && ['=', '+', '@', '-', '\t', '\r'].includes(first) ? "'" + value : String(value)
+    return /[;"\n\r]/.test(raw) ? '"' + raw.replace(/"/g, '""') + '"' : raw
   }
   const rows = [columns.join(';'), ...data.map(row => columns.map(column => escape(row[column])).join(';'))]
   const blob = new Blob(['\uFEFF', rows.join('\r\n')], { type: 'text/csv;charset=utf-8;' })
