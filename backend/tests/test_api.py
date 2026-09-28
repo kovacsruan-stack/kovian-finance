@@ -25,3 +25,10 @@ def test_versioned_api_info_is_available():
         "api_version": "v1",
         "status": "foundation",
     }
+
+
+def test_management_endpoints_are_registered():
+    paths = {route.path for route in app.routes}
+    assert "/api/v1/management/{resource}" in paths
+    assert "/api/v1/management/{resource}/{record_id}" in paths
+    assert "/api/v1/management/{resource}/import-batch" in paths
