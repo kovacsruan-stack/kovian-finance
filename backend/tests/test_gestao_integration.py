@@ -8,8 +8,9 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from app.integration_routes import PaymentEvent, _require_aware, import_gestao_payment
 from fastapi import HTTPException
+
+from app.integration_routes import PaymentEvent, _require_aware, import_gestao_payment
 
 
 def valid_event(**overrides):
