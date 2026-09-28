@@ -14,7 +14,7 @@ The Finance API now exposes `POST /api/v1/integrations/gestao/payments?account_i
 - Currently accepts BRL only and converts integer cents to a decimal amount without floating-point arithmetic.
 - Requires an active account owned by the authenticated user and matching the event currency.
 - Creates a confirmed income transaction and an import record in one database transaction.
-- Enforces unique event ID and source payment reference per user. Repeated identical event deliveries return the original transaction; conflicting replays return HTTP 409.
+- Enforces unique event ID and source payment reference per Gestão owner. Repeated identical event deliveries return the original transaction; conflicting replays return HTTP 409.
 - Stores stable student references only; student names and contact details are not accepted by the event schema.
 - Database migration: `0002_gestao_payment_imports`.
 
