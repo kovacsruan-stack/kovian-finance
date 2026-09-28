@@ -31,6 +31,7 @@ def upgrade() -> None:
             Column("updated_at", DateTime(timezone=True), nullable=False),
             UniqueConstraint("user_id", "source_id"),
         )
+        op.create_index(f"ix_{name}_user_id", name, ["user_id"])
 
 
 def downgrade() -> None:
