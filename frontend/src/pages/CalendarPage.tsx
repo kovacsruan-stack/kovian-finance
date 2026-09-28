@@ -57,13 +57,13 @@ export default function CalendarPage() {
     staleTime: 60_000,
   })
   const lessons = useQuery({
-    queryKey: ['finance', 'calendar', 'management', 'lessons'],
+    queryKey: ['finance', 'calendar', 'management', 'lessons', ownerId],
     queryFn: () => getManagementRecords('lessons'),
     enabled: Boolean(ownerId),
     staleTime: 30_000,
   })
   const payments = useQuery({
-    queryKey: ['finance', 'calendar', 'management', 'payments'],
+    queryKey: ['finance', 'calendar', 'management', 'payments', ownerId],
     queryFn: () => getManagementRecords('payments'),
     enabled: Boolean(ownerId),
     staleTime: 30_000,
