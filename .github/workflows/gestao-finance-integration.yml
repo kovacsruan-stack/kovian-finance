@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "kovian-gestao/src/finance-event.js"
+      - "kovian-gestao/backend/**"
       - "kovian-gestao/tests/finance-event.test.mjs"
       - "kovian-gestao/package.json"
       - ".github/workflows/gestao-finance-integration.yml"
