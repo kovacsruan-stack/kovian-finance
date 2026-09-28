@@ -29,7 +29,11 @@ def upgrade() -> None:
                     "Create a reviewed data migration that assigns each legacy row "
                     "to its rightful owner before enabling this schema."
                 )
-    Base.metadata.create_all(bind=bind, checkfirst=True)
+    Base.metadata.create_all(
+        bind=bind,
+        checkfirst=True,
+        tables=[table for table in Base.metadata.sorted_tables if table.name != "gestao_payment_imports"],
+    )
 
 
 def downgrade() -> None:
