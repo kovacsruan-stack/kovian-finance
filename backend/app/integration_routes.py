@@ -1,8 +1,7 @@
 """Secure, idempotent ingestion endpoint for confirmed KOVIAN Gestão payments.
 
-The endpoint requires a Finance user token. Cross-product service credentials and
-canonical identity mapping must be added before allowing unattended server-to-server
-delivery from Gestão.
+The endpoint accepts either a Finance user token or a configured Gestão service token.
+Service-token requests require an explicit server-side owner-to-Finance-user mapping.
 """
 import json
 import os
