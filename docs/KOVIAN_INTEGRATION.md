@@ -35,3 +35,16 @@ KOVI AI receives read-only governed context through the Finance integration cont
 
 ## Deletion
 Subject deletion marks derived analytics records for deletion. Retention cleanup permanently removes only records that are both deleted and outside the retention window.
+
+
+## Release-gate audit — 2026-09-28
+
+The ingestion endpoint and persistence layer have been reviewed as part of PR #34. The following items remain release blockers and must be resolved before enabling unattended delivery:
+
+- **Replay integrity:** the current duplicate-event path compares the payment and student references, amount, account, and paid timestamp, but does not persist or compare a canonical fingerprint of the complete event. Reuse of an event ID with changes to other fields (for example, `occurredAt`, `correlationId`, or `description`) may be accepted as a duplicate. Add a canonical payload hash (or equivalent immutable event snapshot) and compare it on every replay, including the concurrent-insert recovery path.
+- **Concurrent payment-reference conflict:** the database uniqueness constraint is the final protection against concurrent imports. Add a regression test where two different event IDs race for the same owner/payment reference; only one import may be committed and the losing request must return HTTP 409.
+- **Migration verification:** run the full Alembic upgrade chain against an ephemeral PostgreSQL database, verify the resulting constraints/indexes, and test downgrade behavior in a disposable database. Do not run downgrade against production data.
+- **CI evidence:** PR #34's GitHub Actions runs must be green before merge. A failed run without accessible logs is unresolved, not a pass. Re-run after the root cause is identified.
+- **End-to-end verification:** validate service authentication, owner/account mapping, confirmed payment ingestion, duplicate delivery, conflicting replay, and database persistence using a non-production Gestão/Finance environment.
+
+These are verification and implementation requirements, not claims that the above tests have already passed. PR #31 remains out of scope. No merge or deployment is authorized by this checklist.
