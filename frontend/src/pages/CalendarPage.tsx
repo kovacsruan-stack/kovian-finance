@@ -98,7 +98,7 @@ export default function CalendarPage() {
       return [{
         id: 'lesson:' + item.id,
         date,
-        title: (isPortuguese ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        title: ((document.documentElement.lang || 'pt-BR').startsWith('pt') ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno'),
         amount: 0,
         currency: 'BRL',
         kind: 'LESSON' as const,
@@ -112,14 +112,14 @@ export default function CalendarPage() {
       return [{
         id: 'payment:' + item.id,
         date,
-        title: (isPortuguese ? 'Pagamento · ' : 'Payment · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        title: ((document.documentElement.lang || 'pt-BR').startsWith('pt') ? 'Pagamento · ' : 'Payment · ') + String(data.studentName ?? data.student ?? 'Aluno'),
         amount: Number.isFinite(amount) ? amount : 0,
         currency: 'BRL',
         kind: 'PAYMENT' as const,
       }]
     })
     return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents].sort((a, b) => a.date.localeCompare(b.date))
-  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, from, to, isPortuguese])
+  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, from, to])
 
   const visibleEvents = useMemo(() => events.filter(event => {
     const matchesKind = kindFilter === 'ALL' || event.kind === kindFilter
