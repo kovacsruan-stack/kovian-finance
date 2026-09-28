@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
 import { useTranslation } from 'react-i18next'
@@ -16,6 +16,7 @@ const items: Item[] = [
 const isRouteActive = (pathname: string, route: string) => pathname === route || (route !== '/' && pathname.startsWith(`${route}/`))
 
 const moreItems: Item[] = [
+  { to: '/gestao', key: 'management', icon: Users },
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
   { to: '/cartoes', key: 'cards', icon: CreditCard },
   { to: '/orcamentos', key: 'budgets', icon: Target },
