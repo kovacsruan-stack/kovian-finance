@@ -101,4 +101,5 @@ class GestaoPaymentImport(Base):
     transaction_id: Mapped[str] = mapped_column(
         ForeignKey("transactions.id"), nullable=False
     )
+    event_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
