@@ -1,4 +1,5 @@
 import asyncio
+import json
 from datetime import datetime, timezone
 from decimal import Decimal
 from types import SimpleNamespace
@@ -6,12 +7,16 @@ from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from fastapi import HTTPException
 from fastapi.security import HTTPAuthorizationCredentials
+from pydantic import ValidationError
 
-from app.integration_routes import PaymentEvent, _require_aware, import_gestao_payment, integration_auth
+from app.integration_routes import (
+    PaymentEvent,
+    _require_aware,
+    import_gestao_payment,
+    integration_auth,
+)
 
 
 def valid_event(**overrides):
@@ -96,7 +101,7 @@ def test_payment_import_creates_one_confirmed_income_transaction():
             event=event,
             response=response,
             account_id=account_id,
-            user_id=user_id,
+            auth={"mode": "user", "user_id": user_id},
             db=db,
         )
     )
@@ -195,7 +200,7 @@ def test_service_token_can_import_only_for_server_mapped_owner(monkeypatch):
     user_id = str(uuid4())
     owner_id = str(uuid4())
     account_id = str(uuid4())
-    monkeypatch.setenv("GESTAO_OWNER_MAP", __import__("json").dumps({owner_id: user_id}))
+    monkeypatch.setenv("GESTAO_OWNER_MAP", json.dumps({owner_id: user_id}))
     event_data = valid_event()
     event_data["ownerId"] = owner_id
     event = PaymentEvent.model_validate(event_data)
