@@ -150,7 +150,7 @@ function App() {
               await auth.signOut();
               setUser(null);
               setError(
-                'Esta conta não tem autorização para acessar o KOVIAN Gestão.'
+                'Esta conta não tem autorização para acessar o KOVIAN Finance.'
               );
             }
           }
@@ -891,7 +891,7 @@ function App() {
           </>
         )}
         <footer>
-          KOVIAN Gestão <span>•</span> Dados privados da sua operação
+          KOVIAN Finance <span>•</span> Gestão operacional e financeira
         </footer>
       </main>
     </div>
