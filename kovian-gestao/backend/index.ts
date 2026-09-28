@@ -74,7 +74,8 @@ function validateLessonSchedule(record: Record<string, unknown>): string | null 
   const time = String(record.time ?? '').trim();
   if (!String(record.student ?? '').trim()) return 'Selecione o aluno.';
   if (!String(record.modality ?? '').trim()) return 'Selecione a modalidade.';
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(date + 'T12:00:00Z'))) {
+  const parsedDate = new Date(date + 'T12:00:00Z');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
     return 'Informe uma data válida para a aula.';
   }
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return 'Informe um horário válido.';
@@ -497,13 +498,15 @@ export const handler = router({
           return overlaps && !sameClass(item);
         });
         if (sameStudentConflict || trainerConflict || classCount >= capacity) { skipped++; continue; }
-        candidates.push({
+        const generated: Record<string, unknown> = {
           ...template,
           date,
           recurrenceParentId: String(template.id),
           recurrenceGenerated: true,
           status: 'Agendada',
-        });
+        };
+        delete generated.id;
+        candidates.push(generated);
         if (candidates.length >= 100) break;
       }
 
