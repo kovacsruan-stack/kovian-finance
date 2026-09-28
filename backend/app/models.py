@@ -87,13 +87,14 @@ class GestaoPaymentImport(Base):
 
     __tablename__ = "gestao_payment_imports"
     __table_args__ = (
-        UniqueConstraint("user_id", "event_id", name="uq_gestao_import_user_event"),
-        UniqueConstraint("user_id", "payment_ref", name="uq_gestao_import_user_payment"),
+        UniqueConstraint("owner_id", "event_id", name="uq_gestao_import_owner_event"),
+        UniqueConstraint("owner_id", "payment_ref", name="uq_gestao_import_owner_payment"),
         UniqueConstraint("transaction_id", name="uq_gestao_import_transaction"),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     event_id: Mapped[str] = mapped_column(String(36), nullable=False)
     payment_ref: Mapped[str] = mapped_column(String(128), nullable=False)
     student_ref: Mapped[str] = mapped_column(String(128), nullable=False)
