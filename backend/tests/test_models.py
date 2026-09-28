@@ -1,10 +1,10 @@
-from app.models import Account, Base, Budget, FinancialGoal, ManagementStudent, ManagementModality, ManagementLesson, ManagementPayment, Transaction, User
+from app.models import Account, Base, Budget, FinancialGoal, Transaction, User
 
 
 def test_model_metadata_registers_unique_tables():
     tables = Base.metadata.tables
-    assert {"users", "accounts", "transactions", "budgets", "financial_goals", "management_students", "management_modalities", "management_lessons", "management_payments"} <= set(tables)
-    assert len(tables) == 9
+    assert {"users", "accounts", "transactions", "budgets", "financial_goals"} <= set(tables)
+    assert len(tables) == 5
 
 
 def test_transactions_reference_accounts():
