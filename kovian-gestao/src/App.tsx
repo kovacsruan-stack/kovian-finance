@@ -105,6 +105,7 @@ function App() {
   const [editing, setEditing] = useState<RecordItem | null>(null);
   const [importing, setImporting] = useState(false);
   const [syncingPaymentId, setSyncingPaymentId] = useState<string | null>(null);
+  const [generatingLessonId, setGeneratingLessonId] = useState<string | null>(null);
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
   const [dashboard, setDashboard] = useState({ activeStudents: 0, inactiveStudents: 0, monthlyProjection: 0, overduePayments: 0, paymentsThisMonth: 0 });
@@ -311,6 +312,28 @@ function App() {
       await load('payments');
     } finally {
       setSyncingPaymentId(null);
+    }
+  };
+
+  const generateRecurringLessons = async (item: RecordItem) => {
+    if (generatingLessonId) return;
+    const interval = Math.max(1, Number(item.recurrenceIntervalWeeks) || 1);
+    const end = String(item.repeatUntil || '');
+    const range = end ? ' até ' + end : ' pelos próximos 180 dias';
+    if (!window.confirm('Gerar aulas recorrentes a cada ' + interval + ' semana(s)' + range + '? Aulas já existentes e conflitos de horário serão ignorados.')) return;
+    setGeneratingLessonId(item.id);
+    setError('');
+    try {
+      const result = await api.post('/api/lessons/' + encodeURIComponent(item.id) + '/generate-recurring', {});
+      await load('lessons');
+      setError('Recorrência concluída: ' + Number(result.data.created || 0) + ' aula(s) criada(s), ' + Number(result.data.skipped || 0) + ' ignorada(s).');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '';
+      setError(message && !/internal|stack|token|secret/i.test(message)
+        ? message
+        : 'Não foi possível gerar as aulas recorrentes. Confira a configuração e tente novamente.');
+    } finally {
+      setGeneratingLessonId(null);
     }
   };
 
@@ -820,6 +843,18 @@ function App() {
                                   <span>{syncingPaymentId === item.id ? 'Enviando…' : item.financeSyncStatus === 'pending' ? 'Tentar novamente' : 'Enviar ao Finance'}</span>
                                 </button>
                               )
+                            )}
+                            {section === 'lessons' && item.recurrenceGenerated !== true && item.recurrenceGenerated !== 'true' && (
+                              <button
+                                className="quick-payment-button"
+                                disabled={generatingLessonId !== null}
+                                onClick={() => void generateRecurringLessons(item)}
+                                aria-label={'Gerar recorrência da aula ' + String(item.id)}
+                                title="Gerar próximas aulas com base nos dias e intervalo configurados"
+                              >
+                                <RefreshCw size={15} />
+                                <span>{generatingLessonId === item.id ? 'Gerando…' : 'Gerar recorrência'}</span>
+                              </button>
                             )}
                             {section === 'students' && (
                               <button
