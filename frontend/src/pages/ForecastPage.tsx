@@ -3,7 +3,8 @@ import { CalendarRange, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { getForecastCashFlow, getOwnerId } from '../lib/api'
 import type { CashFlowForecast } from '../lib/forecastTypes'
-import { useTranslation } from 'react-i18next'\nimport { summarizeForecast } from '../lib/forecastAnalysis'
+import { useTranslation } from 'react-i18next'
+import { summarizeForecast } from '../lib/forecastAnalysis'
 
 const money = (value:number) => value.toLocaleString(document.documentElement.lang || 'pt-BR',{style:'currency',currency:'BRL'})
 export default function ForecastPage() {
