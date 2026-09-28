@@ -1,10 +1,27 @@
-from sqlalchemy import UniqueConstraint\n\nfrom app.models import (\n    Account, Base, Budget, FinancialGoal, ManagementLesson, ManagementModality,\n    ManagementPayment, ManagementStudent, Transaction, User,\n)
+from sqlalchemy import UniqueConstraint
+
+from app.models import (
+    Account,
+    Base,
+    Budget,
+    FinancialGoal,
+    ManagementLesson,
+    ManagementModality,
+    ManagementPayment,
+    ManagementStudent,
+    Transaction,
+)
 
 
 def test_model_metadata_registers_unique_tables():
     tables = Base.metadata.tables
     assert {"users", "accounts", "transactions", "budgets", "financial_goals"} <= set(tables)
-    assert {"management_students", "management_modalities", "management_lessons", "management_payments"} <= set(tables)
+    assert {
+        "management_students",
+        "management_modalities",
+        "management_lessons",
+        "management_payments",
+    } <= set(tables)
 
 
 def test_transactions_reference_accounts():
@@ -25,4 +42,7 @@ def test_management_records_are_owner_scoped_and_keep_source_identity():
         assert model.__table__.c.source_id is not None
         assert model.__table__.c.data is not None
         assert model.__table__.c.is_archived is not None
-        assert any(isinstance(constraint, UniqueConstraint) for constraint in model.__table__.constraints)
+        assert any(
+            isinstance(constraint, UniqueConstraint)
+            for constraint in model.__table__.constraints
+        )
