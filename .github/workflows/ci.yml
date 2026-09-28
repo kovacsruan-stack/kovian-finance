@@ -11,6 +11,31 @@ concurrency:
   group: kovian-finance-ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 jobs:
+  fastapi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      PYTHONPATH: backend
+      DATABASE_URL: postgresql+asyncpg://kovian:kovian@localhost:5432/kovian_finance
+      KOVIAN_FINANCE_INTEGRATION_TOKEN: ci-only-integration-token-with-at-least-32-chars
+      KOVIAN_FINANCE_OWNER_ID: d2b3e2d8-4b8a-4d6d-9c41-42b9a1a01c51
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install FastAPI dependencies
+        run: pip install -r requirements.txt
+      - name: Run FastAPI tests
+        run: pytest -q
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
