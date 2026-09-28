@@ -48,6 +48,7 @@ public class ManagementController {
                 ownerId, resource, List.of(sourceId)).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Source record already imported");
         }
+        validateStudentLink(resource, request.data(), ownerId);
         return RecordResponse.from(repository.save(new ManagementRecord(
                 ownerId, resource, sourceId, request.data())));
     }
@@ -58,6 +59,7 @@ public class ManagementController {
                                  @Valid @RequestBody RecordUpdate request) {
         requireResource(resource);
         ManagementRecord record = findOwned(resource, id);
+        validateStudentLink(resource, request.data(), CurrentUser.ownerId());
         record.replaceData(request.data());
         return RecordResponse.from(record);
     }
@@ -86,20 +88,76 @@ public class ManagementController {
         int inserted = 0;
         int updated = 0;
         int unchanged = 0;
+        int unresolvedStudentLinks = 0;
         for (ImportItem item : request.records()) {
+            NormalizedImport normalized = normalizeImportedData(ownerId, resource, item.data());
+            if (normalized.unresolvedStudentLink()) unresolvedStudentLinks++;
             ManagementRecord record = existing.get(item.sourceId());
             if (record == null) {
-                repository.save(new ManagementRecord(ownerId, resource, item.sourceId(), item.data()));
+                repository.save(new ManagementRecord(ownerId, resource, item.sourceId(), normalized.data()));
                 inserted++;
-            } else if (!record.getData().equals(item.data())) {
-                record.replaceData(item.data());
+            } else if (!record.getData().equals(normalized.data())) {
+                record.replaceData(normalized.data());
                 updated++;
             } else {
                 unchanged++;
             }
         }
-        return new ImportResult(resource, inserted, updated, unchanged);
+        return new ImportResult(resource, inserted, updated, unchanged, unresolvedStudentLinks);
     }
+
+    private void validateStudentLink(String resource, Map<String, Object> data, UUID ownerId) {
+        if (!resource.equals("lessons") && !resource.equals("payments")) return;
+        Object studentIdValue = data.get("studentId");
+        if (studentIdValue == null || String.valueOf(studentIdValue).isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Select a valid student");
+        }
+        try {
+            UUID studentId = UUID.fromString(String.valueOf(studentIdValue));
+            if (repository.findByIdAndOwnerIdAndResource(studentId, ownerId, "students").isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Student is not available to this owner");
+            }
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Student ID must be a valid Finance record ID");
+        }
+    }
+
+    private NormalizedImport normalizeImportedData(UUID ownerId, String resource, Map<String, Object> rawData) {
+        Map<String, Object> data = new LinkedHashMap<>(rawData);
+        if (!resource.equals("lessons") && !resource.equals("payments")) {
+            return new NormalizedImport(data, false);
+        }
+        String sourceStudentId = Objects.toString(data.get("studentId"), "").trim();
+        String studentName = Objects.toString(data.get("studentName"), Objects.toString(data.get("student"), "")).trim();
+        ManagementRecord student = null;
+        if (!sourceStudentId.isEmpty()) {
+            student = repository.findByOwnerIdAndResourceAndSourceIdIn(ownerId, "students", List.of(sourceStudentId))
+                    .stream().findFirst().orElse(null);
+        }
+        if (student == null && !studentName.isEmpty()) {
+            String normalizedName = normalizeName(studentName);
+            List<ManagementRecord> matches = repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, "students")
+                    .stream()
+                    .filter(candidate -> normalizeName(Objects.toString(candidate.getData().get("name"), "")).equals(normalizedName))
+                    .toList();
+            if (matches.size() == 1) student = matches.getFirst();
+        }
+        if (student == null) {
+            return new NormalizedImport(data, !sourceStudentId.isEmpty() || !studentName.isEmpty());
+        }
+        if (!sourceStudentId.isEmpty()) data.put("sourceStudentId", sourceStudentId);
+        if (!studentName.isEmpty()) data.put("sourceStudentName", studentName);
+        data.put("studentId", student.getId().toString());
+        data.putIfAbsent("studentName", Objects.toString(student.getData().get("name"), studentName));
+        return new NormalizedImport(data, false);
+    }
+
+    private static String normalizeName(String value) {
+        return java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "").trim().toLowerCase(Locale.ROOT);
+    }
+
+    private record NormalizedImport(Map<String, Object> data, boolean unresolvedStudentLink) {}
 
     private ManagementRecord findOwned(String resource, UUID id) {
         return repository.findByIdAndOwnerIdAndResource(id, CurrentUser.ownerId(), resource)
@@ -118,7 +176,7 @@ public class ManagementController {
     public record ImportItem(@NotBlank @Size(max = 120) String sourceId,
                              @NotEmpty Map<String, Object> data) {}
     public record ImportBatch(@NotEmpty @Size(max = 500) List<@Valid ImportItem> records) {}
-    public record ImportResult(String resource, int inserted, int updated, int unchanged) {}
+    public record ImportResult(String resource, int inserted, int updated, int unchanged, int unresolvedStudentLinks) {}
     public record RecordResponse(UUID id, String sourceId, Map<String, Object> data, boolean archived,
                                  OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         static RecordResponse from(ManagementRecord record) {
