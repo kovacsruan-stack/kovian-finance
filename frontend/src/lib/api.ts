@@ -263,7 +263,7 @@ export function getManagementRecords(resource: ManagementResource, includeArchiv
   return get<ManagementRecord[]>(`/management/${resource}${includeArchived ? '?include_archived=true' : ''}`)
 }
 export function createManagementRecord(resource: ManagementResource, data: Record<string, unknown>, sourceId?: string) {
-  return post<ManagementRecord>(`/management/${resource}`, { data, ...(sourceId ? { source_id: sourceId } : {}) })
+  return post<ManagementRecord>(`/management/${resource}`, { data, ...(sourceId ? { sourceId } : {}) })
 }
 export function updateManagementRecord(resource: ManagementResource, id: string, data: Record<string, unknown>) {
   return request<ManagementRecord>(`/management/${resource}/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ data }) })
