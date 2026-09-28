@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .auth_routes import router as auth_router
 from .finance_routes import router as finance_router
+from .management_routes import router as management_router
 from .planning_routes import router as planning_router
 
 app = FastAPI(
@@ -24,11 +25,12 @@ app.add_middleware(
     allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "Cache-Control"],
 )
 
 app.include_router(auth_router)
 app.include_router(finance_router)
+app.include_router(management_router)
 app.include_router(planning_router)
 
 
