@@ -48,6 +48,7 @@ async def integration_auth(
         raise HTTPException(status_code=401, detail="User is unavailable")
     return {"mode": "user", "user_id": user.id}
 
+
 class PaymentPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
