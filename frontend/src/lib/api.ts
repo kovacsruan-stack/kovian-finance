@@ -282,3 +282,7 @@ export function importManagementRecords(
     { records },
   )
 }
+
+export function restoreManagementRecord(resource: ManagementResource, id: string) {
+  return request<{ restored: boolean; id: string }>(`/management/${resource}/${encodeURIComponent(id)}/restore`, { method: 'POST', body: JSON.stringify({}) })
+}
