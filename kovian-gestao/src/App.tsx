@@ -268,10 +268,26 @@ function App() {
       return;
     }
     try {
+      // Keep a durable relation to the student record for lessons and payments.
+      // The display name remains for backward compatibility with existing records.
+      const payload: Record<string, string> = { ...form };
+      if (section === 'lessons' || section === 'payments') {
+        const existingStudentId = editing && typeof editing.studentId === 'string'
+          && String(editing.student ?? '') === String(form.student ?? '')
+          ? editing.studentId
+          : '';
+        const matchingStudents = referenceStudents.filter(
+          student => String(student.name ?? '').trim().toLocaleLowerCase('pt-BR')
+            === String(form.student ?? '').trim().toLocaleLowerCase('pt-BR')
+        );
+        const studentId = existingStudentId || (matchingStudents.length === 1 ? matchingStudents[0].id : '');
+        if (studentId) payload.studentId = studentId;
+        else delete payload.studentId;
+      }
       if (editing) {
-        await api.put('/api/' + section + '/' + editing.id, form);
+        await api.put('/api/' + section + '/' + editing.id, payload);
       } else {
-        await api.post('/api/' + section, form);
+        await api.post('/api/' + section, payload);
       }
       setForm({});
       setAdding(false);
