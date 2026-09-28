@@ -9,7 +9,7 @@ from decimal import Decimal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,6 +31,22 @@ class PaymentPayload(BaseModel):
     paidAt: datetime
     description: str | None = Field(default=None, max_length=160)
 
+    @field_validator("paymentRef", "studentRef")
+    @classmethod
+    def require_nonblank_reference(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("reference must not be blank")
+        return value
+
+    @field_validator("description")
+    @classmethod
+    def normalize_description(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
+
 
 class PaymentEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -42,6 +58,14 @@ class PaymentEvent(BaseModel):
     occurredAt: datetime
     correlationId: str | None = Field(default=None, max_length=100)
     payload: PaymentPayload
+
+    @field_validator("correlationId")
+    @classmethod
+    def normalize_correlation_id(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        value = value.strip()
+        return value or None
 
 
 def _require_aware(value: datetime, field: str) -> None:
