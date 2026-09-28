@@ -206,7 +206,7 @@ export default function ManagementPage() {
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${records.length} registros`}</span></div>
       <label className="search-field flex items-center gap-2"><Search size={16} /><span className="sr-only">Buscar registros</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar por nome ou informação…" /></label>
-      {query.isLoading ? <div className="empty-inline">Carregando registros…</div> : records.length === 0 ? <div className="empty-inline">Nenhum registro nesta seção.</div> : records.map(record => {
+      {query.isLoading ? <div className="empty-inline">Carregando registros…</div> : visibleRecords.length === 0 ? <div className="empty-inline">{search ? 'Nenhum resultado para esta busca.' : 'Nenhum registro nesta seção.'}</div> : visibleRecords.map(record => {
         const data = record.data
         const entries = Object.entries(data).filter(([key, value]) => !['studentId', 'studentName'].includes(key) && value !== '' && value != null)
         return <article className="account-row" key={record.id}>
