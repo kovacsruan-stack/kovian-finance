@@ -7,11 +7,12 @@ import { useTranslation } from 'react-i18next'
 import { summarizeForecast } from '../lib/forecastAnalysis'
 
 const money = (value:number) => value.toLocaleString(document.documentElement.lang || 'pt-BR',{style:'currency',currency:'BRL'})
+const localDateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 export default function ForecastPage() {
   const { t } = useTranslation()
   const ownerId=getOwnerId()
   const [days,setDays]=useState<30|90|180|365>(90)
-  const from=useMemo(()=>new Date().toISOString().slice(0,10),[])
+  const from=useMemo(()=>localDateKey(new Date()),[])
   const query=useQuery({queryKey:['finance','forecast','cash-flow',ownerId,from,days],queryFn:()=>getForecastCashFlow(ownerId!,from,days),enabled:Boolean(ownerId),staleTime:60_000, retry:2})
   const data:CashFlowForecast[]=query.data ?? []
   const summary = useMemo(() => summarizeForecast(data), [data])
