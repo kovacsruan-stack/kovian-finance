@@ -16,7 +16,7 @@ const endOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() 
 const daysInMonth = (date: Date) => endOfMonth(date).getDate()
 const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
-type CalendarEvent = { date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' }
+type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' }
 
 function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
   if (kind === 'RECURRING') return isPortuguese ? 'Recorrente' : 'Recurring'
@@ -56,6 +56,7 @@ export default function CalendarPage() {
     const transactionEvents = (transactions.data ?? [])
       .filter((item: FinanceTransaction) => item.status !== 'CANCELLED')
       .map(item => ({
+        id: `transaction:${item.id}`,
         date: iso(new Date(item.occurredAt)),
         title: item.description,
         amount: Number(item.amount),
@@ -63,8 +64,9 @@ export default function CalendarPage() {
         kind: item.type,
       }))
     const recurringEvents = (recurring.data ?? [])
-      .filter((item: FinanceRecurring) => item.active && item.nextOccurrence >= from && item.nextOccurrence < to)
+       .filter((item: FinanceRecurring) => item.active && item.nextOccurrence >= from && item.nextOccurrence < to && (!item.endDate || item.nextOccurrence <= item.endDate))
       .map(item => ({
+        id: `recurring:${item.id}`,
         date: item.nextOccurrence,
         title: item.description,
         amount: Number(item.amount),
@@ -141,7 +143,7 @@ export default function CalendarPage() {
             >
               <span className="calendar-day">{day}</span>
               <div className="calendar-events">
-                {items.slice(0, 3).map((event, i) => <div className={'calendar-event ' + event.kind.toLowerCase()} key={event.date + event.kind + event.title + i} title={event.title}>
+                {items.slice(0, 3).map((event, i) => <div className={'calendar-event ' + event.kind.toLowerCase()} key={event.id} title={event.title}>
                   <span>{event.title}</span><b>{money(event.amount, event.currency)}</b>
                 </div>)}
                 {items.length > 3 && <small>+{items.length - 3}</small>}
@@ -156,7 +158,7 @@ export default function CalendarPage() {
         <div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Eventos do dia' : 'Selected day events'}</h2></div>
         <span>{new Date(selectedDate + 'T00:00:00').toLocaleDateString(locale, { dateStyle: 'medium' })}</span>
       </div>
-      {selectedEvents.length ? selectedEvents.map((event, index) => <div className="account-row" key={event.date + event.kind + event.title + index}>
+      {selectedEvents.length ? selectedEvents.map((event, index) => <div className="account-row" key={event.id}>
         <i />
         <span><strong>{event.title}</strong><small>{eventKindLabel(event.kind, isPortuguese)}</small></span>
         <b className={event.kind === 'INCOME' ? 'positive' : event.kind === 'EXPENSE' ? 'negative' : ''}>{money(event.amount, event.currency)}</b>
