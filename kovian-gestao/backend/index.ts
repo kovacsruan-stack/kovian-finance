@@ -180,6 +180,18 @@ export const handler = router({
     async ctx => {
       const table = TABLES[ctx.params.resource];
       if (!table) return error('Recurso não encontrado', 404);
+      if (ctx.params.resource === 'students') {
+        // Student records are historical anchors for lessons and payments.
+        // Archive instead of deleting so linked history is never destroyed.
+        const [existing] = await db.get<Record<string, unknown>>(table, [ctx.params.id]);
+        if (!existing) return error('Registro não encontrado', 404);
+        const [updated] = await db.update(table, [{
+          id: ctx.params.id,
+          record: { ...existing, status: 'Inativo', active: false },
+        }]);
+        if (!updated) return error('Não foi possível inativar o aluno', 500);
+        return json({ deleted: false, archived: true, id: ctx.params.id });
+      }
       const [deleted] = await db.delete(table, [ctx.params.id]);
       if (!deleted) return error('Registro não encontrado', 404);
       return json({ deleted: true });
