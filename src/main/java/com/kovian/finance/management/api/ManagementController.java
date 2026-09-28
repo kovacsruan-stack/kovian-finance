@@ -143,7 +143,7 @@ public class ManagementController {
             if (matches.size() == 1) student = matches.getFirst();
         }
         if (student == null) {
-            return new NormalizedImport(data, !sourceStudentId.isEmpty() || !studentName.isEmpty());
+            return new NormalizedImport(data, true);
         }
         if (!sourceStudentId.isEmpty()) data.put("sourceStudentId", sourceStudentId);
         if (!studentName.isEmpty()) data.put("sourceStudentName", studentName);
