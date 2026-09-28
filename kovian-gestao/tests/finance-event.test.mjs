@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { buildManagementPaymentPaidEvent } from '../src/finance-event.js';
 
 const valid = {
@@ -42,4 +43,13 @@ test('rejects invalid timestamps and overlong descriptions', () => {
   assert.throws(() => buildManagementPaymentPaidEvent({ ...valid, paidAt: '2026-09-28T12:00:00' }), /explicit timezone/);
   assert.throws(() => buildManagementPaymentPaidEvent({ ...valid, paidAt: '2026-02-30T12:00:00Z' }), /valid date-time/);
   assert.throws(() => buildManagementPaymentPaidEvent({ ...valid, description: 'x'.repeat(161) }), /description/);
+});
+
+
+test('payment sync keeps URL, Unicode normalization, and date regexes correctly escaped', async () => {
+  const source = await readFile(new URL('../backend/index.ts', import.meta.url), 'utf8');
+  assert.ok(source.includes(String.raw`replace(/\\/$/, '')`), 'strips a trailing URL slash');
+  assert.ok(source.includes(String.raw`replace(/[\\u0300-\\u036f]/g, '')`), 'normalizes accented student names');
+  assert.ok(source.includes(String.raw`/^\\d{4}-\\d{2}-\\d{2}$/`), 'validates ISO calendar dates');
+  assert.ok(!source.includes(String.raw`/\\\\d{4}-\\\\d{2}-\\\\d{2}$/`), 'does not double-escape date digits');
 });
