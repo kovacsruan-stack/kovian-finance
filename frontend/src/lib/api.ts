@@ -271,3 +271,14 @@ export function updateManagementRecord(resource: ManagementResource, id: string,
 export function archiveManagementRecord(resource: ManagementResource, id: string) {
   return request<{ archived: boolean; id: string }>(`/management/${resource}/${encodeURIComponent(id)}`, { method: 'DELETE' })
 }
+
+
+export function importManagementRecords(
+  resource: ManagementResource,
+  records: Array<{ sourceId: string; data: Record<string, unknown> }>,
+) {
+  return post<{ resource: ManagementResource; inserted: number; updated: number; unchanged: number }>(
+    `/management/import-batch/${resource}`,
+    { records },
+  )
+}
