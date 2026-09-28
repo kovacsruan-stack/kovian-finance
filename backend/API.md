@@ -15,6 +15,7 @@
 - `GET /api/v1/transactions`, `POST /api/v1/transactions` — list/create transactions.
 - `POST /api/v1/transactions/{id}/confirm` — confirm a transaction.
 - `GET /api/v1/summary` — confirmed cash flow and balance summary by currency.
+- `POST /api/v1/integrations/gestao/payments?account_id=...` — ingest an authenticated, idempotent paid-payment event from KOVIAN Gestão.
 - `GET /api/v1/budgets`, `POST /api/v1/budgets` — list/create budgets.
 - `GET /api/v1/goals`, `POST /api/v1/goals` — list/create savings goals.
 - `PATCH /api/v1/goals/{id}/progress` — update goal progress.
@@ -36,3 +37,9 @@ Run these checks from `backend/` against a disposable PostgreSQL database before
 5. Verify transaction totals, currency separation, ownership isolation, and decimal rounding with representative edge cases before importing or reconciling real financial data.
 
 Do not treat a successful migration or liveness response as proof of production readiness. Financial invariants, backup/restore, external connectors, security, performance and end-to-end validation remain release gates.
+
+## KOVIAN Gestão payment event contract
+
+The Gestão backend sends paid-payment events to `POST /api/v1/integrations/gestao/payments?account_id=...`. The receiver must authenticate the server-to-server bearer token, verify the configured Finance owner and that the target account belongs to that owner, validate BRL minor-unit amounts and payment timestamps, and treat the event ID as an idempotency key. Repeated delivery of the same event must return the original transaction rather than create a duplicate. The integration token must exist only in the Gestão backend and Finance backend environment; it must never be exposed to browser code or logs.
+
+The receiver is implemented in `app/gestao_integration.py`. Before enabling it in production, configure `KOVIAN_FINANCE_INTEGRATION_TOKEN` (at least 32 characters) and `KOVIAN_FINANCE_OWNER_ID` in the Finance backend, and configure the matching token, Finance owner ID, account ID, and API URL in the Gestão backend. The selected account must belong to the configured owner and use the same currency as the event. Verify the endpoint against a disposable database and confirm duplicate delivery does not create duplicate transactions.

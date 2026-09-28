@@ -45,5 +45,12 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/kovian-fitness-calendario",
+      "destination": "https://kovian-fitness.vercel.app/calendario",
+      "permanent": false
+    }
   ]
 }

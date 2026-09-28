@@ -1,7 +1,7 @@
 {
-  "name": "KOVIAN Gestão",
-  "short_name": "KOVIAN",
-  "description": "Gestão do Studio: alunos, modalidades, aulas e pagamentos.",
+  "name": "KOVIAN Finance",
+  "short_name": "Finance",
+  "description": "Plataforma KOVIAN Finance: gestão operacional, alunos, aulas e pagamentos.",
   "lang": "pt-BR",
   "start_url": "./",
   "scope": "./",

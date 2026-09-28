@@ -58,6 +58,13 @@ const sections = [
       ['modality', 'Modalidade'],
       ['date', 'Data'],
       ['time', 'Horário'],
+      ['durationMinutes', 'Duração (minutos)'],
+      ['trainer', 'Profissional responsável'],
+      ['location', 'Local / sala'],
+      ['capacity', 'Vagas'],
+      ['daysOfWeek', 'Dias da semana (ex.: SEG, QUA, SEX)'],
+      ['recurrenceIntervalWeeks', 'Repetir a cada (semanas)'],
+      ['repeatUntil', 'Repetir até'],
       ['status', 'Status'],
     ],
   },
@@ -97,6 +104,8 @@ function App() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<RecordItem | null>(null);
   const [importing, setImporting] = useState(false);
+  const [syncingPaymentId, setSyncingPaymentId] = useState<string | null>(null);
+  const [generatingLessonId, setGeneratingLessonId] = useState<string | null>(null);
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
   const [dashboard, setDashboard] = useState({ activeStudents: 0, inactiveStudents: 0, monthlyProjection: 0, overduePayments: 0, paymentsThisMonth: 0 });
@@ -141,7 +150,7 @@ function App() {
               await auth.signOut();
               setUser(null);
               setError(
-                'Esta conta não tem autorização para acessar o KOVIAN Gestão.'
+                'Esta conta não tem autorização para acessar o KOVIAN Finance.'
               );
             }
           }
@@ -284,6 +293,47 @@ function App() {
       setError(
         'Não foi possível salvar. Verifique os dados e tente novamente.'
       );
+    }
+  };
+
+  const syncPaymentWithFinance = async (item: RecordItem) => {
+    if (syncingPaymentId) return;
+    setSyncingPaymentId(item.id);
+    setError('');
+    try {
+      const result = await api.post('/api/payments/' + encodeURIComponent(item.id) + '/sync-finance', {});
+      await load('payments');
+      setError(String(result.data.message || (result.data.status === 'synced' ? 'Pagamento sincronizado com o Finance.' : 'Sincronização pendente.')));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '';
+      setError(message && !/internal|stack|token|secret/i.test(message)
+        ? message
+        : 'Não foi possível sincronizar. Confira a configuração da integração e tente novamente.');
+      await load('payments');
+    } finally {
+      setSyncingPaymentId(null);
+    }
+  };
+
+  const generateRecurringLessons = async (item: RecordItem) => {
+    if (generatingLessonId) return;
+    const interval = Math.max(1, Number(item.recurrenceIntervalWeeks) || 1);
+    const end = String(item.repeatUntil || '');
+    const range = end ? ' até ' + end : ' pelos próximos 180 dias';
+    if (!window.confirm('Gerar aulas recorrentes a cada ' + interval + ' semana(s)' + range + '? Aulas já existentes e conflitos de horário serão ignorados.')) return;
+    setGeneratingLessonId(item.id);
+    setError('');
+    try {
+      const result = await api.post('/api/lessons/' + encodeURIComponent(item.id) + '/generate-recurring', {});
+      await load('lessons');
+      setError('Recorrência concluída: ' + Number(result.data.created || 0) + ' aula(s) criada(s), ' + Number(result.data.skipped || 0) + ' ignorada(s).');
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '';
+      setError(message && !/internal|stack|token|secret/i.test(message)
+        ? message
+        : 'Não foi possível gerar as aulas recorrentes. Confira a configuração e tente novamente.');
+    } finally {
+      setGeneratingLessonId(null);
     }
   };
 
@@ -626,8 +676,11 @@ function App() {
                 <button
                   className="primary"
                   onClick={() => {
-                    setAdding(!adding);
-                    setForm({});
+                    const opening = !adding;
+                    setAdding(opening);
+                    setForm(opening && section === 'lessons'
+                      ? { durationMinutes: '60', capacity: '1', recurrenceIntervalWeeks: '1', status: 'Agendada' }
+                      : {});
                     setError('');
                   }}
                 >
@@ -638,6 +691,13 @@ function App() {
             {adding && (
               <section className="panel form-panel">
                 <h2>{editing ? 'Editar cadastro' : 'Novo registro'}</h2>
+                {section === 'lessons' && (
+                  <p className="muted">
+                    Agenda: informe duração, profissional, local e capacidade. Para recorrência, use dias separados por vírgula
+                    (SEG, TER, QUA, QUI, SEX, SAB, DOM) e intervalo em semanas. Sem dias, usa o dia da primeira aula.
+                    A geração cria até 100 aulas por operação, em no máximo 366 dias, ignorando duplicidades e conflitos.
+                  </p>
+                )}
                 <div className="form-grid">
                   {current.fields.map(([key, label]) => (
                     <label key={key}>
@@ -709,13 +769,15 @@ function App() {
                         </select>
                       ) : (
                         <input
-                          type={['startDate', 'date', 'dueDate', 'paidDate'].includes(key) ? 'date' : key === 'time' ? 'time' : ['monthlyFee', 'amount', 'price', 'frequency', 'dueDay'].includes(key) ? 'number' : 'text'}
-                          inputMode={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay'].includes(key) ? 'decimal' : undefined}
-                          min={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay'].includes(key) ? '0' : undefined}
-                          step={['monthlyFee', 'amount', 'price'].includes(key) ? '0.01' : ['frequency', 'dueDay'].includes(key) ? '1' : undefined}
+                          type={['startDate', 'date', 'dueDate', 'paidDate', 'repeatUntil'].includes(key) ? 'date' : key === 'time' ? 'time' : ['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? 'number' : 'text'}
+                          inputMode={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? 'decimal' : undefined}
+                          min={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? (key === 'durationMinutes' ? '15' : ['capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : '0') : undefined}
+                          max={key === 'durationMinutes' ? '240' : key === 'capacity' ? '200' : key === 'recurrenceIntervalWeeks' ? '52' : undefined}
+                          step={['monthlyFee', 'amount', 'price'].includes(key) ? '0.01' : ['frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : undefined}
+                          required={section === 'lessons' && ['date', 'time'].includes(key)}
                           value={key === 'time' ? String(form[key] || '').slice(0, 5) : form[key] || ''}
                           onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                          placeholder={label}
+                          placeholder={key === 'daysOfWeek' ? 'SEG, QUA, SEX' : label}
                         />
                       )}
                     </label>
@@ -772,6 +834,36 @@ function App() {
                             >
                               <Pencil size={15} /> <span>Editar</span>
                             </button>
+                            {section === 'payments' && /^(pago|paid)$/i.test(String(item.status ?? '').trim()) && (
+                              item.financeSyncStatus === 'synced' ? (
+                                <span className="finance-sync-status" title={String(item.financeTransactionId || 'Lançamento confirmado no Finance')}>
+                                  <Check size={14} /> Finance
+                                </span>
+                              ) : (
+                                <button
+                                  className="quick-payment-button"
+                                  disabled={syncingPaymentId !== null}
+                                  onClick={() => void syncPaymentWithFinance(item)}
+                                  aria-label={'Sincronizar pagamento ' + String(item.id) + ' com o Finance'}
+                                  title={String(item.financeSyncError || 'Enviar pagamento confirmado ao KOVIAN Finance')}
+                                >
+                                  <Wallet size={15} />
+                                  <span>{syncingPaymentId === item.id ? 'Enviando…' : item.financeSyncStatus === 'pending' ? 'Tentar novamente' : 'Enviar ao Finance'}</span>
+                                </button>
+                              )
+                            )}
+                            {section === 'lessons' && item.recurrenceGenerated !== true && item.recurrenceGenerated !== 'true' && (
+                              <button
+                                className="quick-payment-button"
+                                disabled={generatingLessonId !== null}
+                                onClick={() => void generateRecurringLessons(item)}
+                                aria-label={'Gerar recorrência da aula ' + String(item.id)}
+                                title="Gerar próximas aulas com base nos dias e intervalo configurados"
+                              >
+                                <RefreshCw size={15} />
+                                <span>{generatingLessonId === item.id ? 'Gerando…' : 'Gerar recorrência'}</span>
+                              </button>
+                            )}
                             {section === 'students' && (
                               <button
                                 className="quick-payment-button"
@@ -799,7 +891,7 @@ function App() {
           </>
         )}
         <footer>
-          KOVIAN Gestão <span>•</span> Dados privados da sua operação
+          KOVIAN Finance <span>•</span> Gestão operacional e financeira
         </footer>
       </main>
     </div>

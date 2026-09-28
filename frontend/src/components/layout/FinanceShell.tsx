@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
 import { useTranslation } from 'react-i18next'
@@ -64,7 +64,10 @@ function Shell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const moreActive = [...moreItems, ...advancedItems].some(item => isRouteActive(location.pathname, item.to))
 
-  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
+  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) })).concat([
+    { to: '/gestao', key: 'gestao', icon: Users, label: 'Gestão' },
+    { to: '/kovian-fitness-calendario', key: 'fitnessAgenda', icon: CalendarClock, label: 'Agenda Fitness' },
+  ])
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
 
   const openPalette = () => {
@@ -203,7 +206,9 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <div className="nav-group ecosystem-links">
-          <span className="nav-group-title">{t('ecosystem')}</span>
+          <span className="nav-group-title">KOVIAN Finance</span>
+          <NavLink className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} to="/gestao" onClick={() => setOpen(false)}><Users size={17} /><span>Gestão</span></NavLink>
+          <NavLink className={({ isActive }) => isActive ? "nav-item active" : "nav-item"} to="/kovian-fitness-calendario" onClick={() => setOpen(false)}><CalendarClock size={17} /><span>Agenda Fitness</span></NavLink>
           {fitnessUrl && <a className="nav-item" href={fitnessUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Dumbbell size={17} /><span>{t('fitness')}</span></a>}
           {koviUrl && <a className="nav-item" href={koviUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Sparkles size={17} /><span>{t('koviAi')}</span></a>}
         </div>
