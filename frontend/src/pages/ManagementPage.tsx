@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users } from 'lucide-react'
+import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
 import {
   archiveManagementRecord,
   createManagementRecord,
@@ -16,6 +16,8 @@ const tabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }>
   { id: 'modalities', label: 'Modalidades', icon: GraduationCap },
   { id: 'lessons', label: 'Aulas', icon: ClipboardList },
   { id: 'payments', label: 'Pagamentos', icon: CreditCard },
+  { id: 'expenses', label: 'Despesas', icon: Receipt },
+  { id: 'waitlist', label: 'Lista de espera', icon: UserPlus },
 ]
 
 const today = () => {
@@ -37,15 +39,24 @@ function fieldsFor(resource: ManagementResource) {
     ['date', 'Data', 'date'], ['time', 'Horário', 'time'], ['modality', 'Modalidade', 'text'],
     ['status', 'Status', 'text'], ['notes', 'Observações', 'text'],
   ] as const
-  return [
+  if (resource === 'payments') return [
     ['amount', 'Valor (R$)', 'number'], ['dueDate', 'Vencimento', 'date'],
     ['paidDate', 'Data do pagamento', 'date'], ['status', 'Status', 'text'], ['notes', 'Observações', 'text'],
+  ] as const
+  if (resource === 'expenses') return [
+    ['description', 'Descrição', 'text'], ['amount', 'Valor (R$)', 'number'],
+    ['date', 'Data', 'date'], ['category', 'Categoria', 'text'], ['paymentMethod', 'Forma de pagamento', 'text'], ['notes', 'Observações', 'text'],
+  ] as const
+  return [
+    ['name', 'Nome', 'text'], ['phone', 'Telefone', 'tel'], ['email', 'E-mail', 'email'],
+    ['modality', 'Modalidade desejada', 'text'], ['createdAt', 'Data de entrada', 'date'], ['status', 'Status', 'text'], ['notes', 'Observações', 'text'],
   ] as const
 }
 
 function recordTitle(record: ManagementRecord, resource: ManagementResource) {
   const data = record.data
   if (resource === 'lessons' || resource === 'payments') return String(data.studentName ?? data.student ?? data.name ?? 'Registro')
+  if (resource === 'expenses') return String(data.description ?? data.name ?? 'Despesa')
   return String(data.name ?? data.description ?? 'Registro')
 }
 
@@ -139,7 +150,7 @@ export default function ManagementPage() {
         <h1>Gestão de alunos</h1>
         <p>Cadastros, modalidades, aulas e pagamentos no mesmo ambiente do Finance.</p>
       </div>
-      <button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
+      <button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
         <Plus size={16} /> Novo registro
       </button>
     </section>
@@ -167,7 +178,7 @@ export default function ManagementPage() {
     {(query.isError || studentsQuery.isError) && <div className="notice" role="alert">Não foi possível carregar os dados. Verifique sua sessão e tente novamente.</div>}
 
     {formOpen && <section className="panel form-panel">
-      <h2>{editing ? 'Editar registro' : resource === 'students' ? 'Novo aluno' : resource === 'modalities' ? 'Nova modalidade' : resource === 'lessons' ? 'Registrar aula' : 'Registrar pagamento'}</h2>
+      <h2>{editing ? 'Editar registro' : resource === 'students' ? 'Novo aluno' : resource === 'modalities' ? 'Nova modalidade' : resource === 'lessons' ? 'Registrar aula' : resource === 'payments' ? 'Registrar pagamento' : resource === 'expenses' ? 'Registrar despesa' : 'Adicionar à lista de espera'}</h2>
       <div className="form-grid">
         {(resource === 'lessons' || resource === 'payments') && <label>
           Aluno
