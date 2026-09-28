@@ -691,6 +691,13 @@ function App() {
             {adding && (
               <section className="panel form-panel">
                 <h2>{editing ? 'Editar cadastro' : 'Novo registro'}</h2>
+                {section === 'lessons' && (
+                  <p className="muted">
+                    Agenda: informe duração, profissional, local e capacidade. Para recorrência, use dias separados por vírgula
+                    (SEG, TER, QUA, QUI, SEX, SAB, DOM) e intervalo em semanas. Sem dias, usa o dia da primeira aula.
+                    A geração cria até 100 aulas por operação, em no máximo 366 dias, ignorando duplicidades e conflitos.
+                  </p>
+                )}
                 <div className="form-grid">
                   {current.fields.map(([key, label]) => (
                     <label key={key}>
@@ -764,12 +771,13 @@ function App() {
                         <input
                           type={['startDate', 'date', 'dueDate', 'paidDate', 'repeatUntil'].includes(key) ? 'date' : key === 'time' ? 'time' : ['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? 'number' : 'text'}
                           inputMode={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? 'decimal' : undefined}
-                          min={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? (['durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : '0') : undefined}
+                          min={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? (key === 'durationMinutes' ? '15' : ['capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : '0') : undefined}
                           max={key === 'durationMinutes' ? '240' : key === 'capacity' ? '200' : key === 'recurrenceIntervalWeeks' ? '52' : undefined}
                           step={['monthlyFee', 'amount', 'price'].includes(key) ? '0.01' : ['frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : undefined}
+                          required={section === 'lessons' && ['date', 'time'].includes(key)}
                           value={key === 'time' ? String(form[key] || '').slice(0, 5) : form[key] || ''}
                           onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                          placeholder={label}
+                          placeholder={key === 'daysOfWeek' ? 'SEG, QUA, SEX' : label}
                         />
                       )}
                     </label>
