@@ -50,6 +50,8 @@ def test_gestao_payment_event_accepts_contract_shape():
     [
         {"amountMinor": 0},
         {"amountMinor": -1},
+        {"amountMinor": 100_000_000_000_000},
+        {"amountMinor": True},
         {"currency": "R$"},
         {"paymentRef": ""},
         {"paymentRef": "   "},
@@ -201,6 +203,7 @@ def test_service_token_can_import_only_for_server_mapped_owner(monkeypatch):
     owner_id = str(uuid4())
     account_id = str(uuid4())
     monkeypatch.setenv("GESTAO_OWNER_MAP", json.dumps({owner_id: user_id}))
+    monkeypatch.setenv("GESTAO_ACCOUNT_MAP", json.dumps({owner_id: account_id}))
     event_data = valid_event()
     event_data["ownerId"] = owner_id
     event = PaymentEvent.model_validate(event_data)
