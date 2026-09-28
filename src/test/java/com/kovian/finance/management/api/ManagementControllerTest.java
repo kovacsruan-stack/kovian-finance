@@ -74,6 +74,27 @@ class ManagementControllerTest {
     }
 
     @Test
+    void importRemapsLegacyStudentIdsToFinanceRecordIds() {
+        ManagementRecord student = new ManagementRecord(ownerId, "students", "legacy-student-1",
+                Map.of("name", "Alice"));
+        when(repository.findByOwnerIdAndResourceAndSourceIdIn(ownerId, "lessons", List.of("legacy-lesson-1")))
+                .thenReturn(List.of());
+        when(repository.findByOwnerIdAndResourceAndSourceIdIn(ownerId, "students", List.of("legacy-student-1")))
+                .thenReturn(List.of(student));
+        when(repository.save(any(ManagementRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var result = controller.importBatch("lessons", new ManagementController.ImportBatch(List.of(
+                new ManagementController.ImportItem("legacy-lesson-1",
+                        Map.of("studentId", "legacy-student-1", "studentName", "Alice", "date", "2026-09-28")))));
+
+        var captor = org.mockito.ArgumentCaptor.forClass(ManagementRecord.class);
+        verify(repository).save(captor.capture());
+        assertEquals(0, result.unresolvedStudentLinks());
+        assertEquals(student.getId().toString(), captor.getValue().getData().get("studentId"));
+        assertEquals("legacy-student-1", captor.getValue().getData().get("sourceStudentId"));
+    }
+
+    @Test
     void rejectsUnknownResources() {
         assertThrows(ResponseStatusException.class, () -> controller.list("unknown", false));
         verifyNoInteractions(repository);
