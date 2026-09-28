@@ -14,6 +14,7 @@ def upgrade() -> None:
         "gestao_payment_imports",
         sa.Column("id", sa.String(length=36), nullable=False),
         sa.Column("user_id", sa.String(length=36), nullable=False),
+        sa.Column("owner_id", sa.String(length=36), nullable=False),
         sa.Column("event_id", sa.String(length=36), nullable=False),
         sa.Column("payment_ref", sa.String(length=128), nullable=False),
         sa.Column("student_ref", sa.String(length=128), nullable=False),
@@ -22,8 +23,8 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
         sa.ForeignKeyConstraint(["transaction_id"], ["transactions.id"]),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("user_id", "event_id", name="uq_gestao_import_user_event"),
-        sa.UniqueConstraint("user_id", "payment_ref", name="uq_gestao_import_user_payment"),
+        sa.UniqueConstraint("owner_id", "event_id", name="uq_gestao_import_owner_event"),
+        sa.UniqueConstraint("owner_id", "payment_ref", name="uq_gestao_import_owner_payment"),
         sa.UniqueConstraint("transaction_id", name="uq_gestao_import_transaction"),
     )
     op.create_index(
@@ -32,8 +33,15 @@ def upgrade() -> None:
         ["user_id"],
         unique=False,
     )
+    op.create_index(
+        "ix_gestao_payment_imports_owner_id",
+        "gestao_payment_imports",
+        ["owner_id"],
+        unique=False,
+    )
 
 
 def downgrade() -> None:
+    op.drop_index("ix_gestao_payment_imports_owner_id", table_name="gestao_payment_imports")
     op.drop_index("ix_gestao_payment_imports_user_id", table_name="gestao_payment_imports")
     op.drop_table("gestao_payment_imports")
