@@ -36,3 +36,9 @@ Run these checks from `backend/` against a disposable PostgreSQL database before
 5. Verify transaction totals, currency separation, ownership isolation, and decimal rounding with representative edge cases before importing or reconciling real financial data.
 
 Do not treat a successful migration or liveness response as proof of production readiness. Financial invariants, backup/restore, external connectors, security, performance and end-to-end validation remain release gates.
+
+## KOVIAN Gestão payment event contract
+
+The Gestão backend sends paid-payment events to `POST /api/v1/integrations/gestao/payments?account_id=...`. The receiver must authenticate the server-to-server bearer token, verify the configured Finance owner and that the target account belongs to that owner, validate BRL minor-unit amounts and payment timestamps, and treat the event ID as an idempotency key. Repeated delivery of the same event must return the original transaction rather than create a duplicate. The integration token must exist only in the Gestão backend and Finance backend environment; it must never be exposed to browser code or logs.
+
+The current FastAPI route set does not yet implement this endpoint. Do not enable the Gestão sync action in production until the receiver, idempotency behavior, account ownership checks, and integration tests are deployed and verified.
