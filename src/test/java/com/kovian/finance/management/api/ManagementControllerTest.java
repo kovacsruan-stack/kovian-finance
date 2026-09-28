@@ -112,6 +112,22 @@ class ManagementControllerTest {
     }
 
     @Test
+    void acceptsExpensesAndWaitlistAsPreservedManagementResources() {
+        when(repository.save(any(ManagementRecord.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var expense = controller.create("expenses",
+                new ManagementController.RecordRequest(Map.of("description", "Material", "amount", 45.5), "legacy-expense-1"));
+        var lead = controller.create("waitlist",
+                new ManagementController.RecordRequest(Map.of("name", "Pessoa interessada", "status", "Aguardando"), "legacy-lead-1"));
+
+        assertEquals("legacy-expense-1", expense.sourceId());
+        assertEquals("Material", expense.data().get("description"));
+        assertEquals("legacy-lead-1", lead.sourceId());
+        assertEquals("Pessoa interessada", lead.data().get("name"));
+        verify(repository, times(2)).save(any(ManagementRecord.class));
+    }
+
+    @Test
     void rejectsUnknownResources() {
         assertThrows(ResponseStatusException.class, () -> controller.list("unknown", false));
         verifyNoInteractions(repository);
