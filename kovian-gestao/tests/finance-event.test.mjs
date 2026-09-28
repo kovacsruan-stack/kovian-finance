@@ -48,8 +48,8 @@ test('rejects invalid timestamps and overlong descriptions', () => {
 
 test('payment sync keeps URL, Unicode normalization, and date regexes correctly escaped', async () => {
   const source = await readFile(new URL('../backend/index.ts', import.meta.url), 'utf8');
-  assert.ok(source.includes(String.raw`replace(/\\/$/, '')`), 'strips a trailing URL slash');
+  assert.ok(source.includes(String.raw`replace(/\/$/, '')`), 'strips a trailing URL slash');
   assert.ok(source.includes(String.raw`replace(/[\\u0300-\\u036f]/g, '')`), 'normalizes accented student names');
-  assert.ok(source.includes(String.raw`/^\\d{4}-\\d{2}-\\d{2}$/`), 'validates ISO calendar dates');
-  assert.ok(!source.includes(String.raw`/\\\\d{4}-\\\\d{2}-\\\\d{2}$/`), 'does not double-escape date digits');
+  assert.ok(source.includes(String.raw`/^\d{4}-\d{2}-\d{2}$/`), 'validates ISO calendar dates');
+  assert.ok(!source.includes(String.raw`/^\\d{4}-\\d{2}-\\d{2}$/`), 'does not double-escape date digits');
 });
