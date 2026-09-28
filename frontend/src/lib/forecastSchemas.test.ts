@@ -20,4 +20,9 @@ describe('cash flow forecast schema', () => {
     expect(cashFlowForecastListSchema.parse([{ ...row, date: '2024-02-29' }])).toHaveLength(1)
     expect(() => cashFlowForecastListSchema.parse([{ ...row, date: '2025-02-29' }])).toThrow()
   })
+
+  it('applies Gregorian century leap-year rules', () => {
+    expect(() => cashFlowForecastListSchema.parse([{ ...row, date: '1900-02-29' }])).toThrow()
+    expect(cashFlowForecastListSchema.parse([{ ...row, date: '2000-02-29' }])).toHaveLength(1)
+  })
 })
