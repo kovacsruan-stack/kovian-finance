@@ -190,7 +190,7 @@ async def import_gestao_payment(
 
     prior_payment = await db.scalar(
         select(GestaoPaymentImport).where(
-            GestaoPaymentImport.user_id == user_id,
+            GestaoPaymentImport.owner_id == str(event.ownerId),
             GestaoPaymentImport.payment_ref == event.payload.paymentRef,
         )
     )
@@ -245,7 +245,7 @@ async def import_gestao_payment(
         # result only when it is the same event; otherwise report a conflict.
         winner = await db.scalar(
             select(GestaoPaymentImport).where(
-                GestaoPaymentImport.user_id == user_id,
+                GestaoPaymentImport.owner_id == str(event.ownerId),
                 GestaoPaymentImport.event_id == str(event.id),
             )
         )
