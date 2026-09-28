@@ -473,7 +473,7 @@ export const handler = router({
           if (String(item.date ?? '') !== date || String(item.status ?? 'Agendada') === 'Cancelada') return false;
           if (String(item.student ?? '') !== String(template.student ?? '')) return false;
           const time = String(item.time ?? '');
-          if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return false;
+          if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return false;
           const otherStart = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
           const otherEnd = otherStart + Math.max(15, Number(item.durationMinutes ?? 60));
           return startMinutes < otherEnd && otherStart < endMinutes;
@@ -490,7 +490,7 @@ export const handler = router({
           if (String(item.date ?? '') !== date || String(item.status ?? 'Agendada') === 'Cancelada') return false;
           if (String(item.trainer ?? '') !== String(template.trainer ?? '')) return false;
           const time = String(item.time ?? '');
-          if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return false;
+          if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return false;
           const otherStart = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
           const otherEnd = otherStart + Math.max(15, Number(item.durationMinutes ?? 60));
           const overlaps = startMinutes < otherEnd && otherStart < endMinutes;
