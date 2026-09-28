@@ -5,7 +5,7 @@ import { getForecastCashFlow, getOwnerId } from '../lib/api'
 import type { CashFlowForecast } from '../lib/forecastTypes'
 import { useTranslation } from 'react-i18next'
 
-const localDateKey = (date = new Date()) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
+export const localDateKey = (date = new Date()) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
 
 const money = (value:number) => value.toLocaleString(document.documentElement.lang || 'pt-BR',{style:'currency',currency:'BRL'})
 export default function ForecastPage() {
