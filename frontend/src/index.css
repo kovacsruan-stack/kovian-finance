@@ -255,3 +255,10 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .budget-row{border-top-color:var(--line)}
 .language-switcher{background:#ffffff!important;border-color:var(--line)!important;box-shadow:none}
 .language-switcher-trigger{background:#ffffff;color:var(--muted)}
+
+/* Accessible day selection in the financial calendar. */
+.calendar-day-button{display:block;width:100%;min-height:100%;padding:0;border:0;border-radius:7px;background:transparent;color:inherit;text-align:left;cursor:pointer;font:inherit}
+.calendar-day-button:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.calendar-day-button.selected{box-shadow:inset 0 0 0 2px var(--primary);background:rgba(16,185,129,.06)}
+.calendar-day-button.today .calendar-day{color:var(--primary)}
+.calendar-day-button .calendar-day{padding:2px 3px}
