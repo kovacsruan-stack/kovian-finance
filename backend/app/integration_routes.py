@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -68,6 +68,7 @@ def _transaction_response(transaction: Transaction, *, duplicate: bool) -> dict:
 @router.post("/payments", status_code=201)
 async def import_gestao_payment(
     event: PaymentEvent,
+    response: Response,
     account_id: str = Query(min_length=1, max_length=36),
     user_id: str = Depends(current_user),
     db: AsyncSession = Depends(get_session),
@@ -105,6 +106,7 @@ async def import_gestao_payment(
             or transaction.paid_at != event.payload.paidAt
         ):
             raise HTTPException(status_code=409, detail="Event ID was reused with a different payload")
+        response.status_code = 200
         return _transaction_response(transaction, duplicate=True)
 
     prior_payment = await db.scalar(
@@ -183,6 +185,7 @@ async def import_gestao_payment(
                     and winner_transaction.account_id == account_id
                     and winner_transaction.paid_at == event.payload.paidAt
                 ):
+                    response.status_code = 200
                     return _transaction_response(winner_transaction, duplicate=True)
         raise HTTPException(status_code=409, detail="Payment event conflicts with an existing import")
     await db.refresh(transaction)
