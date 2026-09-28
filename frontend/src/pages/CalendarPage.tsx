@@ -3,6 +3,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign } from 'lucid
 import { useQuery } from '@tanstack/react-query'
 import { getAccounts, getOwnerId, getRecurring, getTransactions, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
+import { isRecurringOccurrenceInRange } from '../lib/calendarEvents'
 
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
 const iso = (date: Date) => {
@@ -64,7 +65,7 @@ export default function CalendarPage() {
         kind: item.type,
       }))
     const recurringEvents = (recurring.data ?? [])
-       .filter((item: FinanceRecurring) => item.active && item.nextOccurrence >= from && item.nextOccurrence < to && (!item.endDate || item.nextOccurrence <= item.endDate))
+       .filter((item: FinanceRecurring) => isRecurringOccurrenceInRange(item, from, to))
       .map(item => ({
         id: `recurring:${item.id}`,
         date: item.nextOccurrence,
