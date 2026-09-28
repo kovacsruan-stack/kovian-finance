@@ -101,3 +101,15 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Executar validação local, testes e QA de ponta a ponta.
 
 **Status:** integração em andamento. Não declarar os dados migrados nem o produto unificado concluído até cumprir os critérios de `docs/INTEGRACAO_GESTAO_FINANCE.md`.
+
+
+## 2026-09-28 — Gestão incorporada ao backend e frontend Finance
+
+- Added the authoritative Spring Boot management-record API, owner-scoped by authenticated identity.
+- Added Flyway V22 for JSONB-backed students, modalities, lessons and payments records.
+- Added reversible archival and source-ID-based idempotent import endpoint.
+- Added a Finance navigation entry and first integrated management workspace.
+- Finance calendar now includes management lesson dates and payment due/paid dates.
+- Added entity lifecycle tests and API route registration coverage.
+- Real AppDeploy data migration, reconciliation, full Gestão feature parity, Fitness calendar parity, FitHub visual alignment, and local build/test/browser QA remain outstanding.
+- **Integration implementation estimate: 55%** (the integrated-product scope only; not the historical Finance financial-domain estimate).
