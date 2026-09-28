@@ -264,3 +264,24 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .calendar-cell[role="button"]{cursor:pointer;transition:border-color .15s,box-shadow .15s}
 .calendar-cell[role="button"]:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
 .calendar-cell-selected{border-color:var(--primary);box-shadow:inset 0 0 0 1px var(--primary)}
+
+/* KOVIAN Gestão module embedded in the shared Finance shell */
+.kovian-gestao-page { min-width: 0; }
+.kovian-gestao-page .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.kovian-gestao-page .page-header h1 { margin: 4px 0 6px; }
+.kovian-gestao-page .page-header p { margin: 0; color: var(--muted); }
+.kovian-gestao-page .page-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kovian-gestao-page .page-actions a, .kovian-gestao-page .page-actions button { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.gestao-embed-notice { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.gestao-notice-icon { display: grid; place-items: center; flex: 0 0 36px; height: 36px; border-radius: 10px; background: var(--surface-subtle, #eef3f8); }
+.gestao-embed-notice strong { display: block; font-size: 13px; }
+.gestao-embed-notice p { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.gestao-frame-wrap { position: relative; min-height: 720px; overflow: hidden; border: 1px solid var(--border, #e5e7eb); border-radius: 16px; background: var(--surface, #fff); }
+.gestao-frame-wrap iframe { position: relative; z-index: 1; display: block; width: 100%; height: max(720px, calc(100vh - 250px)); border: 0; background: #fff; }
+.gestao-frame-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 13px; pointer-events: none; }
+.gestao-frame-help { margin: 10px 2px 0; color: var(--muted); font-size: 12px; }
+@media (max-width: 700px) {
+  .gestao-frame-wrap { min-height: 650px; border-radius: 12px; }
+  .gestao-frame-wrap iframe { height: max(650px, calc(100vh - 220px)); }
+  .kovian-gestao-page .page-actions { width: 100%; }
+}
