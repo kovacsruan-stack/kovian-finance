@@ -5,6 +5,7 @@ import { getAccounts, getOwnerId, getRecurring, getTransactions, type FinanceAcc
 import { useTranslation } from 'react-i18next'
 import { isRecurringOccurrenceInRange } from '../lib/calendarEvents'
 
+const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
 const iso = (date: Date) => {
   const y = date.getFullYear()
@@ -31,6 +32,8 @@ export default function CalendarPage() {
   const ownerId = getOwnerId()
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selectedDate, setSelectedDate] = useState(() => iso(new Date()))
+  const [kindFilter, setKindFilter] = useState<'ALL' | CalendarEvent['kind']>('ALL')
+  const [eventSearch, setEventSearch] = useState('')
   const from = iso(startOfMonth(month))
   const to = iso(new Date(month.getFullYear(), month.getMonth() + 1, 1))
   const transactions = useQuery({
@@ -77,12 +80,17 @@ export default function CalendarPage() {
     return [...transactionEvents, ...recurringEvents].sort((a, b) => a.date.localeCompare(b.date))
   }, [transactions.data, recurring.data, accounts.data, from, to])
 
+  const visibleEvents = useMemo(() => events.filter(event => {
+    const matchesKind = kindFilter === 'ALL' || event.kind === kindFilter
+    const query = eventSearch.trim().toLocaleLowerCase(localeSafeLocale())
+    return matchesKind && (!query || event.title.toLocaleLowerCase(localeSafeLocale()).includes(query))
+  }), [events, kindFilter, eventSearch])
   const byDay = useMemo(
-    () => events.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
+    () => visibleEvents.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
       (acc[event.date] ??= []).push(event)
       return acc
     }, {}),
-    [events],
+    [visibleEvents],
   )
   const offset = mondayOffset(month)
   const cells = useMemo(
@@ -92,7 +100,7 @@ export default function CalendarPage() {
   const locale = document.documentElement.lang || 'pt-BR'
   const isPortuguese = locale.startsWith('pt')
   const label = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
-  const monthEvents = events.filter(event => event.date.startsWith(from.slice(0, 7)))
+  const monthEvents = visibleEvents.filter(event => event.date.startsWith(from.slice(0, 7)))
   const selectedEvents = byDay[selectedDate] ?? []
   const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading
   const today = iso(new Date())
@@ -126,7 +134,7 @@ export default function CalendarPage() {
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
         <strong>{label.charAt(0).toUpperCase() + label.slice(1)}</strong>
-        <span>{loading ? t('loading') : (isPortuguese ? events.length + ' eventos' : events.length + ' events')}</span>
+        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (isPortuguese ? visibleEvents.length + ' eventos' : visibleEvents.length + ' events')}</span><select aria-label={isPortuguese ? 'Filtrar tipo de evento' : 'Filter event type'} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{isPortuguese ? 'Todos os tipos' : 'All types'}</option><option value="INCOME">{isPortuguese ? 'Entradas' : 'Income'}</option><option value="EXPENSE">{isPortuguese ? 'Saídas' : 'Expenses'}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option></select><input aria-label={isPortuguese ? 'Buscar evento' : 'Search events'} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={isPortuguese ? 'Buscar...' : 'Search...'} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
       </div>
       <div className="calendar-weekdays">{(isPortuguese ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map(day => <span key={day}>{day}</span>)}</div>
       <div className="calendar-grid">
