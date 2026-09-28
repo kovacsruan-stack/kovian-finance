@@ -2,7 +2,7 @@
 
 ## Product boundary
 
-KOVIAN Finance owns personal financial data and financial intelligence. KOVIAN Fitness owns fitness-business operations. Cross-product financial data uses explicit integration contracts.
+KOVIAN Finance is the definitive unified application for financial management and the integrated Gestão domain (students, modalities, lessons and payments). KOVIAN Fitness remains a separate product; its calendar behaviors and relevant workflows are adapted into Finance rather than queried as an implicit source of truth. Cross-product financial data uses explicit integration contracts.
 
 KOVI AI consumes authorized application-level data through services and tools; it never receives unrestricted database access.
 
@@ -34,6 +34,10 @@ com.kovian.finance
 4. Ownership and authorization are enforced server-side.
 5. Financial records prefer reversible lifecycle states over destructive deletion.
 6. AI insights are advisory and cannot silently execute financial mutations.
+
+## Integrated Gestão domain
+
+Finance stores integrated management records under authenticated owner scope. Student, modality, lesson and payment records use reversible archival and source identifiers for migration reconciliation. Production data migration must be additive/idempotent and must not remove the source records before reconciliation.
 
 ## KOVIAN Fitness integration
 
