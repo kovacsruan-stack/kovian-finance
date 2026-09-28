@@ -5,10 +5,12 @@ from app.models import (
     Base,
     Budget,
     FinancialGoal,
+    ManagementExpense,
     ManagementLesson,
     ManagementModality,
     ManagementPayment,
     ManagementStudent,
+    ManagementWaitlist,
     Transaction,
 )
 
@@ -21,6 +23,8 @@ def test_model_metadata_registers_unique_tables():
         "management_modalities",
         "management_lessons",
         "management_payments",
+        "management_expenses",
+        "management_waitlist",
     } <= set(tables)
 
 
@@ -37,7 +41,7 @@ def test_financial_amount_columns_use_decimal_numeric_types():
 
 
 def test_management_records_are_owner_scoped_and_keep_source_identity():
-    for model in (ManagementStudent, ManagementModality, ManagementLesson, ManagementPayment):
+    for model in (ManagementStudent, ManagementModality, ManagementLesson, ManagementPayment, ManagementExpense, ManagementWaitlist):
         assert model.__table__.c.user_id.foreign_keys
         assert model.__table__.c.source_id is not None
         assert model.__table__.c.data is not None
