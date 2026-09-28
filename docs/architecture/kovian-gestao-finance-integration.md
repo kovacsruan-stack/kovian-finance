@@ -6,6 +6,8 @@ Entregar um único produto chamado **KOVIAN Finance**, com os módulos Operaçã
 
 ## Estado atual confirmado
 
+O código de Gestão agora usa o nome de produto KOVIAN Finance no título do documento e no rodapé. Isso alinha a marca, mas não representa ainda a incorporação do módulo ao mesmo shell nem uma sessão única.
+
 - `products/kovian-gestao` é uma aplicação React/Vite com backend AppDeploy e autenticação Google administrativa.
 - `products/kovian-finance` é apenas uma referência documental no monorepo; o código operacional está em `kovacsruan-stack/kovian-finance`.
 - O Finance independente usa React Router e uma API própria com bearer token em `localStorage`.
@@ -29,7 +31,9 @@ O calendário do Finance continua sendo um calendário financeiro. Ele agora per
 
 ## Arquitetura alvo
 
-1. **Um shell de produto**: marca, navegação, cabeçalho, responsividade e preferências compartilhadas.
+**Nome único do produto: KOVIAN Finance.** O FitHub é somente referência visual para o frontend (hierarquia, navegação, componentes e responsividade); não é a origem do calendário nem deve aparecer como módulo ou marca no produto final. O calendário e os dados de agenda pertencem ao KOVIAN Fitness.
+
+1. **Um shell de produto**: marca KOVIAN Finance, navegação, cabeçalho, responsividade e preferências compartilhadas.
 2. **Módulos separados por domínio**: Gestão (alunos, modalidades, aulas, mensalidades) e Finance (contas, transações, cartões, orçamento, metas, dívidas, patrimônio, previsões e relatórios).
 3. **Identidade unificada**: um provedor de sessão e um identificador estável de usuário/organização. Não reutilizar tokens de um serviço em outro sem validação explícita de audiência, emissor e permissões.
 4. **Persistência sem duplicação**: o Finance mantém o livro financeiro; o Gestão mantém os registros operacionais. Eventos de mensalidade geram uma referência financeira idempotente, em vez de duplicar valores em duas tabelas.
