@@ -1,0 +1,71 @@
+# KOVIAN Gestão + Finance — plano de integração
+
+## Objetivo
+
+Entregar um único produto chamado **KOVIAN Gestão**, com os módulos Operação e Financeiro na mesma experiência. O Finance continua sendo a fonte de verdade para contas, transações, cartões, orçamento, dívidas, patrimônio e previsões. O Gestão continua sendo a fonte de verdade para alunos, modalidades, aulas e pagamentos de mensalidades.
+
+## Estado atual confirmado
+
+- `products/kovian-gestao` é uma aplicação React/Vite com backend AppDeploy e autenticação Google administrativa.
+- `products/kovian-finance` é apenas uma referência documental no monorepo; o código operacional está em `kovacsruan-stack/kovian-finance`.
+- O Finance independente usa React Router e uma API própria com bearer token em `localStorage`.
+- Portanto, não é seguro apenas copiar telas ou compartilhar o token do Gestão com a API Finance. Os mecanismos de autenticação e os backends são diferentes.
+
+## Estado da integração financeira
+
+O Finance possui uma implementação inicial de ingestão de pagamentos na PR #34 do repositório `kovian-finance`. Ela inclui validação do evento, autenticação Finance e modo de serviço configurável, mapeamento de proprietário no servidor, verificação da conta, conversão de centavos e idempotência no banco.
+
+Ainda não existe integração de produção ponta a ponta: faltam provisionar os segredos e o mapa de proprietários no ambiente correto, definir como a conta financeira é escolhida, conectar o produtor de eventos do Gestão, executar migração e testes contra banco real e validar o fluxo completo. A PR permanece draft e não foi mesclada.
+
+## Arquitetura alvo
+
+1. **Um shell de produto**: marca, navegação, cabeçalho, responsividade e preferências compartilhadas.
+2. **Módulos separados por domínio**: Gestão (alunos, modalidades, aulas, mensalidades) e Finance (contas, transações, cartões, orçamento, metas, dívidas, patrimônio, previsões e relatórios).
+3. **Identidade unificada**: um provedor de sessão e um identificador estável de usuário/organização. Não reutilizar tokens de um serviço em outro sem validação explícita de audiência, emissor e permissões.
+4. **Persistência sem duplicação**: o Finance mantém o livro financeiro; o Gestão mantém os registros operacionais. Eventos de mensalidade geram uma referência financeira idempotente, em vez de duplicar valores em duas tabelas.
+5. **Vínculos explícitos**: cada recebimento financeiro originado de mensalidade deve guardar uma referência externa estável para o pagamento/aluno do Gestão, sem expor dados pessoais desnecessários.
+6. **Migração gradual**: manter os aplicativos atuais disponíveis até que autenticação, leitura, escrita, reconciliação e recuperação de falhas sejam validadas.
+
+## Contrato inicial: mensalidade → financeiro
+
+O contrato versionado está em [management-payment-paid-v1.schema.json](../../contracts/events/management-payment-paid-v1.schema.json) e segue o envelope comum de eventos KOVIAN.
+
+Evento `MANAGEMENT_PAYMENT_PAID.v1`:
+
+- `id`: UUID único do evento; chave de idempotência no consumidor.
+- `type` / `version`: tipo e versão fixos do contrato.
+- `ownerId`: UUID do proprietário/tenant, usado para escopo de autorização.
+- `occurredAt`: instante em que o evento foi emitido.
+- `correlationId`: identificador opcional para rastrear o fluxo ponta a ponta.
+- `payload.paymentRef`: identificador estável do pagamento no Gestão.
+- `payload.studentRef`: identificador estável do aluno; nunca usar o nome como chave.
+- `payload.amountMinor`: valor inteiro em centavos, maior que zero.
+- `payload.currency`: inicialmente `BRL`.
+- `payload.paidAt`: instante em que o pagamento foi confirmado.
+- `payload.description`: descrição opcional, limitada a 160 caracteres.
+
+O consumidor financeiro deve validar o schema e a autorização do `ownerId`, persistir o `id` processado com restrição única e criar no máximo um lançamento por evento. Repetições do mesmo evento devem retornar o resultado já criado, não gerar outra transação. Uma mesma referência de pagamento não deve ser contabilizada duas vezes, mesmo se um produtor emitir eventos com IDs diferentes; essa proteção precisa ser garantida no adaptador por uma chave de origem composta por produto e `paymentRef`.
+
+O evento não deve carregar nome, telefone, e-mail ou observações do aluno. Cancelamentos e estornos exigem eventos próprios, com referências ao lançamento original e trilha de auditoria; não se deve editar silenciosamente um pagamento já contabilizado.
+
+## Critérios de aceite antes de substituir os apps
+
+- Uma sessão inicia e encerra os dois módulos.
+- Usuário sem permissão não consegue ler nem escrever dados de outro usuário/organização.
+- Criar/editar/excluir aluno e aula continua funcionando.
+- Pagamentos de mensalidade geram lançamento financeiro idempotente.
+- Estorno/cancelamento mantém trilha de auditoria.
+- Contas, transações, cartões e previsões do Finance continuam acessíveis.
+- Testes de API, integração e navegação passam; build de produção concluído.
+- Nenhum dado de produção é migrado ou apagado sem backup e plano de rollback.
+
+## Direção visual
+
+Usar uma experiência de dashboard de gestão fitness: navegação lateral no desktop, navegação compacta no celular, hierarquia visual clara, cartões de indicadores, listas/tabelas responsivas e ações primárias consistentes. A referência FitHub é inspiração de organização e fluxo, não para copiar código, marca ou assets.
+
+## Fora do escopo desta etapa
+
+- Não remover a autenticação existente.
+- Não publicar nem alterar produção.
+- Não afirmar que os módulos já compartilham sessão ou banco.
+- Não migrar dados reais antes dos critérios de aceite.
