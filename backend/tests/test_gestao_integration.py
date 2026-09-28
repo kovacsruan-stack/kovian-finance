@@ -165,3 +165,26 @@ def test_gestao_payment_event_allows_optional_description():
     event = PaymentPayload.model_validate(data)
     assert event.payload.description == "Mensalidade"
 
+def test_gestao_payment_ingestion_rejects_owner_mismatch(integration_client):
+    client, _ = integration_client
+    event = valid_event()
+    event["ownerId"] = "9a3e1e42-97a0-4e8f-88b5-8d8f0f5d2e10"
+    response = client.post(
+        "/api/v1/integrations/gestao/payments?account_id=account-1",
+        json=event,
+        headers={"Authorization": "Bearer test-integration-token-with-32-chars-min"},
+    )
+    assert response.status_code == 403
+
+
+def test_gestao_payment_ingestion_rejects_invalid_nested_payload(integration_client):
+    client, _ = integration_client
+    event = valid_event()
+    event["payload"]["amountMinor"] = -1
+    response = client.post(
+        "/api/v1/integrations/gestao/payments?account_id=account-1",
+        json=event,
+        headers={"Authorization": "Bearer test-integration-token-with-32-chars-min"},
+    )
+    assert response.status_code == 422
+
