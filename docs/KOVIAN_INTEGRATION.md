@@ -20,10 +20,10 @@ The Finance API now exposes `POST /api/v1/integrations/gestao/payments?account_i
 
 **Authentication modes:**
 - Interactive mode: a Finance Bearer token is required and `ownerId` must equal the authenticated Finance user ID.
-- Service mode: configure `GESTAO_INTEGRATION_TOKEN` with a high-entropy secret of at least 32 characters. Requests using that exact Bearer token resolve `ownerId` through the server-side `GESTAO_OWNER_MAP` JSON object, whose keys are canonical Gestão owner UUIDs and whose values are Finance user IDs. The mapped Finance user must exist and be active.
+- Service mode: configure `GESTAO_INTEGRATION_TOKEN` with a high-entropy secret of at least 32 characters. Requests using that exact Bearer token resolve `ownerId` through the server-side `GESTAO_OWNER_MAP` JSON object, whose keys are canonical Gestão owner UUIDs and whose values are Finance user IDs. The mapped Finance user must exist and be active. Service requests must also match the server-side `GESTAO_ACCOUNT_MAP` entry for that owner; arbitrary account selection is rejected.
 - Keep the service token in the deployment secret manager, rotate it when exposed, and never place it in browser code or the Gestão client. Configure the owner map only on the Finance server.
 
-**Integration boundary:** service authentication and server-side identity mapping are now supported by the endpoint, but unattended production delivery still requires deployment configuration, secret provisioning, verified owner mappings, a reviewed account-selection strategy, and end-to-end testing. The endpoint currently receives `account_id` as a request parameter; the service must only submit an account approved for that mapped owner. Do not treat a preview deployment or this pull request as production activation.
+**Integration boundary:** service authentication and server-side identity mapping are now supported by the endpoint, but unattended production delivery still requires deployment configuration, secret provisioning, verified owner mappings, verified `GESTAO_ACCOUNT_MAP` entries, and end-to-end testing. The endpoint currently receives `account_id` as a request parameter; the service must only submit an account approved for that mapped owner. Do not treat a preview deployment or this pull request as production activation.
 
 Reversals must use a separate audited flow referencing the original transaction; posted ledger facts must not be silently rewritten.
 
