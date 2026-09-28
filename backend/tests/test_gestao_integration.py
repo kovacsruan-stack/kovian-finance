@@ -188,3 +188,9 @@ def test_gestao_payment_ingestion_rejects_invalid_nested_payload(integration_cli
     )
     assert response.status_code == 422
 
+def test_gestao_payment_event_allows_optional_correlation_id():
+    data = valid_event()
+    del data["correlationId"]
+    event = PaymentPayload.model_validate(data)
+    assert event.correlationId is None
+
