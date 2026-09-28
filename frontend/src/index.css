@@ -265,3 +265,5 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .forecast-chart-labels:first-child{margin-bottom:2px}
 .forecast-chart-labels:last-child{margin-top:2px}
 @media(max-width:560px){.forecast-chart svg{height:170px}.forecast-chart-labels{font-size:9px}}
+
+.forecast-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.forecast-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px}.forecast-actions button:disabled{opacity:.45;cursor:not-allowed}@media(max-width:560px){.forecast-actions{width:100%;justify-content:stretch}.forecast-actions>*{flex:1;min-width:0}.forecast-actions button{white-space:nowrap}}
