@@ -250,7 +250,7 @@ export async function createTransfer(input: { fromAccountId: string; toAccountId
 }
 
 
-export type ManagementResource = 'students' | 'modalities' | 'lessons' | 'payments'
+export type ManagementResource = 'students' | 'modalities' | 'lessons' | 'payments' | 'expenses' | 'waitlist'
 export type ManagementRecord = {
   id: string
   sourceId: string | null
