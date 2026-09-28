@@ -48,11 +48,6 @@
   ],
   "redirects": [
     {
-      "source": "/gestao",
-      "destination": "https://kovian-gestao-33xv91.v2.appdeploy.ai/",
-      "permanent": false
-    },
-    {
       "source": "/kovian-fitness-calendario",
       "destination": "https://kovian-fitness.vercel.app/calendario",
       "permanent": false
