@@ -27,6 +27,6 @@ def test_gestao_import_has_database_idempotency_constraints():
         for constraint in GestaoPaymentImport.__table__.constraints
         if constraint.name
     }
-    assert "uq_gestao_import_user_event" in constraints
-    assert "uq_gestao_import_user_payment" in constraints
+    assert "uq_gestao_import_owner_event" in constraints
+    assert "uq_gestao_import_owner_payment" in constraints
     assert "uq_gestao_import_transaction" in constraints
