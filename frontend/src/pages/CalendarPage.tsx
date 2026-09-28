@@ -3,7 +3,7 @@ import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign } from 'lucid
 import { useQuery } from '@tanstack/react-query'
 import { getAccounts, getOwnerId, getRecurring, getTransactions, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
-import { isRecurringOccurrenceInRange } from '../lib/calendarEvents'
+import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
 
 const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
@@ -67,16 +67,16 @@ export default function CalendarPage() {
         currency: currencyByAccount.get(item.accountId) || 'BRL',
         kind: item.type,
       }))
-    const recurringEvents = (recurring.data ?? [])
-       .filter((item: FinanceRecurring) => isRecurringOccurrenceInRange(item, from, to))
-      .map(item => ({
-        id: `recurring:${item.id}`,
-        date: item.nextOccurrence,
+    const recurringEvents = (recurring.data ?? []).flatMap((item: FinanceRecurring) =>
+      getRecurringOccurrencesInRange(item, from, to).map(occurrence => ({
+        id: occurrence.occurrenceId,
+        date: occurrence.occurrenceDate,
         title: item.description,
         amount: Number(item.amount),
         currency: currencyByAccount.get(item.accountId) || 'BRL',
         kind: 'RECURRING' as const,
-      }))
+      })),
+    )
     return [...transactionEvents, ...recurringEvents].sort((a, b) => a.date.localeCompare(b.date))
   }, [transactions.data, recurring.data, accounts.data, from, to])
 
