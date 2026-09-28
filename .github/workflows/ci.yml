@@ -18,7 +18,7 @@ jobs:
       run:
         working-directory: backend
     env:
-      PYTHONPATH: backend
+      PYTHONPATH: .
       DATABASE_URL: postgresql+asyncpg://kovian:kovian@localhost:5432/kovian_finance
       KOVIAN_FINANCE_INTEGRATION_TOKEN: ci-only-integration-token-with-at-least-32-chars
       KOVIAN_FINANCE_OWNER_ID: d2b3e2d8-4b8a-4d6d-9c41-42b9a1a01c51
