@@ -64,7 +64,10 @@ function Shell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const moreActive = [...moreItems, ...advancedItems].some(item => isRouteActive(location.pathname, item.to))
 
-  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
+  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) })).concat([
+    { to: '/gestao', key: 'gestao', icon: Users, label: 'Gestão' },
+    { to: '/kovian-fitness-calendario', key: 'fitnessAgenda', icon: CalendarClock, label: 'Agenda Fitness' },
+  ])
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
 
   const openPalette = () => {
