@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, JSON, Numeric, String
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, JSON, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -96,15 +96,19 @@ class ManagementRecord(Base):
 
 class ManagementStudent(ManagementRecord):
     __tablename__ = "management_students"
+    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
 
 
 class ManagementModality(ManagementRecord):
     __tablename__ = "management_modalities"
+    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
 
 
 class ManagementLesson(ManagementRecord):
     __tablename__ = "management_lessons"
+    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
 
 
 class ManagementPayment(ManagementRecord):
     __tablename__ = "management_payments"
+    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
