@@ -66,3 +66,7 @@ For user-facing changes, local browser QA is mandatory when a local environment 
 The planner UX foundation is based on the MIT-licensed `oofangoo/personal-finance-planner` project. KOVIAN Finance adapts its planning workflows while keeping Spring Boot/PostgreSQL as the authoritative financial system. See [docs/OPEN_SOURCE_FOUNDATION.md](docs/OPEN_SOURCE_FOUNDATION.md) and [docs/UPSTREAM_PERSONAL_FINANCE_PLANNER_MAPPING.md](docs/UPSTREAM_PERSONAL_FINANCE_PLANNER_MAPPING.md).
 
 Browser persistence is limited to UI preferences and transient workflow state; canonical financial records remain server-side.
+
+## Gestão e migração de dados
+
+Consulte [docs/MANAGEMENT_DATA_MIGRATION.md](docs/MANAGEMENT_DATA_MIGRATION.md) para os recursos suportados, o contrato de importação idempotente e a checklist de reconciliação. Não considere os dados migrados até concluir a conferência de origem e destino.
