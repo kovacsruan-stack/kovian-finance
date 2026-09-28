@@ -17,6 +17,12 @@ O Finance possui uma implementação inicial de ingestão de pagamentos na PR #3
 
 O produtor de eventos e a ação de sincronização foram implementados na PR #36 do repositório `kovian-finance`: o backend do Gestão envia pagamentos confirmados ao endpoint da PR #34, preservando o ID do evento para retries e sem expor o token ao navegador. A integração ainda não está operacional em produção: o endpoint receptor desta PR está no serviço Python/FastAPI (`backend/app/main.py`), distinto do backend Java/Spring Boot da raiz. É necessário implantar o serviço FastAPI com o Dockerfile de `backend/`, provisionar os segredos e mapas de proprietário/conta nos dois ambientes, executar testes de API e banco, e validar o fluxo ponta a ponta. As PRs #34 e #36 permanecem draft e não foram mescladas.
 
+## Agenda inspirada no KOVIAN Fitness
+
+A área de aulas do Gestão recebeu campos de agenda inspirados no Fitness: duração, profissional, local/sala, capacidade, dias da semana, intervalo semanal e data final. A ação de recorrência gera sessões sob demanda, limita cada operação a 100 novas aulas e uma janela máxima de 366 dias, e ignora duplicidades e conflitos de horário identificáveis.
+
+O calendário do Finance continua sendo um calendário financeiro. Ele agora permite selecionar um dia e filtrar entradas, saídas, transferências e recorrências financeiras. **As sessões da agenda do Gestão ainda não são exibidas no calendário do Finance**: isso exige um contrato e um fluxo autenticado de eventos de agenda, além de regras de sincronização e cancelamento. Não reutilizar o token de usuário do Finance no Gestão nem expor credenciais de serviço no navegador.
+
 ## Arquitetura alvo
 
 1. **Um shell de produto**: marca, navegação, cabeçalho, responsividade e preferências compartilhadas.
