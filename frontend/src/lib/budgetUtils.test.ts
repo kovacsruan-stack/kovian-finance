@@ -24,6 +24,25 @@ describe('budgetUtils', () => {
     expect(budgetSpent(budget, transactions)).toBe(100)
   })
 
+  it('ignores invalid dates and non-positive or non-finite expense amounts', () => {
+    const budget = { id: 'b', categoryId: 'food', period: 'MONTHLY' as const, periodStart: '2026-09-01T00:00:00Z', limitAmount: 500 }
+    const transactions = [
+      { id: 'valid', accountId: 'a', categoryId: 'food', description: 'Valid', amount: 25, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-10T12:00:00Z' },
+      { id: 'bad-date', accountId: 'a', categoryId: 'food', description: 'Bad date', amount: 90, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: 'not-a-date' },
+      { id: 'negative', accountId: 'a', categoryId: 'food', description: 'Negative', amount: -10, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-12T12:00:00Z' },
+      { id: 'infinite', accountId: 'a', categoryId: 'food', description: 'Infinite', amount: Number.POSITIVE_INFINITY, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-12T12:00:00Z' },
+    ]
+    expect(budgetSpent(budget, transactions)).toBe(25)
+  })
+
+  it('handles invalid limits and keeps overspending visible', () => {
+    expect(budgetPercent(50, 0)).toBe(0)
+    expect(budgetPercent(Number.NaN, 100)).toBe(0)
+    expect(budgetRemaining(50, Number.POSITIVE_INFINITY)).toBe(0)
+    expect(budgetPercent(125, 100)).toBe(125)
+    expect(budgetRemaining(125, 100)).toBe(0)
+  })
+
   it('keeps category roots followed by their direct children', () => {
     const categories = [
       { id: 'child', name: 'Child', kind: 'EXPENSE' as const, parentId: 'root' },
