@@ -2,7 +2,7 @@
 
 ## Ownership
 
-KOVIAN Finance is authoritative for financial-domain records, accounting invariants and financial calculations.
+KOVIAN Finance is authoritative for financial-domain records, accounting invariants, financial calculations and the integrated Gestão records managed by the unified application.
 
 ## KOVI access
 
