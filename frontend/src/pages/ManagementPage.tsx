@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Plus, Users } from 'lucide-react'
+import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users } from 'lucide-react'
 import {
   archiveManagementRecord,
   createManagementRecord,
   getManagementRecords,
+  updateManagementRecord,
   type ManagementRecord,
   type ManagementResource,
 } from '../lib/api'
@@ -51,6 +52,8 @@ export default function ManagementPage() {
   const queryClient = useQueryClient()
   const [resource, setResource] = useState<ManagementResource>('students')
   const [formOpen, setFormOpen] = useState(false)
+  const [editing, setEditing] = useState<ManagementRecord | null>(null)
+  const [search, setSearch] = useState('')
   const [form, setForm] = useState<Record<string, string>>({})
   const [showArchived, setShowArchived] = useState(false)
   const [notice, setNotice] = useState('')
@@ -88,12 +91,15 @@ export default function ManagementPage() {
       if (resource === 'students' && !String(data.name ?? '').trim()) throw new Error('Informe o nome do aluno.')
       if (resource === 'modalities' && !String(data.name ?? '').trim()) throw new Error('Informe o nome da modalidade.')
       if ((resource === 'lessons' || resource === 'payments') && !form.studentId) throw new Error('Selecione um aluno.')
-      return createManagementRecord(resource, data)
+      return editing
+        ? updateManagementRecord(resource, editing.id, data)
+        : createManagementRecord(resource, data)
     },
     onSuccess: async () => {
       setForm({})
+      setEditing(null)
       setFormOpen(false)
-      setNotice('Registro salvo.')
+      setNotice(editing ? 'Alterações salvas.' : 'Registro salvo.')
       await queryClient.invalidateQueries({ queryKey: ['finance', 'management'] })
     },
     onError: error => setNotice(error instanceof Error ? error.message : 'Não foi possível salvar.'),
@@ -107,6 +113,12 @@ export default function ManagementPage() {
     onError: () => setNotice('Não foi possível arquivar o registro.'),
   })
   const records = query.data ?? []
+  const visibleRecords = useMemo(() => {
+    const term = search.trim().toLocaleLowerCase('pt-BR')
+    if (!term) return records
+    return records.filter(record => [recordTitle(record, resource), ...Object.values(record.data).map(String)]
+      .some(value => value.toLocaleLowerCase('pt-BR').includes(term)))
+  }, [records, resource, search])
   const activeStudents = useMemo(() => (studentsQuery.data ?? []).filter(item => !item.archived), [studentsQuery.data])
   const fields = fieldsFor(resource)
   const Icon = tabs.find(tab => tab.id === resource)?.icon ?? Users
@@ -118,7 +130,7 @@ export default function ManagementPage() {
         <h1>Gestão de alunos</h1>
         <p>Cadastros, modalidades, aulas e pagamentos no mesmo ambiente do Finance.</p>
       </div>
-      <button type="button" className="primary" onClick={() => { setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
+      <button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
         <Plus size={16} /> Novo registro
       </button>
     </section>
@@ -146,7 +158,7 @@ export default function ManagementPage() {
     {(query.isError || studentsQuery.isError) && <div className="notice" role="alert">Não foi possível carregar os dados. Verifique sua sessão e tente novamente.</div>}
 
     {formOpen && <section className="panel form-panel">
-      <h2>{resource === 'students' ? 'Novo aluno' : resource === 'modalities' ? 'Nova modalidade' : resource === 'lessons' ? 'Registrar aula' : 'Registrar pagamento'}</h2>
+      <h2>{editing ? 'Editar registro' : resource === 'students' ? 'Novo aluno' : resource === 'modalities' ? 'Nova modalidade' : resource === 'lessons' ? 'Registrar aula' : 'Registrar pagamento'}</h2>
       <div className="form-grid">
         {(resource === 'lessons' || resource === 'payments') && <label>
           Aluno
@@ -186,13 +198,14 @@ export default function ManagementPage() {
         </label>)}
       </div>
       <div className="form-actions">
-        <button type="button" className="secondary" onClick={() => { setFormOpen(false); setForm({}) }}>Cancelar</button>
+        <button type="button" className="secondary" onClick={() => { setFormOpen(false); setForm({}); setEditing(null) }}>Cancelar</button>
         <button type="button" className="primary" disabled={save.isPending} onClick={() => save.mutate()}><Check size={16} /> {save.isPending ? 'Salvando…' : 'Salvar'}</button>
       </div>
     </section>}
 
     <section className="panel data-panel">
-      <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${records.length} registros`}</span></div>
+      <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${records.length} registros`}</span></div>
+      <label className="search-field flex items-center gap-2"><Search size={16} /><span className="sr-only">Buscar registros</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar por nome ou informação…" /></label>
       {query.isLoading ? <div className="empty-inline">Carregando registros…</div> : records.length === 0 ? <div className="empty-inline">Nenhum registro nesta seção.</div> : records.map(record => {
         const data = record.data
         const entries = Object.entries(data).filter(([key, value]) => !['studentId', 'studentName'].includes(key) && value !== '' && value != null)
@@ -202,9 +215,15 @@ export default function ManagementPage() {
             <small>{entries.slice(0, 4).map(([key, value]) => `${key}: ${String(value)}`).join(' · ') || 'Sem detalhes adicionais'}</small>
             {resource === 'payments' && data.status === 'Pendente' && <small>Pagamento pendente</small>}
           </span>
-          {!record.archived && <button type="button" className="secondary" aria-label={`Arquivar ${recordTitle(record, resource)}`} onClick={() => {
+          {!record.archived && <div className="flex gap-2"><button type="button" className="secondary" aria-label={`Editar ${recordTitle(record, resource)}`} onClick={() => {
+            const nextForm: Record<string, string> = Object.fromEntries(Object.entries(record.data).map(([key, value]) => [key, value == null ? '' : String(value)]))
+            setEditing(record)
+            setForm(nextForm)
+            setFormOpen(true)
+            setNotice('')
+          }}><Pencil size={15} /> Editar</button><button type="button" className="secondary" aria-label={`Arquivar ${recordTitle(record, resource)}`} onClick={() => {
             if (window.confirm('Arquivar este registro? Ele continuará salvo no histórico.')) archive.mutate(record.id)
-          }}><Archive size={15} /> Arquivar</button>}
+          }}><Archive size={15} /> Arquivar</button></div>}
         </article>
       })}
     </section>
