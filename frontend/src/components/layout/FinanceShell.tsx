@@ -204,8 +204,8 @@ function Shell({ children }: { children: ReactNode }) {
 
         <div className="nav-group ecosystem-links">
           <span className="nav-group-title">KOVIAN Finance</span>
-          <a className="nav-item" href="/gestao" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Users size={17} /><span>Gestão</span></a>
-          <a className="nav-item" href="/kovian-fitness-calendario" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><CalendarClock size={17} /><span>Agenda Fitness</span></a>
+          <a className="nav-item" href="/gestao" onClick={() => setOpen(false)}><Users size={17} /><span>Gestão</span></a>
+          <a className="nav-item" href="/kovian-fitness-calendario" onClick={() => setOpen(false)}><CalendarClock size={17} /><span>Agenda Fitness</span></a>
           {fitnessUrl && <a className="nav-item" href={fitnessUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Dumbbell size={17} /><span>{t('fitness')}</span></a>}
           {koviUrl && <a className="nav-item" href={koviUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Sparkles size={17} /><span>{t('koviAi')}</span></a>}
         </div>
