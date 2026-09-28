@@ -42,12 +42,14 @@ public class ManagementController {
     public RecordResponse create(@PathVariable String resource, @Valid @RequestBody RecordRequest request) {
         requireResource(resource);
         UUID ownerId = CurrentUser.ownerId();
-        if (request.sourceId() != null && repository.findByOwnerIdAndResourceAndSourceIdIn(
-                ownerId, resource, List.of(request.sourceId())).size() > 0) {
+        String sourceId = request.sourceId() == null || request.sourceId().isBlank()
+                ? null : request.sourceId().trim();
+        if (sourceId != null && !repository.findByOwnerIdAndResourceAndSourceIdIn(
+                ownerId, resource, List.of(sourceId)).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Source record already imported");
         }
         return RecordResponse.from(repository.save(new ManagementRecord(
-                ownerId, resource, request.sourceId(), request.data())));
+                ownerId, resource, sourceId, request.data())));
     }
 
     @PutMapping("/{resource}/{id}")
