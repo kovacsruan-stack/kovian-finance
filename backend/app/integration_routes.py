@@ -3,6 +3,7 @@
 The endpoint accepts either a Finance user token or a configured Gestão service token.
 Service-token requests require an explicit server-side owner-to-Finance-user mapping.
 """
+import hashlib
 import json
 import os
 import secrets
@@ -101,6 +102,17 @@ def _require_aware(value: datetime, field: str) -> None:
         raise HTTPException(status_code=422, detail=f"{field} must include a timezone")
 
 
+def _event_fingerprint(event: PaymentEvent) -> str:
+    """Hash the complete validated event so an event ID cannot mask payload changes."""
+    canonical = json.dumps(
+        event.model_dump(mode="json"),
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
 def _transaction_response(transaction: Transaction, *, duplicate: bool) -> dict:
     return {
         "transaction": {
@@ -128,6 +140,7 @@ async def import_gestao_payment(
     """Import one confirmed payment; repeated deliveries never create another entry."""
     _require_aware(event.occurredAt, "occurredAt")
     _require_aware(event.payload.paidAt, "payload.paidAt")
+    event_fingerprint = _event_fingerprint(event)
 
     if auth["mode"] == "service":
         try:
@@ -180,6 +193,7 @@ async def import_gestao_payment(
         if (
             existing.payment_ref != event.payload.paymentRef
             or existing.student_ref != event.payload.studentRef
+            or existing.event_fingerprint != event_fingerprint
             or transaction.amount != expected_amount
             or transaction.account_id != account_id
             or transaction.paid_at != event.payload.paidAt
@@ -234,6 +248,7 @@ async def import_gestao_payment(
         payment_ref=event.payload.paymentRef,
         student_ref=event.payload.studentRef,
         transaction_id=transaction.id,
+        event_fingerprint=event_fingerprint,
         created_at=datetime.now(timezone.utc),
     )
     db.add_all([transaction, imported])
@@ -261,6 +276,7 @@ async def import_gestao_payment(
                 if (
                     winner.payment_ref == event.payload.paymentRef
                     and winner.student_ref == event.payload.studentRef
+                    and winner.event_fingerprint == event_fingerprint
                     and winner_transaction.amount == expected_amount
                     and winner_transaction.account_id == account_id
                     and winner_transaction.paid_at == event.payload.paidAt
