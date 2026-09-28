@@ -437,13 +437,15 @@ function App() {
   };
 
   const remove = async (id: string) => {
-    if (
-      !window.confirm('Excluir este registro? Esta ação não pode ser desfeita.')
-    )
-      return;
+    const isStudent = section === 'students';
+    const confirmation = isStudent
+      ? 'Inativar este aluno? O cadastro e o histórico de aulas e pagamentos serão preservados.'
+      : 'Excluir este registro? Esta ação não pode ser desfeita.';
+    if (!window.confirm(confirmation)) return;
     try {
       await api.delete('/api/' + section + '/' + id);
       await load(section);
+      if (isStudent) setError('Aluno inativado. Cadastro e histórico preservados.');
     } catch {
       setError('Não foi possível excluir o registro.');
     }
@@ -802,7 +804,7 @@ function App() {
                               className="delete"
                               onClick={() => void remove(item.id)}
                             >
-                              Excluir
+                              {section === 'students' ? 'Inativar' : 'Excluir'}
                             </button>
                           </td>
                         </tr>
