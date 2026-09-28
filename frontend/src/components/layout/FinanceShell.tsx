@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, MoreHorizontal, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import BrandMark from '../BrandMark'
 import { useTranslation } from 'react-i18next'
@@ -204,6 +204,8 @@ function Shell({ children }: { children: ReactNode }) {
 
         <div className="nav-group ecosystem-links">
           <span className="nav-group-title">{t('ecosystem')}</span>
+          <a className="nav-item" href="/gestao" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Users size={17} /><span>KOVIAN Gestão</span></a>
+          <a className="nav-item" href="/fithub-calendario" target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><CalendarClock size={17} /><span>FitHub · Calendário</span></a>
           {fitnessUrl && <a className="nav-item" href={fitnessUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Dumbbell size={17} /><span>{t('fitness')}</span></a>}
           {koviUrl && <a className="nav-item" href={koviUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Sparkles size={17} /><span>{t('koviAi')}</span></a>}
         </div>
