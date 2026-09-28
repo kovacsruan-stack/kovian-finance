@@ -136,6 +136,7 @@ async function syncPaymentWithFinance(
       financeUrl + '/api/v1/integrations/gestao/payments?account_id=' + encodeURIComponent(accountId),
       {
         method: 'POST',
+        signal: AbortSignal.timeout(12000),
         headers: {
           Accept: 'application/json',
           'Content-Type': 'application/json',
