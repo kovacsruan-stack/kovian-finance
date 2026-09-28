@@ -74,3 +74,16 @@ Use [QuiK000/FitHub](https://github.com/QuiK000/FitHub) as a **visual and intera
 - [ ] Keep secrets server-side; redact tokens and sensitive financial details from logs.
 
 GitHub Actions is not part of this project's execution path. Validation and delivery must use the local/tooling workflow documented in `AGENTS.md`.
+
+
+### Implementation status — 2026-09-28
+
+| Capability | Status | Notes |
+|---|---|---|
+| Finance month calendar | Implemented in Finance UI | Shows transactions and recurring items; selected-day details are available. |
+| Fitness internal calendar | Implemented in Fitness UI | Composes training-session calendar data with active management-class sessions; duplicate same-time/title items are collapsed. |
+| Cross-product unified calendar | Not yet implemented | No authenticated cross-domain event API/projection is wired between Finance, Gestão and Fitness. |
+| Student identity mapping across domains | Pending verification | Do not infer identity from names or email alone. |
+| Finance-origin events inside Fitness/Gestão | Not enabled | Financial data remains within Finance until a scoped, authorized projection is implemented. |
+
+The Fitness calendar change is a source-level implementation only until frontend tests/build and runtime QA have been executed. Do not treat GitHub publication as evidence of deployment or production readiness.
