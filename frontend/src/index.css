@@ -285,3 +285,16 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
   .gestao-frame-wrap iframe { height: max(650px, calc(100vh - 220px)); }
   .kovian-gestao-page .page-actions { width: 100%; }
 }
+
+/* Gestão module integration states */
+.gestao-frame-wrap{position:relative;isolation:isolate;min-height:clamp(620px,calc(100dvh - 280px),1100px);overflow:hidden;border:1px solid var(--line);border-radius:16px;background:#fff}
+.gestao-frame-wrap iframe{position:relative;z-index:1;display:block;width:100%;height:clamp(620px,calc(100dvh - 280px),1100px);border:0;background:#fff}
+.gestao-frame-status{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:24px;text-align:center;background:var(--card);color:var(--text)}
+.gestao-frame-status-icon{display:grid;place-items:center;width:46px;height:46px;margin-bottom:4px;border-radius:14px;background:#e8f7f4;color:#087f75}
+.gestao-frame-status strong{font-size:15px}
+.gestao-frame-status>span:not(.gestao-frame-status-icon){max-width:480px;color:var(--muted);font-size:12px;line-height:1.6}
+.gestao-frame-status-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px}
+.gestao-frame-status-actions a,.gestao-frame-status-actions button{display:inline-flex;align-items:center;gap:7px;text-decoration:none}
+.gestao-frame-help{display:flex;align-items:flex-start;gap:7px;margin:10px 2px 0;color:var(--muted);font-size:11px;line-height:1.5}
+.gestao-frame-help svg{flex:none;margin-top:2px}
+@media(max-width:700px){.gestao-frame-wrap{min-height:calc(100dvh - 270px);border-radius:12px}.gestao-frame-wrap iframe{height:calc(100dvh - 270px);min-height:620px}.kovian-gestao-page .page-actions{width:100%}.kovian-gestao-page .page-actions>*{flex:1;justify-content:center}}
