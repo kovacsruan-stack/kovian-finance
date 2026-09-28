@@ -9,8 +9,9 @@ import pytest
 from pydantic import ValidationError
 
 from fastapi import HTTPException
+from fastapi.security import HTTPAuthorizationCredentials
 
-from app.integration_routes import PaymentEvent, _require_aware, import_gestao_payment
+from app.integration_routes import PaymentEvent, _require_aware, import_gestao_payment, integration_auth
 
 
 def valid_event(**overrides):
@@ -175,3 +176,48 @@ def test_payment_import_returns_existing_transaction_for_same_event():
     assert result["transaction"]["id"] == transaction.id
     assert response.status_code == 200
     db.commit.assert_not_called()
+
+
+
+def test_service_token_authentication_requires_configured_secret(monkeypatch):
+    secret = "service-secret-that-is-at-least-32-characters"
+    monkeypatch.setenv("GESTAO_INTEGRATION_TOKEN", secret)
+    db = Mock()
+    credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=secret)
+
+    result = asyncio.run(integration_auth(credentials=credentials, db=db))
+
+    assert result == {"mode": "service"}
+    db.scalar.assert_not_awaited()
+
+
+def test_service_token_can_import_only_for_server_mapped_owner(monkeypatch):
+    user_id = str(uuid4())
+    owner_id = str(uuid4())
+    account_id = str(uuid4())
+    monkeypatch.setenv("GESTAO_OWNER_MAP", __import__("json").dumps({owner_id: user_id}))
+    event_data = valid_event()
+    event_data["ownerId"] = owner_id
+    event = PaymentEvent.model_validate(event_data)
+    mapped_user = SimpleNamespace(id=user_id, is_active=True)
+    account = SimpleNamespace(id=account_id, currency="BRL")
+    db = Mock()
+    db.scalar = AsyncMock(side_effect=[mapped_user, None, None, account])
+    db.commit = AsyncMock()
+    db.refresh = AsyncMock()
+    db.add_all = Mock()
+    response = SimpleNamespace(status_code=201)
+
+    result = asyncio.run(
+        import_gestao_payment(
+            event=event,
+            response=response,
+            account_id=account_id,
+            auth={"mode": "service"},
+            db=db,
+        )
+    )
+
+    assert result["duplicate"] is False
+    assert db.add_all.call_args.args[0][0].user_id == user_id
+    assert db.commit.await_count == 1
