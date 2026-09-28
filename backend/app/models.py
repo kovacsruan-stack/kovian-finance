@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, JSON, Numeric, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -79,36 +79,3 @@ class FinancialGoal(Base):
     target_date: Mapped[date | None] = mapped_column(Date)
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-
-
-class ManagementRecord(Base):
-    """Owner-scoped, loss-minimizing storage for records migrated from Gestão."""
-    __abstract__ = True
-
-    id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
-    source_id: Mapped[str | None] = mapped_column(String(120))
-    data: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
-    is_archived: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-
-
-class ManagementStudent(ManagementRecord):
-    __tablename__ = "management_students"
-    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
-
-
-class ManagementModality(ManagementRecord):
-    __tablename__ = "management_modalities"
-    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
-
-
-class ManagementLesson(ManagementRecord):
-    __tablename__ = "management_lessons"
-    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
-
-
-class ManagementPayment(ManagementRecord):
-    __tablename__ = "management_payments"
-    __table_args__ = (UniqueConstraint("user_id", "source_id"),)
