@@ -52,6 +52,23 @@ function validUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
 
+async function stablePaymentEventId(paymentId: string): Promise<string> {
+  if (validUuid(paymentId)) return paymentId;
+  const namespace = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
+  const namespaceBytes = Uint8Array.from(
+    namespace.replace(/-/g, '').match(/.{2}/g)!.map(byte => Number.parseInt(byte, 16)),
+  );
+  const nameBytes = new TextEncoder().encode(paymentId);
+  const input = new Uint8Array(namespaceBytes.length + nameBytes.length);
+  input.set(namespaceBytes);
+  input.set(nameBytes, namespaceBytes.length);
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-1', input));
+  digest[6] = (digest[6] & 0x0f) | 0x50;
+  digest[8] = (digest[8] & 0x3f) | 0x80;
+  const hex = Array.from(digest.slice(0, 16), byte => byte.toString(16).padStart(2, '0')).join('');
+  return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
+}
+
 async function persistPayment(
   id: string,
   record: Record<string, unknown>,
@@ -99,12 +116,13 @@ async function syncPaymentWithFinance(
     throw new Error('Informe uma data de pagamento válida antes de sincronizar.');
   }
 
+  const paidAt = new Date(paidDate + 'T12:00:00Z').toISOString();
   const eventId = typeof payment.financeEventId === 'string' && validUuid(payment.financeEventId)
     ? payment.financeEventId
-    : crypto.randomUUID();
+    : await stablePaymentEventId(paymentId);
   const occurredAt = typeof payment.financeOccurredAt === 'string' && !Number.isNaN(Date.parse(payment.financeOccurredAt))
     ? new Date(payment.financeOccurredAt).toISOString()
-    : new Date().toISOString();
+    : paidAt;
   const event = {
     id: eventId,
     type: 'MANAGEMENT_PAYMENT_PAID.v1',
@@ -117,7 +135,7 @@ async function syncPaymentWithFinance(
       studentRef,
       amountMinor: Math.round(amount * 100),
       currency: 'BRL',
-      paidAt: new Date(paidDate + 'T12:00:00Z').toISOString(),
+      paidAt,
       description: 'Mensalidade KOVIAN Gestão',
     },
   };
