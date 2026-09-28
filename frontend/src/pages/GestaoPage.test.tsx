@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import GestaoPage from './GestaoPage'
 
@@ -13,7 +13,7 @@ describe('GestaoPage', () => {
   it('offers a separate-tab fallback and a retry when loading is slow', () => {
     vi.useFakeTimers()
     render(<GestaoPage />)
-    vi.advanceTimersByTime(12000)
+    act(() => vi.advanceTimersByTime(12000))
     expect(screen.getByText('O módulo está demorando para responder')).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: /Abrir Gestão|Abrir em nova aba/ })).toHaveLength(2)
     fireEvent.click(screen.getByRole('button', { name: /Tentar novamente/ }))
