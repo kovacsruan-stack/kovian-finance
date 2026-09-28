@@ -124,7 +124,7 @@ def test_payment_import_rejects_owner_mismatch_before_database_write():
                 event=event,
                 response=response,
                 account_id=str(uuid4()),
-                user_id=str(uuid4()),
+                auth={"mode": "user", "user_id": str(uuid4())},
                 db=db,
             )
         )
