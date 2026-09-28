@@ -97,6 +97,7 @@ function App() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<RecordItem | null>(null);
   const [importing, setImporting] = useState(false);
+  const [syncingPaymentId, setSyncingPaymentId] = useState<string | null>(null);
   const [studentStatusFilter, setStudentStatusFilter] = useState('all');
   const [paymentStatusFilter, setPaymentStatusFilter] = useState('all');
   const [dashboard, setDashboard] = useState({ activeStudents: 0, inactiveStudents: 0, monthlyProjection: 0, overduePayments: 0, paymentsThisMonth: 0 });
@@ -284,6 +285,25 @@ function App() {
       setError(
         'Não foi possível salvar. Verifique os dados e tente novamente.'
       );
+    }
+  };
+
+  const syncPaymentWithFinance = async (item: RecordItem) => {
+    if (syncingPaymentId) return;
+    setSyncingPaymentId(item.id);
+    setError('');
+    try {
+      const result = await api.post('/api/payments/' + encodeURIComponent(item.id) + '/sync-finance', {});
+      await load('payments');
+      setError(String(result.data.message || (result.data.status === 'synced' ? 'Pagamento sincronizado com o Finance.' : 'Sincronização pendente.')));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : '';
+      setError(message && !/internal|stack|token|secret/i.test(message)
+        ? message
+        : 'Não foi possível sincronizar. Confira a configuração da integração e tente novamente.');
+      await load('payments');
+    } finally {
+      setSyncingPaymentId(null);
     }
   };
 
@@ -772,6 +792,24 @@ function App() {
                             >
                               <Pencil size={15} /> <span>Editar</span>
                             </button>
+                            {section === 'payments' && /^(pago|paid)$/i.test(String(item.status ?? '').trim()) && (
+                              item.financeSyncStatus === 'synced' ? (
+                                <span className="finance-sync-status" title={String(item.financeTransactionId || 'Lançamento confirmado no Finance')}>
+                                  <Check size={14} /> Finance
+                                </span>
+                              ) : (
+                                <button
+                                  className="quick-payment-button"
+                                  disabled={syncingPaymentId !== null}
+                                  onClick={() => void syncPaymentWithFinance(item)}
+                                  aria-label={'Sincronizar pagamento ' + String(item.id) + ' com o Finance'}
+                                  title={String(item.financeSyncError || 'Enviar pagamento confirmado ao KOVIAN Finance')}
+                                >
+                                  <Wallet size={15} />
+                                  <span>{syncingPaymentId === item.id ? 'Enviando…' : item.financeSyncStatus === 'pending' ? 'Tentar novamente' : 'Enviar ao Finance'}</span>
+                                </button>
+                              )
+                            )}
                             {section === 'students' && (
                               <button
                                 className="quick-payment-button"
