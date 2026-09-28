@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,15 +15,39 @@ from .models import Account, Transaction
 router = APIRouter(prefix="/api/v1/integrations/gestao", tags=["Gestão integration"])
 
 
+class PaymentDetails(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    paymentRef: str = Field(min_length=1, max_length=128)
+    studentRef: str = Field(min_length=1, max_length=128)
+    amountMinor: int = Field(gt=0, le=99999999999999)
+    currency: str = Field(pattern="^[A-Z]{3}$")
+    paidAt: datetime
+    description: str = Field(default="Mensalidade", max_length=160)
+
+    @field_validator("paidAt")
+    @classmethod
+    def paid_at_must_have_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("paidAt must include a timezone")
+        return value
+
+
 class PaymentPayload(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    id: str = Field(min_length=36, max_length=36)
+    id: str = Field(pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
     type: str = Field(pattern="^MANAGEMENT_PAYMENT_PAID[.]v1$")
     version: int = Field(ge=1, le=1)
-    ownerId: str = Field(min_length=1, max_length=36)
+    ownerId: str = Field(pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
     occurredAt: datetime
     correlationId: str = Field(min_length=1, max_length=100)
-    payload: dict
+    payload: PaymentDetails
+
+    @field_validator("occurredAt")
+    @classmethod
+    def occurred_at_must_have_timezone(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.utcoffset() is None:
+            raise ValueError("occurredAt must include a timezone")
+        return value
 
 
 @router.post("/payments", status_code=201)
@@ -44,22 +68,11 @@ async def ingest_payment(
         raise HTTPException(status_code=403, detail="Integration identity mismatch")
 
     data = body.payload
-    amount_minor = data.get("amountMinor")
-    currency = data.get("currency")
-    paid_at_raw = data.get("paidAt")
-    description = data.get("description")
-    if isinstance(amount_minor, bool) or not isinstance(amount_minor, int) or amount_minor <= 0:
-        raise HTTPException(status_code=422, detail="Invalid amount")
-    if not isinstance(currency, str) or len(currency) != 3 or not currency.isalpha() or currency != currency.upper():
-        raise HTTPException(status_code=422, detail="Invalid currency")
-    if not isinstance(paid_at_raw, str) or not isinstance(description, str) or not description.strip():
-        raise HTTPException(status_code=422, detail="Invalid payment details")
-    try:
-        paid_at = datetime.fromisoformat(paid_at_raw.replace("Z", "+00:00"))
-    except ValueError:
-        raise HTTPException(status_code=422, detail="Invalid payment timestamp")
-    if paid_at.tzinfo is None:
-        raise HTTPException(status_code=422, detail="Payment timestamp must include a timezone")
+    paid_at = data.paidAt
+    currency = data.currency
+    description = data.description.strip() or "Mensalidade"
+    if not description:
+        description = "Mensalidade"
 
     account = await db.scalar(select(Account).where(
         Account.id == account_id,
@@ -71,7 +84,7 @@ async def ingest_payment(
     if account.currency != currency:
         raise HTTPException(status_code=422, detail="Currency does not match Finance account")
 
-    amount = (Decimal(amount_minor) / Decimal(100)).quantize(Decimal("0.01"))
+    amount = (Decimal(data.amountMinor) / Decimal(100)).quantize(Decimal("0.01"))
     existing = await db.scalar(select(Transaction).where(Transaction.id == body.id))
     if existing is not None:
         if (existing.user_id, existing.account_id, existing.amount, existing.entry_type, existing.currency) != (
@@ -82,7 +95,7 @@ async def ingest_payment(
 
     transaction = Transaction(
         id=body.id, user_id=expected_owner, account_id=account.id,
-        description=description.strip()[:200], amount=amount, entry_type="income",
+        description=description[:200], amount=amount, entry_type="income",
         currency=currency, category="Mensalidades", due_date=paid_at.date(),
         paid_at=paid_at, is_confirmed=True, created_at=datetime.now(timezone.utc),
     )
