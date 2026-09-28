@@ -40,6 +40,147 @@ function cleanRecord(value: unknown): Record<string, unknown> | null {
   return Object.keys(clean).length ? clean : null;
 }
 
+
+type RuntimeEnv = { process?: { env?: Record<string, string | undefined> } };
+const runtimeEnv = (globalThis as typeof globalThis & RuntimeEnv).process?.env ?? {};
+
+function isPaidPayment(payment: Record<string, unknown>): boolean {
+  return /^(pago|paid)$/i.test(String(payment.status ?? '').trim());
+}
+
+function validUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function persistPayment(
+  id: string,
+  record: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const [updated] = await db.update('payments', [{ id, record }]);
+  if (!updated) throw new Error('Não foi possível atualizar o estado da integração.');
+  return record;
+}
+
+async function syncPaymentWithFinance(
+  paymentId: string,
+): Promise<{ status: string; transactionId?: string; message: string }> {
+  const [payment] = await db.get<Record<string, unknown>>('payments', [paymentId]);
+  if (!payment) throw new Error('Pagamento não encontrado.');
+  if (!isPaidPayment(payment)) throw new Error('Somente pagamentos com status Pago podem ser enviados ao Finance.');
+
+  const financeUrl = (runtimeEnv.KOVIAN_FINANCE_API_URL ?? '').trim().replace(/\\/$/, '');
+  const integrationToken = runtimeEnv.KOVIAN_FINANCE_INTEGRATION_TOKEN ?? '';
+  const ownerId = runtimeEnv.KOVIAN_FINANCE_OWNER_ID ?? '';
+  const accountId = runtimeEnv.KOVIAN_FINANCE_ACCOUNT_ID ?? '';
+  if (!financeUrl || integrationToken.length < 32 || !validUuid(ownerId) || !accountId.trim()) {
+    throw new Error('Integração não configurada no backend. Configure URL, token, proprietário e conta do Finance.');
+  }
+
+  let studentRef = String(payment.studentId ?? '').trim();
+  if (!studentRef) {
+    const { items: students } = await db.list<Record<string, unknown>>('students', { limit: 100 });
+    const target = String(payment.student ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR');
+    const matches = students.filter(student =>
+      String(student.name ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR') === target
+    );
+    if (matches.length !== 1 || !matches[0]?.id) {
+      throw new Error('Não foi possível identificar o aluno por um ID único. Vincule o pagamento ao cadastro do aluno antes de sincronizar.');
+    }
+    studentRef = String(matches[0].id);
+  }
+
+  const amount = Number(String(payment.amount ?? '').replace(',', '.'));
+  if (!Number.isFinite(amount) || amount <= 0 || Math.abs(Math.round(amount * 100) / 100 - amount) > 1e-8) {
+    throw new Error('O valor do pagamento é inválido para lançamento financeiro.');
+  }
+  const paidDate = String(payment.paidDate ?? '').trim();
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(paidDate) || Number.isNaN(Date.parse(paidDate + 'T12:00:00Z'))) {
+    throw new Error('Informe uma data de pagamento válida antes de sincronizar.');
+  }
+
+  const eventId = typeof payment.financeEventId === 'string' && validUuid(payment.financeEventId)
+    ? payment.financeEventId
+    : crypto.randomUUID();
+  const event = {
+    id: eventId,
+    type: 'MANAGEMENT_PAYMENT_PAID.v1',
+    version: 1,
+    ownerId,
+    occurredAt: new Date().toISOString(),
+    correlationId: eventId,
+    payload: {
+      paymentRef: paymentId,
+      studentRef,
+      amountMinor: Math.round(amount * 100),
+      currency: 'BRL',
+      paidAt: new Date(paidDate + 'T12:00:00Z').toISOString(),
+      description: 'Mensalidade KOVIAN Gestão',
+    },
+  };
+
+  await persistPayment(paymentId, {
+    ...payment,
+    financeEventId: eventId,
+    financeSyncStatus: 'pending',
+    financeSyncError: '',
+  });
+
+  try {
+    const response = await fetch(
+      financeUrl + '/api/v1/integrations/gestao/payments?account_id=' + encodeURIComponent(accountId),
+      {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + integrationToken,
+        },
+        body: JSON.stringify(event),
+      },
+    );
+    const responseText = await response.text();
+    let result: Record<string, unknown> = {};
+    try {
+      const parsed: unknown = JSON.parse(responseText);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) result = parsed as Record<string, unknown>;
+    } catch {
+      // Do not expose raw upstream response text, which may contain implementation details.
+    }
+    if (!response.ok) {
+      const detail = typeof result.detail === 'string' ? result.detail : 'Finance recusou a importação (HTTP ' + response.status + ').';
+      await persistPayment(paymentId, {
+        ...payment,
+        financeEventId: eventId,
+        financeSyncStatus: 'pending',
+        financeSyncError: detail.slice(0, 300),
+      });
+      return { status: 'pending', message: detail };
+    }
+
+    const transaction = result.transaction && typeof result.transaction === 'object'
+      ? result.transaction as Record<string, unknown>
+      : {};
+    const transactionId = typeof transaction.id === 'string' ? transaction.id : undefined;
+    await persistPayment(paymentId, {
+      ...payment,
+      financeEventId: eventId,
+      financeSyncStatus: 'synced',
+      financeTransactionId: transactionId ?? '',
+      financeSyncedAt: new Date().toISOString(),
+      financeSyncError: '',
+    });
+    return { status: 'synced', transactionId, message: result.duplicate === true ? 'Pagamento já estava sincronizado no Finance.' : 'Pagamento enviado ao Finance.' };
+  } catch {
+    await persistPayment(paymentId, {
+      ...payment,
+      financeEventId: eventId,
+      financeSyncStatus: 'pending',
+      financeSyncError: 'Falha de comunicação com o Finance. Tente sincronizar novamente.',
+    });
+    return { status: 'pending', message: 'Falha de comunicação com o Finance. O pagamento continua registrado no Gestão e pode ser reenviado.' };
+  }
+}
+
 export const handler = router({
   'GET /api/me': [
     ...protectedRoute,
@@ -147,6 +288,17 @@ export const handler = router({
       const ids = await db.add('payments', records);
       const created = ids.filter((id): id is string => Boolean(id)).length;
       return json({ created, skipped: skipped + records.length - created, month, message: 'Geração concluída.' });
+    },
+  ],
+  'POST /api/payments/:id/sync-finance': [
+    ...protectedRoute,
+    async ctx => {
+      try {
+        const result = await syncPaymentWithFinance(ctx.params.id);
+        return json(result, result.status === 'synced' ? 200 : 202);
+      } catch (e) {
+        return error(e instanceof Error ? e.message : 'Não foi possível sincronizar o pagamento.', 400);
+      }
     },
   ],
   'POST /api/:resource': [
