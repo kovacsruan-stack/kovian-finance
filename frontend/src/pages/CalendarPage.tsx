@@ -69,6 +69,8 @@ export default function CalendarPage() {
     staleTime: 30_000,
   })
 
+  const eventLanguageIsPortuguese = (document.documentElement.lang || 'pt-BR').startsWith('pt')
+
   const events = useMemo<CalendarEvent[]>(() => {
     const currencyByAccount = new Map((accounts.data ?? []).map((account: FinanceAccount) => [account.id, account.currency]))
     const transactionEvents = (transactions.data ?? [])
@@ -98,7 +100,7 @@ export default function CalendarPage() {
       return [{
         id: 'lesson:' + item.id,
         date,
-        title: ((document.documentElement.lang || 'pt-BR').startsWith('pt') ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        title: (eventLanguageIsPortuguese ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno'),
         amount: 0,
         currency: 'BRL',
         kind: 'LESSON' as const,
@@ -113,14 +115,14 @@ export default function CalendarPage() {
       return [{
         id: 'payment:' + item.id,
         date,
-        title: ((document.documentElement.lang || 'pt-BR').startsWith('pt') ? 'Pagamento · ' : 'Payment · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        title: (eventLanguageIsPortuguese ? 'Pagamento · ' : 'Payment · ') + String(data.studentName ?? data.student ?? 'Aluno'),
         amount: Number.isFinite(amount) ? amount : 0,
         currency: 'BRL',
         kind: 'PAYMENT' as const,
       }]
     })
     return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents].sort((a, b) => a.date.localeCompare(b.date))
-  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, from, to])
+  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, from, to, eventLanguageIsPortuguese])
 
   const visibleEvents = useMemo(() => events.filter(event => {
     const matchesKind = kindFilter === 'ALL' || event.kind === kindFilter
