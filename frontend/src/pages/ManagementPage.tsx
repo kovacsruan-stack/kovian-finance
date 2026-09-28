@@ -150,14 +150,29 @@ export default function ManagementPage() {
       <div className="form-grid">
         {(resource === 'lessons' || resource === 'payments') && <label>
           Aluno
-          <select required value={form.studentId ?? ''} onChange={event => setForm(previous => ({ ...previous, studentId: event.target.value }))}>
+          <select required value={form.studentId ?? ''} onChange={event => {
+            const selected = activeStudents.find(item => item.id === event.target.value)
+            setForm(previous => ({
+              ...previous,
+              studentId: event.target.value,
+              ...(resource === 'lessons' ? { modality: String(selected?.data.modality ?? '') } : {}),
+            }))
+          }}>
             <option value="">Selecione um aluno</option>
             {activeStudents.map(student => <option key={student.id} value={student.id}>{String(student.data.name ?? 'Aluno')}</option>)}
           </select>
         </label>}
         {fields.map(([key, label, type]) => <label key={key}>
           {label}
-          {key === 'modality' && (resource === 'students' || resource === 'lessons') ? (
+          {key === 'status' && resource === 'lessons' ? (
+            <select value={form[key] ?? 'Agendada'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
+              {['Agendada', 'Realizada', 'Cancelada', 'Falta'].map(status => <option key={status} value={status}>{status}</option>)}
+            </select>
+          ) : key === 'status' && resource === 'payments' ? (
+            <select value={form[key] ?? 'Pendente'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
+              {['Pendente', 'Pago', 'Atrasado', 'Cancelado'].map(status => <option key={status} value={status}>{status}</option>)}
+            </select>
+          ) : key === 'modality' && (resource === 'students' || resource === 'lessons') ? (
             <select value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
               <option value="">Selecione uma modalidade</option>
               {(modalitiesQuery.data ?? []).filter(item => !item.archived).map(item => (
