@@ -255,6 +255,37 @@ async function syncPaymentWithFinance(
   }
 }
 
+function parseScheduleDays(value: unknown, fallbackDate: string): number[] | null {
+  const aliases: Record<string, number> = {
+    MON: 1, MONDAY: 1, SEG: 1, SEGUNDA: 1,
+    TUE: 2, TUESDAY: 2, TER: 2, TERCA: 2, TERÇA: 2,
+    WED: 3, WEDNESDAY: 3, QUA: 3, QUARTA: 3,
+    THU: 4, THURSDAY: 4, QUI: 4, QUINTA: 4,
+    FRI: 5, FRIDAY: 5, SEX: 5, SEXTA: 5,
+    SAT: 6, SATURDAY: 6, SAB: 6, SABADO: 6, SÁBADO: 6,
+    SUN: 0, SUNDAY: 0, DOM: 0, DOMINGO: 0,
+  };
+  const raw = String(value ?? '').trim();
+  if (!raw) {
+    const day = new Date(fallbackDate + 'T12:00:00Z').getUTCDay();
+    return [day];
+  }
+  const tokens = raw.split(/[,;|/\\s]+/).filter(Boolean).map(token =>
+    token.normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toUpperCase()
+  );
+  const parsed = tokens.map(token => aliases[token]);
+  if (!parsed.length || parsed.some(day => day === undefined)) return null;
+  return [...new Set(parsed)];
+}
+
+function dateOnlyUtc(value: string): Date {
+  return new Date(value + 'T12:00:00Z');
+}
+
+function formatDateOnlyUtc(value: Date): string {
+  return value.toISOString().slice(0, 10);
+}
+
 export const handler = router({
   'GET /api/me': [
     ...protectedRoute,
@@ -373,6 +404,118 @@ export const handler = router({
       } catch (e) {
         return error(e instanceof Error ? e.message : 'Não foi possível sincronizar o pagamento.', 400);
       }
+    },
+  ],
+  'POST /api/lessons/:id/generate-recurring': [
+    ...protectedRoute,
+    async ctx => {
+      const [template] = await db.get<Record<string, unknown>>('lessons', [ctx.params.id]);
+      if (!template) return error('Aula não encontrada.', 404);
+      const validation = validateLessonSchedule(template);
+      if (validation) return error(validation, 400);
+      if (template.recurrenceGenerated === true || template.recurrenceGenerated === 'true') {
+        return error('Uma aula gerada não pode ser usada como modelo de recorrência.', 400);
+      }
+
+      const startDate = String(template.date);
+      const configuredEnd = String(template.repeatUntil ?? '').trim();
+      const endDate = configuredEnd || (() => {
+        const end = dateOnlyUtc(startDate);
+        end.setUTCDate(end.getUTCDate() + 180);
+        return formatDateOnlyUtc(end);
+      })();
+      const start = dateOnlyUtc(startDate);
+      const end = dateOnlyUtc(endDate);
+      if (end.getTime() - start.getTime() > 366 * 24 * 60 * 60 * 1000) {
+        return error('A recorrência pode gerar aulas por no máximo 366 dias.', 400);
+      }
+
+      const days = parseScheduleDays(template.daysOfWeek, startDate);
+      if (!days) return error('Dias inválidos. Use SEG, TER, QUA, QUI, SEX, SAB e/ou DOM.', 400);
+      const interval = Number(template.recurrenceIntervalWeeks ?? 1);
+      const capacity = Number(template.capacity ?? 1);
+      const duration = Number(template.durationMinutes ?? 60);
+      const [existingResult] = await Promise.all([
+        db.list<Record<string, unknown>>('lessons', { limit: 100 }),
+      ]);
+      const existing = existingResult.items;
+      const candidates: Record<string, unknown>[] = [];
+      let skipped = 0;
+      const startMonday = new Date(start);
+      startMonday.setUTCDate(startMonday.getUTCDate() - ((startMonday.getUTCDay() + 6) % 7));
+
+      for (const cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+        if (cursor.getTime() === start.getTime()) continue;
+        const weekday = cursor.getUTCDay();
+        if (!days.includes(weekday)) continue;
+        const weekStart = new Date(cursor);
+        weekStart.setUTCDate(weekStart.getUTCDate() - ((weekStart.getUTCDay() + 6) % 7));
+        const weekIndex = Math.floor((weekStart.getTime() - startMonday.getTime()) / (7 * 24 * 60 * 60 * 1000));
+        if (weekIndex < 0 || weekIndex % interval !== 0) continue;
+        const date = formatDateOnlyUtc(cursor);
+        const duplicate = existing.some(item =>
+          String(item.student ?? '') === String(template.student ?? '') &&
+          String(item.date ?? '') === date &&
+          String(item.time ?? '') === String(template.time ?? '') &&
+          String(item.modality ?? '') === String(template.modality ?? '') &&
+          String(item.recurrenceParentId ?? '') === String(template.id)
+        ) || candidates.some(item =>
+          String(item.student ?? '') === String(template.student ?? '') &&
+          String(item.date ?? '') === date &&
+          String(item.time ?? '') === String(template.time ?? '') &&
+          String(item.modality ?? '') === String(template.modality ?? '')
+        );
+        if (duplicate) { skipped++; continue; }
+
+        const startMinutes = Number(String(template.time).slice(0, 2)) * 60 + Number(String(template.time).slice(3, 5));
+        const endMinutes = startMinutes + duration;
+        const sameStudentConflict = existing.some(item => {
+          if (String(item.date ?? '') !== date || String(item.status ?? 'Agendada') === 'Cancelada') return false;
+          if (String(item.student ?? '') !== String(template.student ?? '')) return false;
+          const time = String(item.time ?? '');
+          if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return false;
+          const otherStart = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+          const otherEnd = otherStart + Math.max(15, Number(item.durationMinutes ?? 60));
+          return startMinutes < otherEnd && otherStart < endMinutes;
+        });
+        const sameClass = (item: Record<string, unknown>) =>
+          String(item.date ?? '') === date &&
+          String(item.time ?? '') === String(template.time ?? '') &&
+          String(item.modality ?? '') === String(template.modality ?? '') &&
+          String(item.trainer ?? '') === String(template.trainer ?? '') &&
+          String(item.location ?? '') === String(template.location ?? '') &&
+          String(item.status ?? 'Agendada') !== 'Cancelada';
+        const classCount = existing.filter(sameClass).length + candidates.filter(sameClass).length;
+        const trainerConflict = Boolean(String(template.trainer ?? '').trim()) && existing.some(item => {
+          if (String(item.date ?? '') !== date || String(item.status ?? 'Agendada') === 'Cancelada') return false;
+          if (String(item.trainer ?? '') !== String(template.trainer ?? '')) return false;
+          const time = String(item.time ?? '');
+          if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return false;
+          const otherStart = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
+          const otherEnd = otherStart + Math.max(15, Number(item.durationMinutes ?? 60));
+          const overlaps = startMinutes < otherEnd && otherStart < endMinutes;
+          return overlaps && !sameClass(item);
+        });
+        if (sameStudentConflict || trainerConflict || classCount >= capacity) { skipped++; continue; }
+        candidates.push({
+          ...template,
+          date,
+          recurrenceParentId: String(template.id),
+          recurrenceGenerated: true,
+          status: 'Agendada',
+        });
+        if (candidates.length >= 100) break;
+      }
+
+      if (!candidates.length) return json({ created: 0, skipped, message: 'Nenhuma nova aula foi gerada.' });
+      const batches: Record<string, unknown>[][] = [];
+      for (let index = 0; index < candidates.length; index += 50) batches.push(candidates.slice(index, index + 50));
+      let created = 0;
+      for (const batch of batches) {
+        const ids = await db.add('lessons', batch);
+        created += ids.filter(Boolean).length;
+      }
+      return json({ created, skipped, message: 'Recorrência processada.' }, 201);
     },
   ],
   'POST /api/:resource': [
