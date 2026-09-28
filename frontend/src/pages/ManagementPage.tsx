@@ -5,6 +5,7 @@ import {
   archiveManagementRecord,
   createManagementRecord,
   getManagementRecords,
+  restoreManagementRecord,
   updateManagementRecord,
   type ManagementRecord,
   type ManagementResource,
@@ -112,6 +113,14 @@ export default function ManagementPage() {
     },
     onError: () => setNotice('Não foi possível arquivar o registro.'),
   })
+  const restore = useMutation({
+    mutationFn: (id: string) => restoreManagementRecord(resource, id),
+    onSuccess: async () => {
+      setNotice('Registro restaurado.')
+      await queryClient.invalidateQueries({ queryKey: ['finance', 'management'] })
+    },
+    onError: () => setNotice('Não foi possível restaurar o registro.'),
+  })
   const records = query.data ?? []
   const visibleRecords = useMemo(() => {
     const term = search.trim().toLocaleLowerCase('pt-BR')
@@ -215,7 +224,7 @@ export default function ManagementPage() {
             <small>{entries.slice(0, 4).map(([key, value]) => `${key}: ${String(value)}`).join(' · ') || 'Sem detalhes adicionais'}</small>
             {resource === 'payments' && data.status === 'Pendente' && <small>Pagamento pendente</small>}
           </span>
-          {!record.archived && <div className="flex gap-2"><button type="button" className="secondary" aria-label={`Editar ${recordTitle(record, resource)}`} onClick={() => {
+          {record.archived ? <button type="button" className="secondary" disabled={restore.isPending} onClick={() => restore.mutate(record.id)}>Restaurar</button> : <div className="flex gap-2"><button type="button" className="secondary" aria-label={`Editar ${recordTitle(record, resource)}`} onClick={() => {
             const nextForm: Record<string, string> = Object.fromEntries(Object.entries(record.data).map(([key, value]) => [key, value == null ? '' : String(value)]))
             setEditing(record)
             setForm(nextForm)
