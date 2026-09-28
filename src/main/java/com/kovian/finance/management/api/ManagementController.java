@@ -73,6 +73,15 @@ public class ManagementController {
         return Map.of("archived", true, "id", record.getId());
     }
 
+    @PostMapping("/{resource}/{id}/restore")
+    @Transactional
+    public Map<String, Object> restore(@PathVariable String resource, @PathVariable UUID id) {
+        requireResource(resource);
+        ManagementRecord record = findOwned(resource, id);
+        record.restore();
+        return Map.of("restored", true, "id", record.getId());
+    }
+
     @PostMapping("/import-batch/{resource}")
     @Transactional
     public ImportResult importBatch(@PathVariable String resource, @Valid @RequestBody ImportBatch request) {
