@@ -138,6 +138,17 @@ async def import_gestao_payment(
         mapped_user_id = owner_map.get(str(event.ownerId))
         if not isinstance(mapped_user_id, str) or not mapped_user_id.strip():
             raise HTTPException(status_code=403, detail="Gestão owner is not linked to Finance")
+        try:
+            account_map = json.loads(os.getenv("GESTAO_ACCOUNT_MAP", "{}"))
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=503, detail="Integration account mapping is misconfigured")
+        if not isinstance(account_map, dict):
+            raise HTTPException(status_code=503, detail="Integration account mapping is misconfigured")
+        mapped_account_id = account_map.get(str(event.ownerId))
+        if not isinstance(mapped_account_id, str) or not mapped_account_id.strip():
+            raise HTTPException(status_code=403, detail="Gestão owner has no configured Finance account")
+        if mapped_account_id != account_id:
+            raise HTTPException(status_code=403, detail="Requested account is not mapped to this Gestão owner")
         mapped_user = await db.scalar(select(User).where(User.id == mapped_user_id))
         if mapped_user is None or not mapped_user.is_active:
             raise HTTPException(status_code=403, detail="Mapped Finance user is unavailable")
