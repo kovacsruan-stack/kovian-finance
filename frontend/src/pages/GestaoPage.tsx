@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-import { ExternalLink, RefreshCw, ShieldCheck, Users, AlertTriangle } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ExternalLink, RefreshCw, ShieldCheck, AlertTriangle } from 'lucide-react'
 
 const gestaoUrl = (import.meta.env.VITE_KOVIAN_GESTAO_URL || 'https://kovian-gestao-33xv91.v2.appdeploy.ai/').trim()
 
 export default function GestaoPage() {
-  const frameRef = useRef<HTMLIFrameElement>(null)
   const [reloadKey, setReloadKey] = useState(0)
   const [loaded, setLoaded] = useState(false)
   const [slow, setSlow] = useState(false)
@@ -60,7 +59,6 @@ export default function GestaoPage() {
         </div>}
         <iframe
           key={reloadKey}
-          ref={frameRef}
           id="kovian-gestao-frame"
           title="KOVIAN Gestão"
           src={gestaoUrl}
