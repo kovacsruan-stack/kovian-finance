@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { getAccounts, getOwnerId, getRecurring, getTransactions, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
+import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
 
@@ -18,12 +18,14 @@ const endOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() 
 const daysInMonth = (date: Date) => endOfMonth(date).getDate()
 const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
-type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' }
+type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' }
 
 function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
   if (kind === 'RECURRING') return isPortuguese ? 'Recorrente' : 'Recurring'
   if (kind === 'INCOME') return isPortuguese ? 'Entrada' : 'Income'
   if (kind === 'TRANSFER') return isPortuguese ? 'Transferência' : 'Transfer'
+  if (kind === 'LESSON') return isPortuguese ? 'Aula' : 'Lesson'
+  if (kind === 'PAYMENT') return isPortuguese ? 'Pagamento' : 'Payment'
   return isPortuguese ? 'Saída' : 'Expense'
 }
 
@@ -54,6 +56,18 @@ export default function CalendarPage() {
     enabled: Boolean(ownerId),
     staleTime: 60_000,
   })
+  const lessons = useQuery({
+    queryKey: ['finance', 'calendar', 'management', 'lessons'],
+    queryFn: () => getManagementRecords('lessons'),
+    enabled: Boolean(ownerId),
+    staleTime: 30_000,
+  })
+  const payments = useQuery({
+    queryKey: ['finance', 'calendar', 'management', 'payments'],
+    queryFn: () => getManagementRecords('payments'),
+    enabled: Boolean(ownerId),
+    staleTime: 30_000,
+  })
 
   const events = useMemo<CalendarEvent[]>(() => {
     const currencyByAccount = new Map((accounts.data ?? []).map((account: FinanceAccount) => [account.id, account.currency]))
@@ -77,8 +91,35 @@ export default function CalendarPage() {
         kind: 'RECURRING' as const,
       })),
     )
-    return [...transactionEvents, ...recurringEvents].sort((a, b) => a.date.localeCompare(b.date))
-  }, [transactions.data, recurring.data, accounts.data, from, to])
+    const lessonEvents = (lessons.data ?? []).flatMap(item => {
+      const data = item.data
+      const date = String(data.date ?? data.startDate ?? '').slice(0, 10)
+      if (!date || date < from || date >= to || /cancelad|canceled/i.test(String(data.status ?? ''))) return []
+      return [{
+        id: 'lesson:' + item.id,
+        date,
+        title: (isPortuguese ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        amount: 0,
+        currency: 'BRL',
+        kind: 'LESSON' as const,
+      }]
+    })
+    const paymentEvents = (payments.data ?? []).flatMap(item => {
+      const data = item.data
+      const date = String((/^(pago|paid)$/i.test(String(data.status ?? '')) ? data.paidDate : data.dueDate) ?? '').slice(0, 10)
+      if (!date || date < from || date >= to) return []
+      const amount = Number(String(data.amount ?? '0').replace(',', '.'))
+      return [{
+        id: 'payment:' + item.id,
+        date,
+        title: (isPortuguese ? 'Pagamento · ' : 'Payment · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        amount: Number.isFinite(amount) ? amount : 0,
+        currency: 'BRL',
+        kind: 'PAYMENT' as const,
+      }]
+    })
+    return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents].sort((a, b) => a.date.localeCompare(b.date))
+  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, from, to, isPortuguese])
 
   const visibleEvents = useMemo(() => events.filter(event => {
     const matchesKind = kindFilter === 'ALL' || event.kind === kindFilter
@@ -102,7 +143,7 @@ export default function CalendarPage() {
   const label = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   const monthEvents = visibleEvents.filter(event => event.date.startsWith(from.slice(0, 7)))
   const selectedEvents = byDay[selectedDate] ?? []
-  const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading
+  const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading || lessons.isLoading || payments.isLoading
   const today = iso(new Date())
 
   const moveMonth = (delta: number) => {
@@ -130,11 +171,11 @@ export default function CalendarPage() {
       </div>
     </section>
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
-    {(transactions.isError || recurring.isError || accounts.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
+    {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
         <strong>{label.charAt(0).toUpperCase() + label.slice(1)}</strong>
-        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (isPortuguese ? visibleEvents.length + ' eventos' : visibleEvents.length + ' events')}</span><select aria-label={isPortuguese ? 'Filtrar tipo de evento' : 'Filter event type'} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{isPortuguese ? 'Todos os tipos' : 'All types'}</option><option value="INCOME">{isPortuguese ? 'Entradas' : 'Income'}</option><option value="EXPENSE">{isPortuguese ? 'Saídas' : 'Expenses'}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option></select><input aria-label={isPortuguese ? 'Buscar evento' : 'Search events'} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={isPortuguese ? 'Buscar...' : 'Search...'} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
+        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (isPortuguese ? visibleEvents.length + ' eventos' : visibleEvents.length + ' events')}</span><select aria-label={isPortuguese ? 'Filtrar tipo de evento' : 'Filter event type'} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{isPortuguese ? 'Todos os tipos' : 'All types'}</option><option value="INCOME">{isPortuguese ? 'Entradas' : 'Income'}</option><option value="EXPENSE">{isPortuguese ? 'Saídas' : 'Expenses'}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option></select><input aria-label={isPortuguese ? 'Buscar evento' : 'Search events'} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={isPortuguese ? 'Buscar...' : 'Search...'} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
       </div>
       <div className="calendar-weekdays">{(isPortuguese ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map(day => <span key={day}>{day}</span>)}</div>
       <div className="calendar-grid">
