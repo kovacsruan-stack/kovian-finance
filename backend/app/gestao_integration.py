@@ -39,7 +39,7 @@ class PaymentPayload(BaseModel):
     version: int = Field(ge=1, le=1)
     ownerId: str = Field(pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
     occurredAt: datetime
-    correlationId: str = Field(min_length=1, max_length=100)
+    correlationId: str | None = Field(default=None, min_length=1, max_length=100)
     payload: PaymentDetails
 
     @field_validator("occurredAt")
@@ -64,7 +64,7 @@ async def ingest_payment(
     scheme, _, supplied = (authorization or "").partition(" ")
     if scheme.lower() != "bearer" or not supplied or not hmac.compare_digest(supplied, expected_token):
         raise HTTPException(status_code=401, detail="Invalid integration credentials")
-    if body.ownerId != expected_owner or body.id != body.correlationId:
+    if body.ownerId != expected_owner or (body.correlationId is not None and body.correlationId != body.id):
         raise HTTPException(status_code=403, detail="Integration identity mismatch")
 
     data = body.payload
