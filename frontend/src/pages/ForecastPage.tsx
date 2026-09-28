@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { CalendarRange, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { getForecastCashFlow, getOwnerId } from '../lib/api'
@@ -12,7 +12,8 @@ export default function ForecastPage() {
   const { t } = useTranslation()
   const ownerId=getOwnerId()
   const [days,setDays]=useState<30|90|180|365>(90)
-  const from=useMemo(()=>localDateKey(),[])
+  const [from,setFrom]=useState(()=>localDateKey())
+  const today=localDateKey()
   const query=useQuery({queryKey:['finance','forecast','cash-flow',ownerId,from,days],queryFn:()=>getForecastCashFlow(ownerId!,from,days),enabled:Boolean(ownerId),staleTime:60_000, retry:2})
   const data:CashFlowForecast[]=query.data ?? []
   const hasFiniteData=data.every(row=>Number.isFinite(row.income)&&Number.isFinite(row.expense)&&Number.isFinite(row.netCashFlow)&&Number.isFinite(row.projectedBalance))
@@ -20,7 +21,7 @@ export default function ForecastPage() {
   const income=data.reduce((s,x)=>s+x.income,0)
   const expense=data.reduce((s,x)=>s+x.expense,0)
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value) as 30|90|180|365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount',{count:30})}</option><option value={90}>{t('daysCount',{count:90})}</option><option value={180}>{t('daysCount',{count:180})}</option><option value={365}>{t('daysCount',{count:365})}</option></select></label></section>
+    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><div className="flex flex-wrap items-center gap-3"><label className="secondary"><CalendarRange size={16}/><span>Data inicial</span><input type="date" value={from} min={today} onChange={e=>setFrom(e.target.value)} aria-label="Data inicial da projeção" /></label><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value) as 30|90|180|365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount',{count:30})}</option><option value={90}>{t('daysCount',{count:90})}</option><option value={180}>{t('daysCount',{count:180})}</option><option value={365}>{t('daysCount',{count:365})}</option></select></label></div></section>
     {!ownerId && <div className="notice">{t('loginToLoadData')}</div>}
     {query.isError && <div className="notice">{t('forecastError')}</div>}
     <div className="stat-grid"><article className="stat-card"><TrendingUp size={17}/><span>{t('projectedIncome')}</span><strong>{query.isLoading||query.isError||!hasFiniteData?'—':money(income)}</strong></article><article className="stat-card"><TrendingDown size={17}/><span>{t('projectedExpense')}</span><strong>{query.isLoading||query.isError||!hasFiniteData?'—':money(expense)}</strong></article><article className="stat-card"><Wallet size={17}/><span>{t('projectedEndingBalance')}</span><strong>{query.isLoading||query.isError||!hasFiniteData?'—':money(ending)}</strong></article></div>
