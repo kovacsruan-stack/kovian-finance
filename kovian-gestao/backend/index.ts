@@ -69,6 +69,30 @@ async function stablePaymentEventId(paymentId: string): Promise<string> {
   return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20);
 }
 
+function validateLessonSchedule(record: Record<string, unknown>): string | null {
+  const date = String(record.date ?? '').trim();
+  const time = String(record.time ?? '').trim();
+  if (!String(record.student ?? '').trim()) return 'Selecione o aluno.';
+  if (!String(record.modality ?? '').trim()) return 'Selecione a modalidade.';
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(date) || Number.isNaN(Date.parse(date + 'T12:00:00Z'))) {
+    return 'Informe uma data válida para a aula.';
+  }
+  if (!/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return 'Informe um horário válido.';
+  const duration = Number(record.durationMinutes ?? 60);
+  if (!Number.isInteger(duration) || duration < 15 || duration > 240) return 'A duração deve estar entre 15 e 240 minutos.';
+  const capacity = Number(record.capacity ?? 1);
+  if (!Number.isInteger(capacity) || capacity < 1 || capacity > 200) return 'A capacidade deve estar entre 1 e 200 vagas.';
+  const interval = Number(record.recurrenceIntervalWeeks ?? 1);
+  if (!Number.isInteger(interval) || interval < 1 || interval > 52) return 'A recorrência deve ser de 1 a 52 semanas.';
+  const repeatUntil = String(record.repeatUntil ?? '').trim();
+  if (repeatUntil && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(repeatUntil) || repeatUntil < date)) {
+    return 'A data final da recorrência deve ser igual ou posterior à primeira aula.';
+  }
+  const days = String(record.daysOfWeek ?? '').trim();
+  if (days.length > 100) return 'A configuração dos dias da semana é muito longa.';
+  return null;
+}
+
 async function persistPayment(
   id: string,
   record: Record<string, unknown>,
@@ -358,6 +382,13 @@ export const handler = router({
       if (!table) return error('Recurso não encontrado', 404);
       const record = cleanRecord(ctx.body);
       if (!record) return error('Dados inválidos', 400);
+      if (ctx.params.resource === 'lessons') {
+        const scheduleError = validateLessonSchedule(record);
+        if (scheduleError) return error(scheduleError, 400);
+        record.durationMinutes = Number(record.durationMinutes ?? 60);
+        record.capacity = Number(record.capacity ?? 1);
+        record.recurrenceIntervalWeeks = Number(record.recurrenceIntervalWeeks ?? 1);
+      }
       const [id] = await db.add(table, [record]);
       if (!id) return error('Não foi possível salvar o registro', 500);
       return json({ id, ...record }, 201);
@@ -372,9 +403,17 @@ export const handler = router({
       if (!incoming) return error('Dados inválidos', 400);
       const [existing] = await db.get<Record<string, unknown>>(table, [ctx.params.id]);
       if (!existing) return error('Registro não encontrado', 404);
-      const [updated] = await db.update(table, [{ id: ctx.params.id, record: { ...existing, ...incoming } }]);
+      const merged = { ...existing, ...incoming };
+      if (ctx.params.resource === 'lessons') {
+        const scheduleError = validateLessonSchedule(merged);
+        if (scheduleError) return error(scheduleError, 400);
+        merged.durationMinutes = Number(merged.durationMinutes ?? 60);
+        merged.capacity = Number(merged.capacity ?? 1);
+        merged.recurrenceIntervalWeeks = Number(merged.recurrenceIntervalWeeks ?? 1);
+      }
+      const [updated] = await db.update(table, [{ id: ctx.params.id, record: merged }]);
       if (!updated) return error('Não foi possível atualizar o registro', 500);
-      return json({ id: ctx.params.id, ...existing, ...incoming });
+      return json({ id: ctx.params.id, ...merged });
     },
   ],
   'DELETE /api/:resource/:id': [
