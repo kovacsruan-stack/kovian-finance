@@ -4,21 +4,63 @@ The endpoint requires a Finance user token. Cross-product service credentials an
 canonical identity mapping must be added before allowing unattended server-to-server
 delivery from Gestão.
 """
+import json
+import os
+import secrets
 from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_session
-from .finance_routes import current_user
-from .models import Account, GestaoPaymentImport, Transaction
+from .models import Account, GestaoPaymentImport, Transaction, User
+from .security import decode_access_token
 
 router = APIRouter(prefix="/api/v1/integrations/gestao", tags=["integrations"])
+bearer = HTTPBearer(auto_error=False)
+
+
+async def integration_user(
+    event_owner_id: UUID,
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer),
+    db: AsyncSession = Depends(get_session),
+) -> str:
+    """Resolve either an interactive Finance user or a mapped Gestão service identity."""
+    if credentials is None:
+        raise HTTPException(status_code=401, detail="Bearer token required")
+
+    service_token = os.getenv("GESTAO_INTEGRATION_TOKEN", "")
+    if service_token and secrets.compare_digest(credentials.credentials, service_token):
+        if len(service_token) < 32:
+            raise HTTPException(status_code=503, detail="Integration service token is misconfigured")
+        try:
+            owner_map = json.loads(os.getenv("GESTAO_OWNER_MAP", "{}"))
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=503, detail="Integration owner mapping is misconfigured")
+        if not isinstance(owner_map, dict):
+            raise HTTPException(status_code=503, detail="Integration owner mapping is misconfigured")
+        mapped_user_id = owner_map.get(str(event_owner_id))
+        if not isinstance(mapped_user_id, str) or not mapped_user_id.strip():
+            raise HTTPException(status_code=403, detail="Gestão owner is not linked to Finance")
+        user = await db.scalar(select(User).where(User.id == mapped_user_id))
+        if user is None or not user.is_active:
+            raise HTTPException(status_code=403, detail="Mapped Finance user is unavailable")
+        return user.id
+
+    try:
+        payload = decode_access_token(credentials.credentials)
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired access token")
+    user = await db.scalar(select(User).where(User.id == str(payload["sub"])))
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=401, detail="User is unavailable")
+    return user.id
 
 
 class PaymentPayload(BaseModel):
@@ -94,7 +136,7 @@ async def import_gestao_payment(
     event: PaymentEvent,
     response: Response,
     account_id: str = Query(min_length=1, max_length=36),
-    user_id: str = Depends(current_user),
+    user_id: str = Depends(integration_user),
     db: AsyncSession = Depends(get_session),
 ):
     """Import one confirmed payment; repeated deliveries never create another entry."""
