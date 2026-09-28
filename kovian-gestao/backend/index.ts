@@ -76,7 +76,7 @@ async function syncPaymentWithFinance(
     throw new Error('Integração não configurada no backend. Configure URL, token, proprietário e conta do Finance.');
   }
 
-  let studentRef = String(payment.studentId ?? '').trim();
+  let studentRef = String(payment.financeStudentRef ?? payment.studentId ?? '').trim();
   if (!studentRef) {
     const { items: students } = await db.list<Record<string, unknown>>('students', { limit: 100 });
     const target = String(payment.student ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR');
