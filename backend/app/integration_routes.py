@@ -26,7 +26,7 @@ class PaymentPayload(BaseModel):
 
     paymentRef: str = Field(min_length=1, max_length=128)
     studentRef: str = Field(min_length=1, max_length=128)
-    amountMinor: int = Field(gt=0)
+    amountMinor: int = Field(gt=0, le=99_999_999_999_999, strict=True)
     currency: str = Field(pattern="^[A-Z]{3}$")
     paidAt: datetime
     description: str | None = Field(default=None, max_length=160)
