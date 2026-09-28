@@ -207,6 +207,10 @@ export default function ManagementPage() {
             <select value={form[key] ?? 'Pendente'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
               {['Pendente', 'Pago', 'Atrasado', 'Cancelado'].map(status => <option key={status} value={status}>{status}</option>)}
             </select>
+          ) : key === 'status' && resource === 'waitlist' ? (
+            <select value={form[key] ?? 'Aguardando'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
+              {['Aguardando', 'Contactado', 'Matriculado', 'Desistiu'].map(status => <option key={status} value={status}>{status}</option>)}
+            </select>
           ) : key === 'modality' && resource === 'students' ? (
             <>
               <input list="management-modalities" value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))} />
