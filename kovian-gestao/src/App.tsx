@@ -58,6 +58,13 @@ const sections = [
       ['modality', 'Modalidade'],
       ['date', 'Data'],
       ['time', 'Horário'],
+      ['durationMinutes', 'Duração (minutos)'],
+      ['trainer', 'Profissional responsável'],
+      ['location', 'Local / sala'],
+      ['capacity', 'Vagas'],
+      ['daysOfWeek', 'Dias da semana (ex.: SEG, QUA, SEX)'],
+      ['recurrenceIntervalWeeks', 'Repetir a cada (semanas)'],
+      ['repeatUntil', 'Repetir até'],
       ['status', 'Status'],
     ],
   },
@@ -646,8 +653,11 @@ function App() {
                 <button
                   className="primary"
                   onClick={() => {
-                    setAdding(!adding);
-                    setForm({});
+                    const opening = !adding;
+                    setAdding(opening);
+                    setForm(opening && section === 'lessons'
+                      ? { durationMinutes: '60', capacity: '1', recurrenceIntervalWeeks: '1', status: 'Agendada' }
+                      : {});
                     setError('');
                   }}
                 >
@@ -729,10 +739,11 @@ function App() {
                         </select>
                       ) : (
                         <input
-                          type={['startDate', 'date', 'dueDate', 'paidDate'].includes(key) ? 'date' : key === 'time' ? 'time' : ['monthlyFee', 'amount', 'price', 'frequency', 'dueDay'].includes(key) ? 'number' : 'text'}
-                          inputMode={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay'].includes(key) ? 'decimal' : undefined}
-                          min={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay'].includes(key) ? '0' : undefined}
-                          step={['monthlyFee', 'amount', 'price'].includes(key) ? '0.01' : ['frequency', 'dueDay'].includes(key) ? '1' : undefined}
+                          type={['startDate', 'date', 'dueDate', 'paidDate', 'repeatUntil'].includes(key) ? 'date' : key === 'time' ? 'time' : ['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? 'number' : 'text'}
+                          inputMode={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? 'decimal' : undefined}
+                          min={['monthlyFee', 'amount', 'price', 'frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? (['durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : '0') : undefined}
+                          max={key === 'durationMinutes' ? '240' : key === 'capacity' ? '200' : key === 'recurrenceIntervalWeeks' ? '52' : undefined}
+                          step={['monthlyFee', 'amount', 'price'].includes(key) ? '0.01' : ['frequency', 'dueDay', 'durationMinutes', 'capacity', 'recurrenceIntervalWeeks'].includes(key) ? '1' : undefined}
                           value={key === 'time' ? String(form[key] || '').slice(0, 5) : form[key] || ''}
                           onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
                           placeholder={label}
