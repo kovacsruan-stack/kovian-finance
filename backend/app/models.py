@@ -2,7 +2,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String
+from sqlalchemy import Boolean, Date, DateTime, ForeignKey, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -79,3 +79,27 @@ class FinancialGoal(Base):
     target_date: Mapped[date | None] = mapped_column(Date)
     priority: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+
+
+
+class GestaoPaymentImport(Base):
+    """Idempotency record linking a trusted Gestão payment event to one ledger transaction."""
+
+    __tablename__ = "gestao_payment_imports"
+    __table_args__ = (
+        UniqueConstraint("owner_id", "event_id", name="uq_gestao_import_owner_event"),
+        UniqueConstraint("owner_id", "payment_ref", name="uq_gestao_import_owner_payment"),
+        UniqueConstraint("transaction_id", name="uq_gestao_import_transaction"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    event_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    payment_ref: Mapped[str] = mapped_column(String(128), nullable=False)
+    student_ref: Mapped[str] = mapped_column(String(128), nullable=False)
+    transaction_id: Mapped[str] = mapped_column(
+        ForeignKey("transactions.id"), nullable=False
+    )
+    event_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
