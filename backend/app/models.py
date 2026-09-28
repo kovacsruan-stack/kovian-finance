@@ -113,3 +113,13 @@ class ManagementLesson(ManagementRecord, Base):
 class ManagementPayment(ManagementRecord, Base):
     __tablename__ = "management_payments"
     __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_payments_owner_source"),)
+
+
+class ManagementExpense(ManagementRecord, Base):
+    __tablename__ = "management_expenses"
+    __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_expenses_owner_source"),)
+
+
+class ManagementWaitlist(ManagementRecord, Base):
+    __tablename__ = "management_waitlist"
+    __table_args__ = (UniqueConstraint("user_id", "source_id", name="uq_management_waitlist_owner_source"),)
