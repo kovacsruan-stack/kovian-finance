@@ -23,7 +23,8 @@ function exportForecastCsv(data: CashFlowForecast[]) {
   document.body.appendChild(anchor)
   anchor.click()
   anchor.remove()
-  URL.revokeObjectURL(url)
+  // Keep the object URL alive long enough for the browser to begin the download.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1_000)
 }
 
 function BalanceChart({ data }: { data: CashFlowForecast[] }) {
