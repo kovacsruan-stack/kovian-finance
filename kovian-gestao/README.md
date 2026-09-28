@@ -33,7 +33,7 @@ Pagamentos com status **Pago** podem ser enviados pelo botão **Enviar ao Financ
 
 Configure estas variáveis **somente nos segredos do backend AppDeploy**:
 
-- `KOVIAN_FINANCE_API_URL`: origem/base pública da API Finance, sem o sufixo `/api/v1`.
+- `KOVIAN_FINANCE_API_URL`: origem pública do serviço **Python/FastAPI** que hospeda `backend/app/main.py`, sem o sufixo `/api/v1`. Não use automaticamente a URL do frontend ou do backend Java da raiz; o FastAPI é um serviço separado e precisa estar implantado.
 - `KOVIAN_FINANCE_INTEGRATION_TOKEN`: token de serviço com pelo menos 32 caracteres, igual a `GESTAO_INTEGRATION_TOKEN` no backend Finance.
 - `KOVIAN_FINANCE_OWNER_ID`: UUID do proprietário configurado em `GESTAO_OWNER_MAP` no Finance.
 - `KOVIAN_FINANCE_ACCOUNT_ID`: ID de uma conta BRL ativa pertencente ao usuário mapeado, também configurada em `GESTAO_ACCOUNT_MAP`.
