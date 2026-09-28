@@ -10,7 +10,7 @@ Finance consumes the canonical ecosystem subject identifier while retaining owne
 The monorepo contract is `contracts/events/management-payment-paid-v1.schema.json` and defines `MANAGEMENT_PAYMENT_PAID.v1`. A first Finance ingestion endpoint now exists on the separate implementation branch / PR #34. This document defines the security and operational requirements for completing the producer-side integration; the endpoint is not production-enabled by this documentation change.
 
 - Authenticate the producer with a high-entropy service credential or equivalent signed request; do not accept an event based only on a browser-provided payload. The Finance foundation supports a server-configured `GESTAO_INTEGRATION_TOKEN`.
-- Resolve the event's `ownerId` to the Finance subject using the server-side `GESTAO_OWNER_MAP`; never trust a client-provided Finance user ID.
+- Resolve the event's `ownerId` to the Finance subject using the server-side `GESTAO_OWNER_MAP`; never trust a client-provided Finance user ID. For service calls, require `account_id` to match the server-side `GESTAO_ACCOUNT_MAP` entry for that owner.
 - Validate the schema and require `currency = BRL`; convert `amountMinor` to a decimal amount without floating-point arithmetic.
 - Store both the event ID and the source payment reference under database uniqueness constraints. Event-ID deduplication alone is insufficient if a producer retries the same payment with a new event ID.
 - Create one income transaction only after validating that the target account belongs to the resolved user and uses the same currency.
