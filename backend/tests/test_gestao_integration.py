@@ -275,3 +275,17 @@ def test_service_token_rejects_malformed_owner_map(monkeypatch):
 
     assert exc.value.status_code == 503
     db.scalar.assert_not_awaited()
+
+
+def test_service_account_mapping_mismatch_fails_closed(monkeypatch):
+    owner_id, user_id = str(uuid4()), str(uuid4())
+    monkeypatch.setenv("GESTAO_OWNER_MAP", json.dumps({owner_id: user_id}))
+    monkeypatch.setenv("GESTAO_ACCOUNT_MAP", json.dumps({owner_id: str(uuid4())}))
+    data = valid_event()
+    data["ownerId"] = owner_id
+    db = Mock()
+    db.scalar = AsyncMock()
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(import_gestao_payment(event=PaymentEvent.model_validate(data), response=SimpleNamespace(status_code=201), account_id=str(uuid4()), auth={"mode": "service"}, db=db))
+    assert exc.value.status_code == 403
+    db.scalar.assert_not_awaited()
