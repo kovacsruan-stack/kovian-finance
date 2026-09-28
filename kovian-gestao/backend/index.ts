@@ -94,6 +94,9 @@ function validateLessonSchedule(record: Record<string, unknown>): string | null 
   }
   const days = String(record.daysOfWeek ?? '').trim();
   if (days.length > 100) return 'A configuração dos dias da semana é muito longa.';
+  const selectedDays = parseScheduleDays(days, date);
+  if (!selectedDays) return 'Use dias válidos: SEG, TER, QUA, QUI, SEX, SAB e/ou DOM.';
+  if (!selectedDays.includes(parsedDate.getUTCDay())) return 'A data da primeira aula precisa corresponder a um dos dias selecionados.';
   return null;
 }
 
@@ -274,7 +277,7 @@ function parseScheduleDays(value: unknown, fallbackDate: string): number[] | nul
     const day = new Date(fallbackDate + 'T12:00:00Z').getUTCDay();
     return [day];
   }
-  const tokens = raw.split(/[,;| ]+/).filter(Boolean).map(token =>
+  const tokens = raw.split(/[,;|\\s]+/).filter(Boolean).map(token =>
     token.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase()
   );
   const parsed = tokens.map(token => aliases[token]);
@@ -490,9 +493,11 @@ export const handler = router({
           String(item.location ?? '') === String(template.location ?? '') &&
           String(item.status ?? 'Agendada') !== 'Cancelada';
         const classCount = existing.filter(sameClass).length + candidates.filter(sameClass).length;
-        const trainerConflict = Boolean(String(template.trainer ?? '').trim()) && existing.some(item => {
+        const resourceConflict = existing.some(item => {
           if (String(item.date ?? '') !== date || String(item.status ?? 'Agendada') === 'Cancelada') return false;
-          if (String(item.trainer ?? '') !== String(template.trainer ?? '')) return false;
+          const sameTrainer = Boolean(String(template.trainer ?? '').trim()) && String(item.trainer ?? '') === String(template.trainer ?? '');
+          const sameRoom = Boolean(String(template.location ?? '').trim()) && String(item.location ?? '') === String(template.location ?? '');
+          if (!sameTrainer && !sameRoom) return false;
           const time = String(item.time ?? '');
           if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return false;
           const otherStart = Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5));
@@ -500,7 +505,7 @@ export const handler = router({
           const overlaps = startMinutes < otherEnd && otherStart < endMinutes;
           return overlaps && !sameClass(item);
         });
-        if (sameStudentConflict || trainerConflict || classCount >= capacity) { skipped++; continue; }
+        if (sameStudentConflict || resourceConflict || classCount >= capacity) { skipped++; continue; }
         const generated: Record<string, unknown> = {
           ...template,
           date,
