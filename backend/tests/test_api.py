@@ -31,4 +31,4 @@ def test_management_endpoints_are_registered():
     paths = {route.path for route in app.routes}
     assert "/api/v1/management/{resource}" in paths
     assert "/api/v1/management/{resource}/{record_id}" in paths
-    assert "/api/v1/management/{resource}/import-batch" in paths
+    assert "/api/v1/management/import-batch/{resource}" in paths
