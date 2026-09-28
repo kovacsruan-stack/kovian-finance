@@ -1,0 +1,14 @@
+{
+  "methods": ["google"],
+  "headline": "Entrar no KOVIAN Gestão",
+  "subtitle": "Acesso administrativo seguro",
+  "style": {
+    "mode": "light",
+    "accentColor": "#203e63",
+    "backgroundColor": "#f5f7fa",
+    "panelColor": "#ffffff",
+    "textColor": "#182230",
+    "fontFamily": "Inter, system-ui, sans-serif",
+    "borderRadius": 14
+  }
+}
