@@ -43,3 +43,15 @@ No backend Finance, configure `GESTAO_OWNER_MAP` e `GESTAO_ACCOUNT_MAP` como obj
 A sincronização guarda o ID do evento, a referência do aluno e o instante original para que uma nova tentativa reutilize o mesmo evento. O Finance aplica idempotência e cria no máximo um lançamento por pagamento. Pagamentos antigos sem `studentId` só podem ser sincronizados quando o nome corresponder exatamente a um único aluno; prefira pagamentos vinculados ao ID do aluno.
 
 A integração ainda depende da configuração de segredos e mapas nos ambientes de execução e de validação ponta a ponta. Não considere a integração pronta para produção até concluir essa validação.
+
+## Agenda e recorrência
+
+A área **Aulas** usa os controles de agenda inspirados no KOVIAN Fitness:
+
+- Data e horário da sessão, duração de 15 a 240 minutos, profissional responsável e local/sala.
+- Capacidade configurável de 1 a 200 participantes.
+- Dias de recorrência (SEG, TER, QUA, QUI, SEX, SAB, DOM), intervalo de 1 a 52 semanas e data final opcional.
+- Ação **Gerar recorrência** na aula-modelo. Sem data final, a janela padrão é de 180 dias; cada operação cria no máximo 100 sessões e não ultrapassa 366 dias.
+- A geração ignora duplicidades e horários conflitantes para o mesmo aluno/profissional, além de respeitar a capacidade configurada para o mesmo horário, modalidade, profissional e local.
+
+A recorrência é gerada sob demanda, não em segundo plano. A agenda do Finance mantém a visão financeira e agora permite selecionar um dia e filtrar entradas, saídas, transferências e recorrências financeiras. A sincronização automática de aulas da Gestão para o calendário financeiro ainda exige uma integração de eventos dedicada; não confundir a visualização financeira com um calendário compartilhado.
