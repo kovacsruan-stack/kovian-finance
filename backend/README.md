@@ -48,7 +48,7 @@ Review generated SQL carefully before applying it to any database containing rea
 `POST /api/v1/integrations/gestao/payments?account_id={account_id}` accepts `MANAGEMENT_PAYMENT_PAID.v1` and records one confirmed BRL income transaction.
 
 - Interactive calls use a Finance Bearer token whose user ID must match the event `ownerId`.
-- Service calls use `GESTAO_INTEGRATION_TOKEN` (32+ random characters) and server-side `GESTAO_OWNER_MAP` JSON mapping Gestão owner UUIDs to Finance user IDs.
+- Service calls use `GESTAO_INTEGRATION_TOKEN` (32+ random characters), `GESTAO_OWNER_MAP` (Gestão owner UUID → Finance user ID), and `GESTAO_ACCOUNT_MAP` (Gestão owner UUID → approved Finance account ID). The endpoint rejects service requests that select an account outside this server-side mapping.
 - The target account must be active, belong to the resolved Finance user, and use BRL.
 - The event ID and payment reference are unique per Finance user; exact retries return the existing transaction.
 - Never expose the service token or owner map to frontend code. Do not enable unattended delivery until production secrets, owner mappings, account selection, and end-to-end checks are complete.
