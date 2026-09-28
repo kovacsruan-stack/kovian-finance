@@ -15,6 +15,7 @@ from app.integration_routes import (
     PaymentEvent,
     _require_aware,
     import_gestao_payment,
+    _event_fingerprint,
     integration_auth,
 )
 
@@ -153,6 +154,7 @@ def test_payment_import_returns_existing_transaction_for_same_event():
         transaction_id=str(uuid4()),
         payment_ref=event.payload.paymentRef,
         student_ref=event.payload.studentRef,
+        event_fingerprint=_event_fingerprint(event),
     )
     transaction = SimpleNamespace(
         id=imported.transaction_id,
@@ -185,6 +187,87 @@ def test_payment_import_returns_existing_transaction_for_same_event():
     db.commit.assert_not_called()
 
 
+
+
+def test_event_fingerprint_changes_when_any_event_field_changes():
+    original = PaymentEvent.model_validate(valid_event())
+    changed_data = valid_event()
+    changed_data["id"] = str(original.id)
+    changed_data["payload"]["description"] = "Descrição alterada"
+    changed = PaymentEvent.model_validate(changed_data)
+    assert _event_fingerprint(original) != _event_fingerprint(changed)
+
+
+def test_reused_event_id_with_changed_description_is_conflict():
+    user_id = str(uuid4())
+    account_id = str(uuid4())
+    event_data = valid_event()
+    event_data["ownerId"] = user_id
+    event = PaymentEvent.model_validate(event_data)
+    changed_data = valid_event()
+    changed_data["id"] = str(event.id)
+    changed_data["ownerId"] = user_id
+    changed_data["payload"]["description"] = "Outra descrição"
+    changed_event = PaymentEvent.model_validate(changed_data)
+    imported = SimpleNamespace(
+        transaction_id=str(uuid4()),
+        payment_ref=event.payload.paymentRef,
+        student_ref=event.payload.studentRef,
+        event_fingerprint=_event_fingerprint(event),
+    )
+    transaction = SimpleNamespace(
+        id=imported.transaction_id,
+        user_id=user_id,
+        account_id=account_id,
+        amount=Decimal("125.00"),
+        paid_at=event.payload.paidAt,
+        currency="BRL",
+        entry_type="income",
+        category="Mensalidades",
+        is_confirmed=True,
+    )
+    db = Mock()
+    db.scalar = AsyncMock(side_effect=[imported, transaction])
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(import_gestao_payment(
+            event=changed_event,
+            response=SimpleNamespace(status_code=201),
+            account_id=account_id,
+            auth={"mode": "user", "user_id": user_id},
+            db=db,
+        ))
+    assert exc.value.status_code == 409
+    db.commit.assert_not_called()
+
+
+def test_concurrent_duplicate_payment_reference_returns_conflict():
+    from sqlalchemy.exc import IntegrityError
+
+    user_id = str(uuid4())
+    account_id = str(uuid4())
+    event_data = valid_event()
+    event_data["ownerId"] = user_id
+    event = PaymentEvent.model_validate(event_data)
+    account = SimpleNamespace(id=account_id, currency="BRL")
+    db = Mock()
+    # No prior event/payment is visible; another request wins the unique
+    # payment-reference constraint before this request commits.
+    db.scalar = AsyncMock(side_effect=[None, None, account, None])
+    db.commit = AsyncMock(side_effect=IntegrityError("insert", {}, Exception("unique violation")))
+    db.rollback = AsyncMock()
+    db.add_all = Mock()
+
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(import_gestao_payment(
+            event=event,
+            response=SimpleNamespace(status_code=201),
+            account_id=account_id,
+            auth={"mode": "user", "user_id": user_id},
+            db=db,
+        ))
+
+    assert exc.value.status_code == 409
+    db.rollback.assert_awaited_once()
 
 def test_service_token_authentication_requires_configured_secret(monkeypatch):
     secret = "service-secret-that-is-at-least-32-characters"
