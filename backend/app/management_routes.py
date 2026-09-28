@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_session
 from .finance_routes import current_user
-from .models import ManagementLesson, ManagementModality, ManagementPayment, ManagementStudent
+from .models import ManagementExpense, ManagementLesson, ManagementModality, ManagementPayment, ManagementStudent, ManagementWaitlist
 
 router = APIRouter(prefix="/api/v1/management", tags=["management"])
 MODELS = {
@@ -18,6 +18,8 @@ MODELS = {
     "modalities": ManagementModality,
     "lessons": ManagementLesson,
     "payments": ManagementPayment,
+    "expenses": ManagementExpense,
+    "waitlist": ManagementWaitlist,
 }
 
 
