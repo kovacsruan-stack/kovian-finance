@@ -169,14 +169,17 @@ async function syncPaymentWithFinance(
     const transaction = result.transaction && typeof result.transaction === 'object'
       ? result.transaction as Record<string, unknown>
       : {};
-    const transactionId = typeof transaction.id === 'string' ? transaction.id : undefined;
+    const transactionId = typeof transaction.id === 'string' ? transaction.id.trim() : '';
+    if (!transactionId) {
+      throw new Error('Finance retornou uma resposta sem o identificador da transação.');
+    }
     await persistPayment(paymentId, {
       ...payment,
       financeEventId: eventId,
       financeStudentRef: studentRef,
       financeOccurredAt: occurredAt,
       financeSyncStatus: 'synced',
-      financeTransactionId: transactionId ?? '',
+      financeTransactionId: transactionId,
       financeSyncedAt: new Date().toISOString(),
       financeSyncError: '',
     });
@@ -185,6 +188,8 @@ async function syncPaymentWithFinance(
     await persistPayment(paymentId, {
       ...payment,
       financeEventId: eventId,
+      financeStudentRef: studentRef,
+      financeOccurredAt: occurredAt,
       financeSyncStatus: 'pending',
       financeSyncError: 'Falha de comunicação com o Finance. Tente sincronizar novamente.',
     });
