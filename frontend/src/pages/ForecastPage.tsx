@@ -13,10 +13,8 @@ export default function ForecastPage() {
   const from=useMemo(()=>new Date().toISOString().slice(0,10),[])
   const query=useQuery({queryKey:['finance','forecast','cash-flow',ownerId,from,days],queryFn:()=>getForecastCashFlow(ownerId!,from,days),enabled:Boolean(ownerId),staleTime:60_000, retry:2})
   const data:CashFlowForecast[]=query.data ?? []
+  const summary = useMemo(() => summarizeForecast(data), [data])
   const hasFiniteData=data.every(row=>Number.isFinite(row.income)&&Number.isFinite(row.expense)&&Number.isFinite(row.netCashFlow)&&Number.isFinite(row.projectedBalance))
-  const ending=data.at(-1)?.projectedBalance ?? 0
-  const income=data.reduce((s,x)=>s+x.income,0)
-  const expense=data.reduce((s,x)=>s+x.expense,0)
   return <main className="page">
     <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value) as 30|90|180|365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount',{count:30})}</option><option value={90}>{t('daysCount',{count:90})}</option><option value={180}>{t('daysCount',{count:180})}</option><option value={365}>{t('daysCount',{count:365})}</option></select></label></section>
     {!ownerId && <div className="notice">{t('loginToLoadData')}</div>}
