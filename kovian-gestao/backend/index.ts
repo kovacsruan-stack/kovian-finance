@@ -116,7 +116,7 @@ async function syncPaymentWithFinance(
   if (!payment) throw new Error('Pagamento não encontrado.');
   if (!isPaidPayment(payment)) throw new Error('Somente pagamentos com status Pago podem ser enviados ao Finance.');
 
-  const financeUrl = (runtimeEnv.KOVIAN_FINANCE_API_URL ?? '').trim().replace(/\\/$/, '');
+  const financeUrl = (runtimeEnv.KOVIAN_FINANCE_API_URL ?? '').trim().replace(/\/$/, '');
   const integrationToken = runtimeEnv.KOVIAN_FINANCE_INTEGRATION_TOKEN ?? '';
   const ownerId = runtimeEnv.KOVIAN_FINANCE_OWNER_ID ?? '';
   const accountId = runtimeEnv.KOVIAN_FINANCE_ACCOUNT_ID ?? '';
@@ -143,9 +143,9 @@ async function syncPaymentWithFinance(
   let studentRef = String(payment.financeStudentRef ?? payment.studentId ?? '').trim();
   if (!studentRef) {
     const { items: students } = await db.list<Record<string, unknown>>('students', { limit: 100 });
-    const target = String(payment.student ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR');
+    const target = String(payment.student ?? '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR');
     const matches = students.filter(student =>
-      String(student.name ?? '').trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g, '').toLocaleLowerCase('pt-BR') === target
+      String(student.name ?? '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR') === target
     );
     if (matches.length !== 1 || !matches[0]?.id) {
       throw new Error('Não foi possível identificar o aluno por um ID único. Vincule o pagamento ao cadastro do aluno antes de sincronizar.');
@@ -159,7 +159,7 @@ async function syncPaymentWithFinance(
   }
   const paidDate = String(payment.paidDate ?? '').trim();
   const parsedPaidDate = new Date(paidDate + 'T12:00:00Z');
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(paidDate) || Number.isNaN(parsedPaidDate.getTime()) || parsedPaidDate.toISOString().slice(0, 10) !== paidDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(paidDate) || Number.isNaN(parsedPaidDate.getTime()) || parsedPaidDate.toISOString().slice(0, 10) !== paidDate) {
     throw new Error('Informe uma data de pagamento válida antes de sincronizar.');
   }
 
