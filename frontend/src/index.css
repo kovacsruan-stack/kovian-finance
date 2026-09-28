@@ -255,3 +255,15 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .budget-row{border-top-color:var(--line)}
 .language-switcher{background:#ffffff!important;border-color:var(--line)!important;box-shadow:none}
 .language-switcher-trigger{background:#ffffff;color:var(--muted)}
+
+
+/* Cash-flow forecast visualization */
+.forecast-chart{position:relative;width:100%;min-width:0;padding:12px 0 4px;color:var(--muted)}
+.forecast-chart svg{display:block;width:100%;height:220px;overflow:visible}
+.forecast-chart-labels{display:flex;justify-content:space-between;gap:12px;font-size:10px;font-variant-numeric:tabular-nums}
+.forecast-chart-labels span{min-width:0;overflow-wrap:anywhere}
+.forecast-chart-labels:first-child{margin-bottom:2px}
+.forecast-chart-labels:last-child{margin-top:2px}
+@media(max-width:560px){.forecast-chart svg{height:170px}.forecast-chart-labels{font-size:9px}}
+
+.forecast-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.forecast-actions button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px}.forecast-actions button:disabled{opacity:.45;cursor:not-allowed}@media(max-width:560px){.forecast-actions{width:100%;justify-content:stretch}.forecast-actions>*{flex:1;min-width:0}.forecast-actions button{white-space:nowrap}}
