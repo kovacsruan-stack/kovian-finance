@@ -260,7 +260,7 @@ export type ManagementRecord = {
   updatedAt: string
 }
 export function getManagementRecords(resource: ManagementResource, includeArchived = false) {
-  return get<ManagementRecord[]>(`/management/${resource}${includeArchived ? '?include_archived=true' : ''}`)
+  return get<ManagementRecord[]>(`/management/${resource}${includeArchived ? '?includeArchived=true' : ''}`)
 }
 export function createManagementRecord(resource: ManagementResource, data: Record<string, unknown>, sourceId?: string) {
   return post<ManagementRecord>(`/management/${resource}`, { data, ...(sourceId ? { sourceId } : {}) })
@@ -277,7 +277,7 @@ export function importManagementRecords(
   resource: ManagementResource,
   records: Array<{ sourceId: string; data: Record<string, unknown> }>,
 ) {
-  return post<{ resource: ManagementResource; inserted: number; updated: number; unchanged: number }>(
+  return post<{ resource: ManagementResource; inserted: number; updated: number; unchanged: number; unresolvedStudentLinks: number }>(
     `/management/import-batch/${resource}`,
     { records },
   )
