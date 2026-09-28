@@ -16,7 +16,7 @@ The Finance API now exposes `POST /api/v1/integrations/gestao/payments?account_i
 - Creates a confirmed income transaction and an import record in one database transaction.
 - Enforces unique event ID and source payment reference per Gestão owner. Repeated identical event deliveries return the original transaction; conflicting replays return HTTP 409.
 - Stores stable student references only; student names and contact details are not accepted by the event schema.
-- Database migration: `0002_gestao_payment_imports`.
+- Database migrations: `0002_gestao_payment_imports` and `0003_gestao_event_fingerprint`.
 
 **Authentication modes:**
 - Interactive mode: a Finance Bearer token is required and `ownerId` must equal the authenticated Finance user ID.
