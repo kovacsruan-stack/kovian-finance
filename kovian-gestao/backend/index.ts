@@ -86,8 +86,11 @@ function validateLessonSchedule(record: Record<string, unknown>): string | null 
   const interval = Number(record.recurrenceIntervalWeeks ?? 1);
   if (!Number.isInteger(interval) || interval < 1 || interval > 52) return 'A recorrência deve ser de 1 a 52 semanas.';
   const repeatUntil = String(record.repeatUntil ?? '').trim();
-  if (repeatUntil && (!/^\d{4}-\d{2}-\d{2}$/.test(repeatUntil) || repeatUntil < date)) {
-    return 'A data final da recorrência deve ser igual ou posterior à primeira aula.';
+  if (repeatUntil) {
+    const parsedRepeatUntil = new Date(repeatUntil + 'T12:00:00Z');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(repeatUntil) || Number.isNaN(parsedRepeatUntil.getTime()) || parsedRepeatUntil.toISOString().slice(0, 10) !== repeatUntil || repeatUntil < date) {
+      return 'A data final da recorrência deve ser uma data válida, igual ou posterior à primeira aula.';
+    }
   }
   const days = String(record.daysOfWeek ?? '').trim();
   if (days.length > 100) return 'A configuração dos dias da semana é muito longa.';
