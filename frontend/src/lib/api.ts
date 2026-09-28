@@ -248,3 +248,26 @@ export async function createTransfer(input: { fromAccountId: string; toAccountId
   const value = await request<unknown>('/transfers', { method: 'POST', headers: { 'Idempotency-Key': key }, body: JSON.stringify(input) })
   return financeTransferSchema.parse(value)
 }
+
+
+export type ManagementResource = 'students' | 'modalities' | 'lessons' | 'payments'
+export type ManagementRecord = {
+  id: string
+  sourceId: string | null
+  data: Record<string, unknown>
+  archived: boolean
+  createdAt: string
+  updatedAt: string
+}
+export function getManagementRecords(resource: ManagementResource, includeArchived = false) {
+  return get<ManagementRecord[]>(`/management/${resource}${includeArchived ? '?include_archived=true' : ''}`)
+}
+export function createManagementRecord(resource: ManagementResource, data: Record<string, unknown>, sourceId?: string) {
+  return post<ManagementRecord>(`/management/${resource}`, { data, ...(sourceId ? { source_id: sourceId } : {}) })
+}
+export function updateManagementRecord(resource: ManagementResource, id: string, data: Record<string, unknown>) {
+  return request<ManagementRecord>(`/management/${resource}/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify({ data }) })
+}
+export function archiveManagementRecord(resource: ManagementResource, id: string) {
+  return request<{ archived: boolean; id: string }>(`/management/${resource}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
