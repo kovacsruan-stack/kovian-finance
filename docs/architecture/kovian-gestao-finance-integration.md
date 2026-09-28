@@ -77,6 +77,38 @@ O evento não deve carregar nome, telefone, e-mail ou observações do aluno. Ca
 
 Usar uma experiência de dashboard de gestão fitness: navegação lateral no desktop, navegação compacta no celular, hierarquia visual clara, cartões de indicadores, listas/tabelas responsivas e ações primárias consistentes. O FitHub é exclusivamente uma referência visual para layout, navegação e organização do frontend. O calendário funcional de origem é o do KOVIAN Fitness. Não copiar código, marca ou assets do FitHub.
 
+
+## Decisão técnica para integrar a agenda Fitness
+
+A inspeção do frontend do KOVIAN Fitness confirma que o calendário não é uma página estática: ele usa serviços autenticados da API Fitness. O cliente HTTP usa `VITE_API_BASE_URL` (em produção, por padrão, `https://kovian-fitness-api-production.up.railway.app/api/v1`), envia `Authorization: Bearer` a partir de `sessionStorage.access_token`, renova sessão por `/auth/refresh-token` e pode enviar `X-Business-Unit-Id` a partir de `localStorage.business_unit_id`. O serviço de calendário consulta `/calendar-integrations`, `/sessions/availability` e `/sessions/availability/slots`; a agenda de aulas também usa endpoints de gestão de classes e sessões.
+
+### Consequências
+
+- O Finance não deve chamar esses endpoints com o token de Finance nem colocar um token de serviço no bundle do navegador.
+- A política atual do Finance define `X-Frame-Options: DENY`; portanto, incorporar a aplicação Fitness em iframe não é uma alternativa compatível com a configuração atual.
+- O calendário financeiro existente (`CalendarPage.tsx`) lê transações, contas e recorrências do Finance. Ele não possui modelo de evento para aulas/sessões do Fitness.
+- O frontend Fitness obtém dados de agenda por meio de endpoints autenticados. Antes de exibir esses dados no Finance, é necessário definir autorização por usuário/unidade, escopo temporal, fuso horário, estados de sessão, cancelamentos e paginação.
+
+### Implementação segura em etapas
+
+1. **Contrato de leitura de agenda**: criar no backend uma API de integração versionada, por exemplo `GET /api/v1/integrations/fitness/calendar-events?from=...&to=...`, que retorne somente campos necessários à agenda: referência estável, início/fim com fuso, título, tipo, estado e referências operacionais estritamente necessárias.
+2. **Autorização no servidor**: resolver usuário e unidade a partir da sessão validada; verificar que o usuário tem acesso à unidade Fitness. Nunca confiar em `ownerId` ou `business_unit_id` fornecidos sem validação.
+3. **Conector servidor-servidor**: usar credencial mantida em segredo no backend e um escopo mínimo de leitura. Se a API Fitness não suportar credencial de serviço/escopo apropriado, implementar esse suporte no backend Fitness antes de ligar o Finance.
+4. **UI nativa**: adicionar eventos de aula à agenda do Finance como uma categoria separada, sem alterar os eventos financeiros nem misturar valores financeiros com sessões.
+5. **Confiabilidade**: definir timeouts, tratamento de 401/403/429/5xx, cache curto, deduplicação, atualização e comportamento degradado quando o Fitness estiver indisponível.
+6. **Testes de aceitação**: cobrir isolamento entre unidades, intervalo de datas, fuso horário, aulas canceladas, falha da API externa, ausência de credenciais, permissões e renderização no calendário.
+
+### Bloqueios que exigem alteração de backend/configuração
+
+A inspeção do cliente confirma autenticação por JWT e endpoints de agenda, mas não comprova a existência de uma credencial servidor-servidor de leitura nem um endpoint consolidado de eventos de calendário. Assim, a ponte de dados não deve ser simulada no frontend. O próximo incremento de código precisa incluir o endpoint autenticado no backend, o adaptador Fitness e os testes de contrato; só depois a UI pode consumir os eventos reais.
+
+### Critérios adicionais de aceite da agenda
+
+- Nenhum segredo de integração aparece em arquivos `VITE_*`, no JavaScript entregue ao navegador ou em logs.
+- A agenda continua funcional quando a API Fitness falha, sem impedir o uso do calendário financeiro.
+- Eventos Fitness são visualmente distinguíveis de entradas, saídas, transferências e recorrências financeiras.
+- A sessão e as permissões são verificadas no servidor em cada consulta; não há compartilhamento implícito de JWT entre produtos.
+
 ## Fora do escopo desta etapa
 
 - Não remover a autenticação existente.
