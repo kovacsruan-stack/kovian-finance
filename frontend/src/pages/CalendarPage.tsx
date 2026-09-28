@@ -106,7 +106,8 @@ export default function CalendarPage() {
     })
     const paymentEvents = (payments.data ?? []).flatMap(item => {
       const data = item.data
-      const date = String((/^(pago|paid)$/i.test(String(data.status ?? '')) ? data.paidDate : data.dueDate) ?? '').slice(0, 10)
+      const paid = /^(pago|paid)$/i.test(String(data.status ?? ''))
+      const date = String((paid ? data.paidDate || data.dueDate : data.dueDate) ?? '').slice(0, 10)
       if (!date || date < from || date >= to) return []
       const amount = Number(String(data.amount ?? '0').replace(',', '.'))
       return [{
