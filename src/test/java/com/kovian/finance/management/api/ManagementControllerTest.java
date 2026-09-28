@@ -74,6 +74,23 @@ class ManagementControllerTest {
     }
 
     @Test
+    void restoresArchivedRecordWithoutChangingItsIdentityOrData() {
+        ManagementRecord record = new ManagementRecord(ownerId, "students", "legacy-789",
+                Map.of("name", "Aluno preservado"));
+        record.archive();
+        when(repository.findByIdAndOwnerIdAndResource(record.getId(), ownerId, "students"))
+                .thenReturn(Optional.of(record));
+
+        var response = controller.restore("students", record.getId());
+
+        assertEquals(Boolean.TRUE, response.get("restored"));
+        assertFalse(record.isArchived());
+        assertEquals("legacy-789", record.getSourceId());
+        assertEquals("Aluno preservado", record.getData().get("name"));
+        verify(repository, never()).delete(any());
+    }
+
+    @Test
     void importRemapsLegacyStudentIdsToFinanceRecordIds() {
         ManagementRecord student = new ManagementRecord(ownerId, "students", "legacy-student-1",
                 Map.of("name", "Alice"));
