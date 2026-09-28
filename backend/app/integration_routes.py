@@ -163,7 +163,7 @@ async def import_gestao_payment(
 
     existing = await db.scalar(
         select(GestaoPaymentImport).where(
-            GestaoPaymentImport.user_id == user_id,
+            GestaoPaymentImport.owner_id == str(event.ownerId),
             GestaoPaymentImport.event_id == str(event.id),
         )
     )
@@ -229,6 +229,7 @@ async def import_gestao_payment(
     imported = GestaoPaymentImport(
         id=str(uuid4()),
         user_id=user_id,
+        owner_id=str(event.ownerId),
         event_id=str(event.id),
         payment_ref=event.payload.paymentRef,
         student_ref=event.payload.studentRef,
