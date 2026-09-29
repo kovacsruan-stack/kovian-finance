@@ -7,6 +7,8 @@ import { useFinanceOwnerId } from '../../lib/useFinanceOwnerId'
 import { useFinanceMutation } from '../../lib/queries'
 import { formatCurrency as money } from '../../lib/format'
 import PageHeader from '../../components/ui/PageHeader'
+import Modal from '../../components/ui/Modal'
+import Field from '../../components/ui/Field'
 
 const localDateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}'
 
@@ -95,20 +97,19 @@ export default function GoalsPage() {
         </article>
       })}
     </section>
-    {editor && <div className="modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setEditor(null) }}><section className="modal" role="dialog" aria-modal="true" aria-labelledby="goal-dialog-title">
-      <div className="modal-header"><h2 id="goal-dialog-title">{editor === 'create' ? t('goalsNew') : editor === 'edit' ? t('goalsEdit') : t('goalsAddContribution')}</h2><button type="button" className="text-button" onClick={() => setEditor(null)}>{t('close')}</button></div>
+    {editor && <Modal title={editor === 'create' ? t('goalsNew') : editor === 'edit' ? t('goalsEdit') : t('goalsAddContribution')} onClose={() => setEditor(null)}>
       {editor === 'contribute' ? <form className="form-grid" onSubmit={submitContribution}>
         <p>{selected?.name} · {t('goalsRemaining')}: {money(Math.max(0, Number(selected?.targetAmount ?? 0) - Number(selected?.currentAmount ?? 0)))}</p>
-        <label>{t('goalsContributionAmount')}<input autoFocus type="number" min="0.01" step="0.01" value={contribution} onChange={event => setContribution(event.target.value)} required /></label>
+        <Field label={t('goalsContributionAmount')}><input autoFocus type="number" min="0.01" step="0.01" value={contribution} onChange={event => setContribution(event.target.value)} required /></Field>
         {error && <div className="form-error" role="alert">{error}</div>}
         <button className="primary form-submit" type="submit" disabled={busy}>{busy ? t('saving') : t('goalsConfirmContribution')}</button>
       </form> : <form className="form-grid" onSubmit={submitGoal}>
-        <label>{t('name')}<input autoFocus maxLength={140} value={name} onChange={event => setName(event.target.value)} required /></label>
-        <label>{t('targetAmount')}<input type="number" min="0.01" step="0.01" value={targetAmount} onChange={event => setTargetAmount(event.target.value)} required /></label>
-        <label>{t('targetDate')}<input type="date" min={localDateKey(new Date(0))} value={targetDate} onChange={event => setTargetDate(event.target.value)} /></label>
+        <Field label={t('name')}><input autoFocus maxLength={140} value={name} onChange={event => setName(event.target.value)} required /></Field>
+        <Field label={t('targetAmount')}><input type="number" min="0.01" step="0.01" value={targetAmount} onChange={event => setTargetAmount(event.target.value)} required /></Field>
+        <Field label={t('targetDate')}><input type="date" value={targetDate} onChange={event => setTargetDate(event.target.value)} /></Field>
         {error && <div className="form-error" role="alert">{error}</div>}
         <button className="primary form-submit" type="submit" disabled={busy}>{busy ? t('saving') : editor === 'create' ? t('goalsCreate') : t('goalsSaveChanges')}</button>
       </form>}
-    </section></div>}
+    </Modal>}
   </main>
 }
