@@ -314,7 +314,7 @@ export function createCard(input: { ownerId: string; name: string; brand?: strin
 export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input, financePurchaseSchema) }
 export function getInvoicePurchases(id: string) { return get(`/cards/invoices/${encodeURIComponent(id)}/purchases`, financePurchaseListSchema) }
 export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
-export function payInvoice(id: string, ownerId: string, accountId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/pay?ownerId=${encodeURIComponent(ownerId)}&accountId=${encodeURIComponent(accountId)}`, {}) }
+export function payInvoice(id: string, ownerId: string, accountId: string, amount?: number, idempotencyKey?: string) {\n  const params = new URLSearchParams({ ownerId, accountId })\n  if (amount !== undefined) params.set('amount', String(amount))\n  if (idempotencyKey) params.set('idempotencyKey', idempotencyKey)\n  return post<void>(`/cards/invoices/${encodeURIComponent(id)}/pay?${params.toString()}`, {})\n}
 
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
   return post<FinanceGoal>('/goals', input, financeGoalSchema)
