@@ -10,7 +10,7 @@ import PageHeader from '../../components/ui/PageHeader'
 import Modal from '../../components/ui/Modal'
 import Field from '../../components/ui/Field'
 
-const localDateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}'
+const localDateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 
 export default function GoalsPage() {
   const { t } = useTranslation()
