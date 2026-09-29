@@ -218,7 +218,7 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 15000): 
   }
 }
 
-async function get<T>(path: string, schema?: { parse: (value: unknown) => T }): Promise<T> { const value = await request<unknown>(path); return schema ? schema.parse(value) : value as T }
+async function get<T>(path: string, schema?: z.ZodType<T>): Promise<T> { const value = await request<unknown>(path); return schema ? schema.parse(value) : value as T }
 
 async function postMultipart<T>(path: string, body: FormData): Promise<T> {
   await ensureFinanceSession()
