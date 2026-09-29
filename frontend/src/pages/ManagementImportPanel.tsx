@@ -191,8 +191,8 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       <div className="flex items-center gap-2 font-semibold"><ShieldCheck size={17} /> Prévia de segurança</div>
       <p className="mt-2 text-sm">Destino: <strong>{backupRows ? 'backup completo do Gestão' : resource}</strong>. {resourceSummary}. IDs de origem serão usados para evitar duplicações em reimportações. {skipped > 0 ? `${skipped} registro(s) serão ignorados.` : ''}</p>
       <p className="mt-1 text-xs text-muted-foreground">No backup completo, alunos e modalidades são importados antes das aulas, para facilitar a reconciliação dos vínculos. Registros ausentes no backup não serão apagados do Finance.</p>
-      {backupRows && duplicateLessonStats.excess > 0 && <div className="notice mt-3" role="alert">
-        <strong>Atenção: possíveis aulas duplicadas.</strong> Foram encontrados {duplicateLessonStats.groups} grupos com mesmo aluno, data, horário, modalidade e status, totalizando {duplicateLessonStats.records} registros ({duplicateLessonStats.excess} além de um por grupo). A importação preservará todos os IDs originais; não vamos excluir registros automaticamente. Revise esses casos no Gestão/Finance após importar.
+      {backupRows && duplicateLessonsSkipped > 0 && <div className="notice mt-3" role="alert">
+        <strong>Atenção: aulas duplicadas serão ignoradas na prévia.</strong> Foram identificadas {duplicateLessonsSkipped} ocorrência(s) excedente(s) com o mesmo aluno, data, horário, modalidade e status. A importação manterá uma ocorrência por combinação e não apagará registros já existentes no Finance.
       </div>}
       {unmatchedModalities.length > 0 && <div className="notice mt-3" role="alert">
         <strong>Modalidade sem correspondência:</strong> {unmatchedModalities.join(', ')}. Os alunos serão preservados, mas essa modalidade não aparece na lista de modalidades exportada. Confira o cadastro após a importação.
