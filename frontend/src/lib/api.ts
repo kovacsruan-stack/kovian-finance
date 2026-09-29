@@ -31,6 +31,50 @@ function token(): string | null {
   }
 }
 
+export type FinanceAuthUser = { id: string; email: string; role: string; is_active: boolean }
+
+export async function loginFinance(email: string, password: string): Promise<FinanceAuthUser> {
+  let response: Response
+  try {
+    response = await fetch(baseUrl + '/auth/login', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      body: JSON.stringify({ email: email.trim(), password }),
+      signal: AbortSignal.timeout(15000),
+    })
+  } catch (error) {
+    const cause = error as { message?: string }
+    throw new Error(cause?.message || 'Não foi possível conectar ao serviço de autenticação.')
+  }
+
+  const payload = await response.json().catch(() => null) as {
+    access_token?: unknown
+    user?: FinanceAuthUser
+    detail?: unknown
+  } | null
+
+  if (!response.ok) {
+    const detail = typeof payload?.detail === 'string' ? payload.detail : ''
+    throw new Error(response.status === 401
+      ? 'E-mail ou senha inválidos.'
+      : detail || 'Não foi possível autenticar. Tente novamente.')
+  }
+  if (!payload || typeof payload.access_token !== 'string' || !payload.user) {
+    throw new Error('A resposta de autenticação é inválida.')
+  }
+
+  try {
+    localStorage.setItem('access_token', payload.access_token)
+  } catch {
+    throw new Error('O navegador bloqueou o armazenamento da sessão. Permita o armazenamento do site e tente novamente.')
+  }
+  return payload.user
+}
+
+export function clearFinanceSession() {
+  try { localStorage.removeItem('access_token') } catch { /* Storage may be unavailable. */ }
+}
+
 function decodePayload(value: string): Record<string, unknown> | null {
   try {
     const part = value.split('.')[1]
