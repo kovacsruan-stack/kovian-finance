@@ -47,6 +47,18 @@ function normalizeRows(value: unknown): { rows: ImportRow[]; skipped: number } {
   return { rows: [...unique.values()], skipped }
 }
 
+function removeDuplicateLessons(rows: ImportRow[]): ImportRow[] {
+  const seen = new Set<string>()
+  return rows.filter(row => {
+    const data = row.data
+    const key = [data.studentId, data.date, data.time, data.modality, data.status]
+      .map(value => String(value ?? '').trim()).join('|')
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
 function lessonQuality(rows: ImportRow[]) {
   const groups = new Map<string, number>()
   for (const row of rows) {
@@ -80,7 +92,7 @@ function parseBackup(value: unknown): BackupRows | null {
   for (const resource of importOrder) {
     if (!Array.isArray(source[resource])) continue
     const normalized = normalizeRows(source[resource])
-    backup[resource] = normalized.rows
+    backup[resource] = resource === 'lessons' ? removeDuplicateLessons(normalized.rows) : normalized.rows
     found = true
   }
   return found ? backup : null
