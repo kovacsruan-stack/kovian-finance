@@ -31,4 +31,5 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, UUID> 
             OffsetDateTime now,
             UUID ownerId
     );
+    long countByOwnerIdAndStatus(UUID ownerId, OutboxStatus status);
 }
