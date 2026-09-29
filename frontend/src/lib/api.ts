@@ -385,6 +385,7 @@ export function getDebts(ownerId: string) { return get(`/debts?ownerId=${encodeU
 
 export function getNotifications(unreadOnly = false) { return get(`/notifications?unreadOnly=${unreadOnly}`, financeNotificationListSchema) }
 export function markNotificationRead(id: string) { return post<void>(`/notifications/${encodeURIComponent(id)}/read`, {}) }
+export function markAllNotificationsRead() { return post<{ markedRead: number }>('/notifications/read-all', {}) }
 
 export function getFinancialSnapshots() { return get('/snapshots', financeSnapshotListSchema) }
 
