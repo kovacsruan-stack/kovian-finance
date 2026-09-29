@@ -14,7 +14,7 @@ export default function ForecastPage() {
   const { t } = useTranslation()
   const ownerId=useFinanceOwnerId()
   const [days,setDays]=useState<30|90|180|365>(90)
-  const from=useMemo(()=>localDateKey(new Date()),[])
+  const from=localDateKey(new Date())
   const query=useQuery({queryKey:['finance','forecast','cash-flow',ownerId,from,days],queryFn:()=>getForecastCashFlow(ownerId!,from,days),enabled:Boolean(ownerId),staleTime:60_000, retry:2})
   const data:CashFlowForecast[]=query.data ?? []
   const summary = useMemo(() => summarizeForecast(data), [data])
