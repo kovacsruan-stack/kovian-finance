@@ -334,3 +334,10 @@ html,body,#root{background:var(--bg);color:var(--text)}
 /* Avoid repeating the product wordmark while the mobile drawer is open. */
 @media(max-width:900px){.topbar-menu-open .top-left{visibility:hidden}}
 @media(min-width:901px){.topbar-wordmark{display:none}}
+
+
+/* Secondary navigation is grouped by task, keeping the long tail scannable. */
+.nav-section-items{gap:10px}
+.nav-subgroup{display:grid;gap:2px}
+.nav-subgroup-title{padding:8px 12px 3px;color:var(--muted);font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.nav-subgroup:first-child .nav-subgroup-title{padding-top:3px}
