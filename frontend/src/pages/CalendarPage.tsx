@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, Download } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
+import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, importManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
-import { importManagementRecords } from '../lib/api'
 
 const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
@@ -19,7 +18,7 @@ const endOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() 
 const daysInMonth = (date: Date) => endOfMonth(date).getDate()
 const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
-type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' }
+type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' | 'FITNESS' }
 
 function exportEventsToIcs(events: CalendarEvent[]) {
   const escapeIcs = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
@@ -57,6 +56,7 @@ function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
   if (kind === 'TRANSFER') return isPortuguese ? 'Transferência' : 'Transfer'
   if (kind === 'LESSON') return isPortuguese ? 'Aula' : 'Lesson'
   if (kind === 'PAYMENT') return isPortuguese ? 'Pagamento' : 'Payment'
+  if (kind === 'FITNESS') return isPortuguese ? 'Evento Fitness' : 'Fitness event'
   return isPortuguese ? 'Saída' : 'Expense'
 }
 
@@ -78,7 +78,7 @@ function parseCalendarFile(text: string): ImportedCalendarLesson[] {
     const summary = unescapeText(property('SUMMARY') || 'Evento importado do Fitness')
     const uid = unescapeText(property('UID') || 'fitness-calendar-' + index)
     if (!date) return []
-    return [{ sourceId: uid.slice(0, 120), data: { date, title: summary, studentName: summary, notes: unescapeText(property('DESCRIPTION')), status: 'Agendada', source: 'Kovian Fitness calendar import' } }]
+    return [{ sourceId: uid.slice(0, 120), data: { date, title: summary, notes: unescapeText(property('DESCRIPTION')), status: 'Agendada', source: 'Kovian Fitness calendar import' } }]
   })
 }
 
@@ -123,6 +123,12 @@ export default function CalendarPage() {
   const expenses = useQuery({
     queryKey: ['finance', 'calendar', 'management', 'expenses', ownerId],
     queryFn: () => getManagementRecords('expenses'),
+    enabled: Boolean(ownerId),
+    staleTime: 30_000,
+  })
+  const fitnessEvents = useQuery({
+    queryKey: ['finance', 'calendar', 'management', 'calendar_events', ownerId],
+    queryFn: () => getManagementRecords('calendar_events'),
     enabled: Boolean(ownerId),
     staleTime: 30_000,
   })
@@ -185,6 +191,13 @@ export default function CalendarPage() {
         kind: 'EXPENSE' as const,
       }]
     })
+    const fitnessCalendarEvents = (fitnessEvents.data ?? []).flatMap(item => {
+      if (item.archived) return []
+      const data = item.data
+      const date = String(data.date ?? data.startDate ?? '').slice(0, 10)
+      if (!date || date < from || date >= to || /cancelad|canceled/i.test(String(data.status ?? ''))) return []
+      return [{ id: 'fitness:' + item.id, date, title: String(data.title ?? data.summary ?? 'Evento Fitness'), amount: 0, currency: 'BRL', kind: 'FITNESS' as const }]
+    })
     const paymentEvents = (payments.data ?? []).flatMap(item => {
       const data = item.data
       const paid = /^(pago|paid)$/i.test(String(data.status ?? ''))
@@ -200,8 +213,8 @@ export default function CalendarPage() {
         kind: 'PAYMENT' as const,
       }]
     })
-    return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents, ...managementExpenseEvents].sort((a, b) => a.date.localeCompare(b.date))
-  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, expenses.data, from, to, eventLanguageIsPortuguese])
+    return [...transactionEvents, ...recurringEvents, ...lessonEvents, ...paymentEvents, ...managementExpenseEvents, ...fitnessCalendarEvents].sort((a, b) => a.date.localeCompare(b.date))
+  }, [transactions.data, recurring.data, accounts.data, lessons.data, payments.data, expenses.data, fitnessEvents.data, from, to, eventLanguageIsPortuguese])
 
   const visibleEvents = useMemo(() => events.filter(event => {
     const matchesKind = kindFilter === 'ALL' || event.kind === kindFilter
@@ -225,7 +238,7 @@ export default function CalendarPage() {
   const label = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   const monthEvents = visibleEvents.filter(event => event.date.startsWith(from.slice(0, 7)))
   const selectedEvents = byDay[selectedDate] ?? []
-  const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading || lessons.isLoading || payments.isLoading || expenses.isLoading
+  const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading || lessons.isLoading || payments.isLoading || expenses.isLoading || fitnessEvents.isLoading
   const today = iso(new Date())
 
   const moveMonth = (delta: number) => {
@@ -256,7 +269,7 @@ export default function CalendarPage() {
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Trazer agenda do Kovian Fitness' : 'Import Kovian Fitness calendar'}</h2></div></div>
-      <p className="text-sm text-muted-foreground">{isPortuguese ? 'Exporte o calendário do Fitness em .ics e importe aqui. Os eventos serão criados como aulas no Gestão; revise a prévia antes de confirmar.' : 'Export the Fitness calendar as .ics and import it here. Events become Management lessons; review before confirming.'}</p>
+      <p className="text-sm text-muted-foreground">{isPortuguese ? 'Exporte o calendário do Fitness em .ics e importe aqui. Os eventos serão salvos separadamente no calendário; revise a prévia antes de confirmar.' : 'Export the Fitness calendar as .ics and import it here. Events are stored separately in the calendar; review before confirming.'}</p>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <label className="secondary cursor-pointer"><Download size={15} /> {isPortuguese ? 'Selecionar arquivo .ics' : 'Choose .ics file'}<input className="sr-only" type="file" accept=".ics,text/calendar" onChange={async event => {
           const file = event.target.files?.[0]
@@ -276,19 +289,19 @@ export default function CalendarPage() {
       {calendarImportError && <div className="notice mt-3" role="alert">{calendarImportError}</div>}
       {calendarImportResult && <div className="notice mt-3" role="status">{calendarImportResult}</div>}
       {calendarImportRows.length > 0 && <div className="mt-3 rounded-xl border border-border p-4">
-        <p className="text-sm">A importação é idempotente pelo UID do evento. Os eventos importados aparecerão na aba Aulas. Isso importa eventos como registros, não recria automaticamente turmas recorrentes ou integrações Google/Outlook.</p>
+        <p className="text-sm">A importação é idempotente pelo UID do evento. Os eventos importados aparecerão no calendário. Isso não recria automaticamente turmas recorrentes, presenças ou integrações Google/Outlook.</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className="primary" disabled={calendarImportBusy || !ownerId} onClick={async () => {
             setCalendarImportBusy(true); setCalendarImportError(''); setCalendarImportResult('')
             try {
               let inserted = 0, updated = 0, unchanged = 0, unresolvedStudentLinks = 0
               for (let offset = 0; offset < calendarImportRows.length; offset += 500) {
-                const result = await importManagementRecords('lessons', calendarImportRows.slice(offset, offset + 500))
+                const result = await importManagementRecords('calendar_events', calendarImportRows.slice(offset, offset + 500))
                 inserted += result.inserted; updated += result.updated; unchanged += result.unchanged; unresolvedStudentLinks += result.unresolvedStudentLinks
               }
               setCalendarImportResult(`Importação concluída: ${inserted} novos, ${updated} atualizados, ${unchanged} sem alteração.${unresolvedStudentLinks ? ` ${unresolvedStudentLinks} vínculo(s) precisam de conferência.` : ''}`)
               setCalendarImportRows([])
-              await Promise.all([lessons.refetch(), transactions.refetch(), recurring.refetch()])
+              await Promise.all([fitnessEvents.refetch(), lessons.refetch(), transactions.refetch(), recurring.refetch()])
             } catch (error) { setCalendarImportError(error instanceof Error ? error.message : 'Falha ao importar calendário.') }
             finally { setCalendarImportBusy(false) }
           }}>{calendarImportBusy ? 'Importando…' : `Confirmar importação de ${calendarImportRows.length} evento(s)`}</button>
@@ -297,11 +310,11 @@ export default function CalendarPage() {
       </div>}
     </section>
 
-    {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError || expenses.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
+    {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError || expenses.isError || fitnessEvents.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
         <strong>{label.charAt(0).toUpperCase() + label.slice(1)}</strong>
-        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (isPortuguese ? visibleEvents.length + ' eventos' : visibleEvents.length + ' events')}</span><select aria-label={isPortuguese ? 'Filtrar tipo de evento' : 'Filter event type'} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{isPortuguese ? 'Todos os tipos' : 'All types'}</option><option value="INCOME">{isPortuguese ? 'Entradas' : 'Income'}</option><option value="EXPENSE">{isPortuguese ? 'Saídas' : 'Expenses'}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option></select><input aria-label={isPortuguese ? 'Buscar evento' : 'Search events'} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={isPortuguese ? 'Buscar...' : 'Search...'} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
+        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (isPortuguese ? visibleEvents.length + ' eventos' : visibleEvents.length + ' events')}</span><select aria-label={isPortuguese ? 'Filtrar tipo de evento' : 'Filter event type'} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{isPortuguese ? 'Todos os tipos' : 'All types'}</option><option value="INCOME">{isPortuguese ? 'Entradas' : 'Income'}</option><option value="EXPENSE">{isPortuguese ? 'Saídas' : 'Expenses'}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option><option value="FITNESS">{isPortuguese ? 'Eventos Fitness' : 'Fitness events'}</option></select><input aria-label={isPortuguese ? 'Buscar evento' : 'Search events'} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={isPortuguese ? 'Buscar...' : 'Search...'} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
       </div>
       <div className="calendar-weekdays">{(isPortuguese ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map(day => <span key={day}>{day}</span>)}</div>
       <div className="calendar-grid">
