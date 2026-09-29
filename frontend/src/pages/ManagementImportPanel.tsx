@@ -52,7 +52,7 @@ function lessonQuality(rows: ImportRow[]) {
   const groups = new Map<string, number>()
   for (const row of rows) {
     const data = row.data
-    const values = [data.studentId, data.date, data.time, data.modality, data.status]
+    const values = [data.studentId, data.date, data.time, data.modality]
       .map(value => String(value ?? '').trim())
     if (values.some(value => !value)) continue
     const key = JSON.stringify(values)
