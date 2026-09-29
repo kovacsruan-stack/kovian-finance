@@ -120,6 +120,11 @@ public class ManagementController {
     public ReconciliationResult reconcile(@Valid @RequestBody ReconciliationRequest request) {
         UUID ownerId = CurrentUser.ownerId();
         Map<String, Long> expected = request.expectedCounts() == null ? Map.of() : request.expectedCounts();
+        if (expected.entrySet().stream().anyMatch(entry ->
+                !RESOURCES.contains(entry.getKey()) || entry.getValue() == null || entry.getValue() < 0)) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Expected counts must contain known resources and non-negative values");
+        }
         Map<String, ResourceReconciliation> resources = new LinkedHashMap<>();
         for (String resource : RESOURCES) {
             List<ManagementRecord> records = repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, resource);
