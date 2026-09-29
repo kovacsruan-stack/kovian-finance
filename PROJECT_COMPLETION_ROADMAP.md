@@ -113,3 +113,12 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Added entity lifecycle tests and API route registration coverage.
 - Real AppDeploy data migration, reconciliation, full Gestão feature parity, Fitness calendar parity, FitHub visual alignment, and local build/test/browser QA remain outstanding.
 - **Integration implementation estimate: 55%** (the integrated-product scope only; not the historical Finance financial-domain estimate).
+
+## 2026-09-29 — Bloco 6/12: reconciliação integrada à interface
+
+- Exposto o endpoint de reconciliação de dados do Gestão no cliente TypeScript.
+- Adicionado painel na tela Gestão para informar contagens esperadas por recurso e consultar a reconciliação.
+- A interface apresenta contagem esperada, contagem encontrada, diferença e vínculos de aluno pendentes.
+- A operação é somente de leitura; a interface alerta que os totais do Finance incluem registros arquivados e dados preexistentes.
+- Adicionado teste de controller para divergência de vínculo e conferência de contagens.
+- Build, testes automatizados e validação no navegador ainda pendentes.
