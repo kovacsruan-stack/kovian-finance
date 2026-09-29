@@ -1,8 +1,8 @@
 import { useMemo, useState, type FormEvent } from 'react'
-import { CalendarClock, Pause, Play, Plus, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react'
+import { CalendarClock, Pause, Play, Plus, Pencil, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { createRecurring, getAccounts, getCategories, getRecurring, pauseRecurring, processRecurringDue, resumeRecurring, type FinanceRecurring } from '../../lib/api'
+import { createRecurring, getAccounts, getCategories, getRecurring, pauseRecurring, processRecurringDue, resumeRecurring, updateRecurring, type FinanceRecurring } from '../../lib/api'
 import { useFinanceOwnerId } from '../../lib/useFinanceOwnerId'
 import { useFinanceMutation } from '../../lib/queries'
 import { formatCurrency as money } from '../../lib/format'
@@ -22,6 +22,8 @@ export default function RecurringPage() {
   const otherCategoriesQuery = useQuery({ queryKey:['finance','categories',ownerId,otherKind], queryFn:()=>getCategories(ownerId!,otherKind), enabled:Boolean(ownerId) })
   const mutate = useFinanceMutation((task:()=>Promise<unknown>)=>task())
   const [open,setOpen] = useState(false)
+  const [editing,setEditing] = useState<FinanceRecurring | null>(null)
+  const [info,setInfo] = useState('')
   const [accountId,setAccountId] = useState('')
   const [categoryId,setCategoryId] = useState('')
   const [description,setDescription] = useState('')
@@ -55,8 +57,13 @@ export default function RecurringPage() {
     const value=Number(amount)
     if(!accountId||!description.trim()||!Number.isFinite(value)||value<=0||!nextOccurrence||(endDate&&endDate<nextOccurrence)){setError(t('recurringValidation'));return}
     setBusy(true);setError('')
-    void mutate.mutateAsync(()=>createRecurring({accountId,categoryId:categoryId||null,description:description.trim(),amount:value,transactionType:kind,frequency,nextOccurrence,endDate:endDate||null}))
-      .then(()=>setOpen(false)).catch(cause=>setError(cause instanceof Error?cause.message:t('recurringSaveError'))).finally(()=>setBusy(false))
+    const task = editing
+      ? () => updateRecurring(editing.id,{accountId,categoryId:categoryId||null,description:description.trim(),amount:value,transactionType:kind,frequency,nextOccurrence,endDate:endDate||null})
+      : () => createRecurring({accountId,categoryId:categoryId||null,description:description.trim(),amount:value,transactionType:kind,frequency,nextOccurrence,endDate:endDate||null})
+    void mutate.mutateAsync(task)
+      .then(()=>{setOpen(false);setEditing(null);setInfo(editing?t('recurringUpdated'):t('recurringCreated'))})
+      .catch(cause=>setError(cause instanceof Error?cause.message:t('recurringSaveError')))
+      .finally(()=>setBusy(false))
   }
   const runAction=(task:()=>Promise<unknown>,success?: (value:unknown)=>void)=>{
     if(busy)return
@@ -67,10 +74,13 @@ export default function RecurringPage() {
     if(!window.confirm(t('recurringProcessConfirm',{date:today()})))return
     runAction(()=>processRecurringDue(today()),value=>window.alert(t('recurringProcessed',{count:Number(value)})))
   }
-  const openCreate=()=>{setAccountId(accounts[0]?.id??'');setCategoryId('');setKind('EXPENSE');setDescription('');setAmount('');setFrequency('MONTHLY');setNextOccurrence(today());setEndDate('');setError('');setOpen(true)}
+  const openCreate=()=>{setEditing(null);setAccountId(accounts[0]?.id??'');setCategoryId('');setKind('EXPENSE');setDescription('');setAmount('');setFrequency('MONTHLY');setNextOccurrence(today());setEndDate('');setError('');setInfo('');setOpen(true)}
+  const openEdit=(record:FinanceRecurring)=>{
+    setEditing(record);setAccountId(record.accountId);setCategoryId(record.categoryId??'');setKind(record.transactionType==='INCOME'?'INCOME':'EXPENSE');setDescription(record.description);setAmount(String(record.amount));setFrequency(record.frequency);setNextOccurrence(record.nextOccurrence);setEndDate(record.endDate??'');setError('');setInfo('');setOpen(true)
+  }
   return <main className="page">
     <PageHeader title={t('recurringTitle')} description={t('recurringDescription')} actions={<><button className="secondary" type="button" disabled={!active.length||busy} onClick={processDue}><RefreshCw size={16}/>{t('recurringProcessDue')}</button><button className="primary" type="button" onClick={openCreate} disabled={!accounts.length}><Plus size={17}/>{t('recurringNew')}</button></>} />
-    {!ownerId&&<div className="notice" role="status">{t('loginToLoadData')}</div>}
+    {!ownerId&&<div className="notice" role="status">{t('loginToLoadData')}</div>}{info&&<div className="notice" role="status">{info}</div>}
     {(recurringQuery.isError||accountsQuery.isError||categoriesQuery.isError||otherCategoriesQuery.isError)&&<div className="notice" role="alert">{t('financeLoadError')} <button className="text-button" type="button" onClick={()=>{void recurringQuery.refetch();void accountsQuery.refetch();void categoriesQuery.refetch();void otherCategoriesQuery.refetch()}}>{t('retry')}</button></div>}
     <div className="stat-grid"><article className="stat-card"><CalendarClock size={17}/><span>{t('recurringActiveCount')}</span><strong>{recurringQuery.isLoading?'—':active.length}</strong></article>{monthlyByCurrency.map(([currency,totals])=><article className="stat-card" key={currency}><TrendingDown size={17}/><span>{t('recurringMonthlyExpense')} · {currency}</span><strong>{recurringQuery.isLoading?'—':money(totals.expense,currency)}</strong><small>{t('recurringMonthlyIncome')}: {money(totals.income,currency)}</small></article>)}</div>
     <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('planning')}</span><h2>{t('recurringListTitle')}</h2></div><span className="badge">{t('recurringMonthlyEquivalent')}</span></div>
@@ -78,7 +88,7 @@ export default function RecurringPage() {
       {!recurringQuery.isLoading&&!records.length&&<div className="empty-inline">{t('recurringEmpty')}</div>}
       {records.map(record=><article className="budget-row" key={record.id}><div className="budget-row-head"><span><strong>{record.description}</strong><small>{accountNames.get(record.accountId)??t('account')} · {record.categoryId?(categoryNames.get(record.categoryId)??t('category')):t('uncategorized')} · {t(`frequency${record.frequency}`)}</small></span><span className={record.active?'positive':'badge'}>{record.active?t('active'):t('paused')}</span></div><div className="budget-row-meta"><span className={record.transactionType==='INCOME'?'positive':'negative'}>{record.transactionType==='INCOME'?'+':'−'} {money(Number(record.amount))}</span><span>{t('recurringNext')}: {new Date(record.nextOccurrence+'T12:00:00').toLocaleDateString()}</span></div>{record.endDate&&<small className="muted">{t('recurringEnds')}: {new Date(record.endDate+'T12:00:00').toLocaleDateString()}</small>}<div className="budget-row-meta"><span/>{record.active?<button className="text-button" type="button" disabled={busy} onClick={()=>runAction(()=>pauseRecurring(record.id))}><Pause size={15}/>{t('pause')}</button>:<button className="text-button" type="button" disabled={busy} onClick={()=>runAction(()=>resumeRecurring(record.id))}><Play size={15}/>{t('resume')}</button>}</div></article>)}
     </section>
-    {open&&<Modal title={t('recurringNew')} onClose={()=>setOpen(false)}><form className="form-grid" onSubmit={submit}>
+    {open&&<Modal title={editing?t('recurringEdit'):t('recurringNew')} onClose={()=>setOpen(false)}><form className="form-grid" onSubmit={submit}>
       <Field label={t('transactionType')}><select value={kind} onChange={e=>{setKind(e.target.value as 'EXPENSE'|'INCOME');setCategoryId('')}}><option value="EXPENSE">{t('expense')}</option><option value="INCOME">{t('income')}</option></select></Field>
       <Field label={t('description')}><input maxLength={255} value={description} onChange={e=>setDescription(e.target.value)} required /></Field>
       <Field label={t('amount')}><input type="number" min="0.0001" step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} required /></Field>
@@ -89,7 +99,7 @@ export default function RecurringPage() {
       <Field label={t('recurringEndDate')}><input type="date" min={nextOccurrence} value={endDate} onChange={e=>setEndDate(e.target.value)} /></Field>
       {error&&<div className="form-error" role="alert">{error}</div>}
       <p className="muted">{t('recurringCreateNote')}</p>
-      <button className="primary form-submit" type="submit" disabled={busy||!accounts.length}>{busy?t('saving'):t('recurringCreate')}</button>
+      <button className="primary form-submit" type="submit" disabled={busy||!accounts.length}>{busy?t('saving'):editing?t('recurringSaveChanges'):t('recurringCreate')}</button>
     </form></Modal>}
   </main>
 }
