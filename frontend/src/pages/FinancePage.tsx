@@ -158,8 +158,78 @@ export function FinancePage({ config }: { config: typeof pageConfig[string] }) {
     const now = new Date(); const from = new Date(now.getFullYear(), now.getMonth(), 1); const to = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1)
     const fromIso = from.toISOString(); const toIso = to.toISOString(); const monthEndIso = monthEnd.toISOString(); const fromDate = localDateKey(from); const toDate = localDateKey(to)
-    const load = config.actionTo === '/contas' ? Promise.all([getAccounts(ownerId), getReconciliationHistory()] as const).then(([a, runs]) => { setAccounts(a); setReconciliationRuns(runs) }) : config.actionTo === '/transacoes' ? Promise.all([getAccounts(ownerId), getCategories(ownerId, 'EXPENSE'), getCategories(ownerId, 'INCOME'), getTransactions(fromIso, toIso), getBudgets(ownerId, new Date(now.getFullYear(), 0, 1).toISOString(), new Date(now.getFullYear() + 1, 0, 1).toISOString()), getRecurring()] as const).then(([a, e, i, tr, allBudgets, allRecurring]) => { setAccounts(a); setCategories([...e, ...i]); setTransactions(tr); setBudgets(allBudgets.filter(b => periodStartFor(b.period, now).toISOString().slice(0, 10) === new Date(b.periodStart).toISOString().slice(0, 10))); setRecurring(allRecurring) }) : config.actionTo === '/metas' ? getGoals(ownerId).then(setGoals) : config.actionTo === '/cartoes' ? Promise.all([getCards(ownerId), getInvoices(ownerId), getAccounts(ownerId)] as const).then(([c, i, a]) => { setCards(c); setInvoices(i); setAccounts(a) }) : config.actionTo === '/categorias' ? Promise.all([getCategories(ownerId, 'EXPENSE'), getCategories(ownerId, 'INCOME')] as const).then(([e, i]) => setCategories([...e, ...i])) : config.actionTo === '/orcamentos' ? Promise.all([getBudgets(ownerId, new Date(now.getFullYear(), 0, 1).toISOString(), new Date(now.getFullYear() + 1, 0, 1).toISOString()), getCategories(ownerId, 'EXPENSE')] as const).then(async ([allBudgets, c]) => { const currentBudgets = allBudgets.filter(b => periodStartFor(b.period, now).toISOString().slice(0, 10) === new Date(b.periodStart).toISOString().slice(0, 10)); const bounds = currentBudgets.map(periodBounds); const transactionFrom = bounds.length ? new Date(Math.min(...bounds.map(b => b.from.getTime()))) : from; const transactionTo = bounds.length ? new Date(Math.max(...bounds.map(b => b.to.getTime()))) : monthEnd; const tr = await getTransactions(transactionFrom.toISOString(), transactionTo.toISOString()); setBudgets(currentBudgets); setCategories(c); setTransactions(tr) }) : config.actionTo === '/recorrentes' ? Promise.all([getRecurring(), getAccounts(ownerId), getCategories(ownerId, 'EXPENSE'), getCategories(ownerId, 'INCOME')] as const).then(([r, a, e, i]) => { setRecurring(r); setAccounts(a); setCategories([...e, ...i]) }) : config.actionTo === '/relatorios' ? Promise.all([getAnalytics(fromDate, toDate, ownerId), getCategoryAnalytics(fromDate, toDate, ownerId)] as const).then(([a, c]) => { setAnalytics(a); setCategoryAnalytics(c) }) : Promise.resolve()
-    void load.catch(error => setLoadError(error instanceof Error ? error.message : t('financeLoadError'))).finally(() => setLoading(false))
+    const load = async () => {
+      if (config.actionTo === '/contas') {
+        const accounts = await getAccounts(ownerId)
+        const runs = await getReconciliationHistory()
+        setAccounts(accounts)
+        setReconciliationRuns(runs)
+        return
+      }
+      if (config.actionTo === '/transacoes') {
+        const accounts = await getAccounts(ownerId)
+        const expenseCategories = await getCategories(ownerId, 'EXPENSE')
+        const incomeCategories = await getCategories(ownerId, 'INCOME')
+        const transactions = await getTransactions(fromIso, toIso)
+        const allBudgets = await getBudgets(ownerId, new Date(now.getFullYear(), 0, 1).toISOString(), new Date(now.getFullYear() + 1, 0, 1).toISOString())
+        const allRecurring = await getRecurring()
+        setAccounts(accounts)
+        setCategories([...expenseCategories, ...incomeCategories])
+        setTransactions(transactions)
+        setBudgets(allBudgets.filter(budget => periodStartFor(budget.period, now).toISOString().slice(0, 10) === new Date(budget.periodStart).toISOString().slice(0, 10)))
+        setRecurring(allRecurring)
+        return
+      }
+      if (config.actionTo === '/metas') {
+        setGoals(await getGoals(ownerId))
+        return
+      }
+      if (config.actionTo === '/cartoes') {
+        const cards = await getCards(ownerId)
+        const invoices = await getInvoices(ownerId)
+        const accounts = await getAccounts(ownerId)
+        setCards(cards)
+        setInvoices(invoices)
+        setAccounts(accounts)
+        return
+      }
+      if (config.actionTo === '/categorias') {
+        const expenseCategories = await getCategories(ownerId, 'EXPENSE')
+        const incomeCategories = await getCategories(ownerId, 'INCOME')
+        setCategories([...expenseCategories, ...incomeCategories])
+        return
+      }
+      if (config.actionTo === '/orcamentos') {
+        const allBudgets = await getBudgets(ownerId, new Date(now.getFullYear(), 0, 1).toISOString(), new Date(now.getFullYear() + 1, 0, 1).toISOString())
+        const categories = await getCategories(ownerId, 'EXPENSE')
+        const currentBudgets = allBudgets.filter(budget => periodStartFor(budget.period, now).toISOString().slice(0, 10) === new Date(budget.periodStart).toISOString().slice(0, 10))
+        const bounds = currentBudgets.map(periodBounds)
+        const transactionFrom = bounds.length ? new Date(Math.min(...bounds.map(bound => bound.from.getTime()))) : from
+        const transactionTo = bounds.length ? new Date(Math.max(...bounds.map(bound => bound.to.getTime()))) : monthEnd
+        const transactions = await getTransactions(transactionFrom.toISOString(), transactionTo.toISOString())
+        setBudgets(currentBudgets)
+        setCategories(categories)
+        setTransactions(transactions)
+        return
+      }
+      if (config.actionTo === '/recorrentes') {
+        const recurring = await getRecurring()
+        const accounts = await getAccounts(ownerId)
+        const expenseCategories = await getCategories(ownerId, 'EXPENSE')
+        const incomeCategories = await getCategories(ownerId, 'INCOME')
+        setRecurring(recurring)
+        setAccounts(accounts)
+        setCategories([...expenseCategories, ...incomeCategories])
+        return
+      }
+      if (config.actionTo === '/relatorios') {
+        const analytics = await getAnalytics(fromDate, toDate, ownerId)
+        const categoryAnalytics = await getCategoryAnalytics(fromDate, toDate, ownerId)
+        setAnalytics(analytics)
+        setCategoryAnalytics(categoryAnalytics)
+      }
+    }
+    void load().catch(error => setLoadError(error instanceof Error ? error.message : t('financeLoadError'))).finally(() => setLoading(false))
   }, [ownerId, config.actionTo, refreshVersion, t])
   const isAccounts = config.actionTo === '/contas'; const isTransactions = config.actionTo === '/transacoes'; const isGoals = config.actionTo === '/metas'; const isCards = config.actionTo === '/cartoes'; const isCategories = config.actionTo === '/categorias'; const isBudgets = config.actionTo === '/orcamentos'; const isRecurring = config.actionTo === '/recorrentes'; const isReports = config.actionTo === '/relatorios'; const isSettings = config.actionTo === '/configuracoes'
   const saveMutation = useFinanceMutation(async (task: () => Promise<unknown>) => task())
