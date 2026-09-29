@@ -335,6 +335,9 @@ export function archiveGoal(id: string) {
 }
 
 export function getRecurring() { return get('/recurring', financeRecurringListSchema) }
+export function processRecurringDue(date: string) {
+  return request<number>(`/recurring/process-due?date=${encodeURIComponent(date)}`, { method: 'POST', body: JSON.stringify({}) })
+}
 export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input, financeRecurringSchema) }
 export function pauseRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/pause`, {}) }
 export function resumeRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/resume`, {}) }
