@@ -1,37 +1,58 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users, Plus } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
 type Item = { to: string; key: string; icon: typeof Wallet }
 
-const items: Item[] = [
+const primaryItems: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3 },
   { to: '/transacoes', key: 'transactions', icon: Receipt },
-  { to: '/contas', key: 'accounts', icon: Wallet },
 ]
 
-const moreItems: Item[] = [
-  { to: '/gestao', key: 'management', icon: Users },
-  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
-  { to: '/cartoes', key: 'cards', icon: CreditCard },
-  { to: '/categorias', key: 'categories', icon: FolderTree },
-  { to: '/import-export', key: 'importExport', icon: FileText },
-]
-
-const advancedItems: Item[] = [
-  { to: '/orcamentos', key: 'budgets', icon: Target },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
-  { to: '/metas', key: 'goals', icon: Target },
-  { to: '/previsao', key: 'forecast', icon: CalendarClock },
-  { to: '/relatorios', key: 'reports', icon: BarChart3 },
-  { to: '/patrimonio', key: 'netWorth', icon: Wallet },
-  { to: '/inteligencia', key: 'insights', icon: Sparkles },
-  { to: '/dividas', key: 'debts', icon: CreditCard },
-  { to: '/notificacoes', key: 'notifications', icon: Bell },
-  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
-]
+const navigationGroups = [
+  {
+    id: 'money',
+    title: 'Seu dinheiro',
+    items: [
+      { to: '/contas', key: 'accounts', icon: Wallet },
+      { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
+      { to: '/cartoes', key: 'cards', icon: CreditCard },
+      { to: '/categorias', key: 'categories', icon: FolderTree },
+    ],
+  },
+  {
+    id: 'planning',
+    title: 'Planejamento',
+    items: [
+      { to: '/orcamentos', key: 'budgets', icon: Target },
+      { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
+      { to: '/metas', key: 'goals', icon: Target },
+      { to: '/dividas', key: 'debts', icon: CreditCard },
+    ],
+  },
+  {
+    id: 'analysis',
+    title: 'Análises',
+    items: [
+      { to: '/previsao', key: 'forecast', icon: CalendarClock },
+      { to: '/relatorios', key: 'reports', icon: BarChart3 },
+      { to: '/patrimonio', key: 'netWorth', icon: Wallet },
+      { to: '/inteligencia', key: 'insights', icon: Sparkles },
+    ],
+  },
+  {
+    id: 'tools',
+    title: 'Ferramentas',
+    items: [
+      { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
+      { to: '/notificacoes', key: 'notifications', icon: Bell },
+      { to: '/gestao', key: 'management', icon: Users },
+      { to: '/import-export', key: 'importExport', icon: FileText },
+    ],
+  },
+] satisfies { id: string; title: string; items: Item[] }[]
 
 const localAppUrl = (port: number, configured: string) => {
   if (configured.trim()) return configured
@@ -48,8 +69,7 @@ const koviUrl = (import.meta.env.VITE_KOVI_APP_URL || '').trim() || (['localhost
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const location = useLocation()
-  const [organizationOpen, setOrganizationOpen] = useState(false)
-  const [planningOpen, setPlanningOpen] = useState(false)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({ money: true })
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches)
   const drawerRef = useRef<HTMLElement | null>(null)
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null)
@@ -63,11 +83,11 @@ function Shell({ children }: { children: ReactNode }) {
   useEffect(() => { setOpen(false) }, [location.pathname])
 
   useEffect(() => {
-    if (moreItems.some(item => item.to === location.pathname)) setOrganizationOpen(true)
-    if (advancedItems.some(item => item.to === location.pathname)) setPlanningOpen(true)
+    const activeGroup = navigationGroups.find(group => group.items.some(item => item.to === location.pathname))
+    if (activeGroup) setOpenGroups(previous => ({ ...previous, [activeGroup.id]: true }))
   }, [location.pathname])
 
-  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
+  const commands = [...primaryItems, ...navigationGroups.flatMap(group => group.items)].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
 
   const openPalette = () => {
@@ -180,46 +200,45 @@ function Shell({ children }: { children: ReactNode }) {
         </div>
 
         <nav aria-label={t('mainNavigation')} className="nav-groups">
-          <div className="nav-group">
-            <span className="nav-group-title">{t('group_principal')}</span>
-            {items.map(item => (
+          <div className="nav-group nav-primary-group">
+            <span className="nav-group-title">Principal</span>
+            {primaryItems.map(item => (
               <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                <item.icon size={17} /><span>{t(item.key)}</span>
+                <item.icon size={18} strokeWidth={1.9} /><span>{t(item.key)}</span>
               </NavLink>
             ))}
           </div>
 
-          <div className="nav-group">
-            <button type="button" className="nav-section-toggle" aria-expanded={organizationOpen} onClick={() => setOrganizationOpen(value => !value)}>
-              <span>{t('group_organizacao')}</span><span className="nav-section-count">{moreItems.length}</span><ChevronDown size={15} className={organizationOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
-            </button>
-            {organizationOpen && <div className="nav-section-items">
-              {moreItems.map(item => (
-                <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                  <item.icon size={17} /><span>{t(item.key)}</span>
-                </NavLink>
-              ))}
-            </div>}
-          </div>
-
-          <div className="nav-group">
-            <button type="button" className="nav-section-toggle" aria-expanded={planningOpen} onClick={() => setPlanningOpen(value => !value)}>
-              <span>{t('group_planejamento')}</span><span className="nav-section-count">{advancedItems.length}</span><ChevronDown size={15} className={planningOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
-            </button>
-            {planningOpen && <div className="nav-section-items">
-              {advancedItems.map(item => (
-                <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                  <item.icon size={17} /><span>{t(item.key)}</span>
-                </NavLink>
-              ))}
-            </div>}
-          </div>
+          {navigationGroups.map(group => {
+            const expanded = Boolean(openGroups[group.id])
+            const active = group.items.some(item => item.to === location.pathname)
+            return (
+              <div className="nav-group nav-accordion" key={group.id}>
+                <button
+                  type="button"
+                  className={active ? 'nav-section-toggle has-active' : 'nav-section-toggle'}
+                  aria-expanded={expanded}
+                  onClick={() => setOpenGroups(previous => ({ ...previous, [group.id]: !previous[group.id] }))}
+                >
+                  <span>{group.title}</span>
+                  <ChevronDown size={16} className={expanded ? 'nav-section-chevron open' : 'nav-section-chevron'} />
+                </button>
+                {expanded && <div className="nav-section-items">
+                  {group.items.map(item => (
+                    <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                      <item.icon size={18} strokeWidth={1.9} /><span>{t(item.key)}</span>
+                    </NavLink>
+                  ))}
+                </div>}
+              </div>
+            )
+          })}
         </nav>
 
         <div className="nav-group ecosystem-links">
           <span className="nav-group-title">{t('ecosystem')}</span>
-          {fitnessUrl && <a className="nav-item" href={fitnessUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Dumbbell size={17} /><span>{t('fitness')}</span></a>}
-          {koviUrl && <a className="nav-item" href={koviUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Sparkles size={17} /><span>{t('koviAi')}</span></a>}
+          {fitnessUrl && <a className="nav-item" href={fitnessUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Dumbbell size={18} /><span>{t('fitness')}</span></a>}
+          {koviUrl && <a className="nav-item" href={koviUrl} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)}><Sparkles size={18} /><span>{t('koviAi')}</span></a>}
         </div>
       </aside>
 
@@ -232,7 +251,7 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="top-actions">
-            <NavLink className="primary shell-create-transaction" to="/transacoes" onClick={() => setOpen(false)} aria-label={t('newTransaction')} title={t('newTransaction')}><Plus size={16} aria-hidden="true" /><span>{t('newTransaction')}</span></NavLink>
+
             <button type="button" className="search-icon-button" aria-label={t('search')} title={`${t('search')} · Ctrl K`} onClick={openPalette}>
               <Search size={17} aria-hidden="true" />
             </button>
