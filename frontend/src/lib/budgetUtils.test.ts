@@ -69,6 +69,18 @@ describe('budgetUtils', () => {
     expect(budgetSpent(budget, transactions)).toBe(25)
   })
 
+  it('handles a missing period date from malformed runtime data', () => {
+    const bounds = periodBounds({
+      id: 'missing-date',
+      categoryId: 'food',
+      period: 'MONTHLY',
+      periodStart: undefined as never,
+      limitAmount: 100,
+    })
+    expect(Number.isNaN(bounds.from.getTime())).toBe(true)
+    expect(Number.isNaN(bounds.to.getTime())).toBe(true)
+  })
+
   it('returns safe values for non-finite budget inputs', () => {
     expect(budgetPercent(Number.NaN, 100)).toBe(0)
     expect(budgetPercent(100, Number.POSITIVE_INFINITY)).toBe(0)
