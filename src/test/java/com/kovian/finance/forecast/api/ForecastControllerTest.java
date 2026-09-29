@@ -88,9 +88,9 @@ class ForecastControllerTest {
             currentUser.when(CurrentUser::ownerId).thenReturn(owner);
             var result = controller.cashFlow(null, LocalDate.of(2026, 9, 23), 2);
             org.junit.jupiter.api.Assertions.assertEquals(2, result.size());
-            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("10.0000"), result.get(0).projectedIncome());
-            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("5.0000"), result.get(0).projectedExpense());
-            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("5.0000"), result.get(0).projectedCashFlow());
+            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("10.0000"), result.get(0).income());
+            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("5.0000"), result.get(0).expense());
+            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("5.0000"), result.get(0).netCashFlow());
             org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("105.0000"), result.get(0).projectedBalance());
             org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("110.0000"), result.get(1).projectedBalance());
         }
