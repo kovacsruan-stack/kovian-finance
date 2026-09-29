@@ -1,5 +1,14 @@
 export type ImportedCalendarLesson = { sourceId: string; data: Record<string, unknown> }
 
+function stableHash(value: string) {
+  let hash = 2166136261
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return (hash >>> 0).toString(36)
+}
+
 export function parseCalendarFile(text: string): ImportedCalendarLesson[] {
   const unfolded = text.replace(/\r?\n[ \t]/g, '')
   const blocks = unfolded.split(/BEGIN:VEVENT/i).slice(1)
@@ -22,13 +31,9 @@ export function parseCalendarFile(text: string): ImportedCalendarLesson[] {
     const summary = unescapeText(readProperty(body, 'SUMMARY') || 'Evento importado do Fitness')
     const explicitUid = unescapeText(readProperty(body, 'UID')).trim()
     const fallbackSource = [date, rawStart, summary, readProperty(body, 'LOCATION')].join('|')
-    let fallbackHash = 2166136261
-    for (let charIndex = 0; charIndex < fallbackSource.length; charIndex += 1) {
-      fallbackHash ^= fallbackSource.charCodeAt(charIndex)
-      fallbackHash = Math.imul(fallbackHash, 16777619)
-    }
-    const uid = explicitUid || 'fitness-calendar-' + (fallbackHash >>> 0).toString(36)
+    const uid = explicitUid || 'fitness-calendar-' + stableHash(fallbackSource)
     if (!date || !uid) return []
+    const sourceId = uid.length <= 120 ? uid : uid.slice(0, 80) + '-' + stableHash(uid)
     const rawEnd = readProperty(body, 'DTEND')
     const endDate = rawEnd ? parseDate(rawEnd) : ''
     const recurrenceRule = readProperty(body, 'RRULE')
@@ -37,7 +42,7 @@ export function parseCalendarFile(text: string): ImportedCalendarLesson[] {
     const categories = unescapeText(readProperty(body, 'CATEGORIES'))
     const description = unescapeText(readProperty(body, 'DESCRIPTION'))
     return [{
-      sourceId: uid.slice(0, 120),
+      sourceId,
       data: {
         date,
         title: summary,
