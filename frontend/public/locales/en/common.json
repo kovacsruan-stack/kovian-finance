@@ -41,5 +41,6 @@
   "incomeExpenseChart": "Income and expense comparison over the last three months",
   "recentTransactions": "Recent transactions",
   "activity": "Activity",
-  "overview": "Overview"
+  "overview": "Overview",
+  "goalsContributionNote": "This records goal progress only. It does not move money between accounts."
 }
