@@ -291,12 +291,12 @@ export default function CalendarPage() {
                 const result = await importManagementRecords('calendar_events', calendarImportRows.slice(offset, offset + 500))
                 inserted += result.inserted; updated += result.updated; unchanged += result.unchanged; unresolvedStudentLinks += result.unresolvedStudentLinks
               }
-              setCalendarImportResult(`${t('importCompletedSummary', { inserted, updated, unchanged })}${unresolvedStudentLinks ? ` ${t('unresolvedLinksSummary', { count: unresolvedStudentLinks })}` : ''}`)
+              setCalendarImportResult(`${t('importCompletedSummary', { inserted, updated, unchanged })}${unresolvedStudentLinks ? ` ${t('unresolvedLinksSummary', { total: unresolvedStudentLinks })}` : ''}`)
               setCalendarImportRows([])
               await Promise.all([fitnessEvents.refetch(), lessons.refetch(), transactions.refetch(), recurring.refetch()])
             } catch (error) { setCalendarImportError(error instanceof Error ? error.message : t('importFailed')) }
             finally { setCalendarImportBusy(false) }
-          }}>{calendarImportBusy ? t('importing') : t('confirmImportEvents', { count: calendarImportRows.length })}</button>
+          }}>{calendarImportBusy ? t('importing') : t('confirmImportEvents', { total: calendarImportRows.length })}</button>
           <button type="button" className="secondary" disabled={calendarImportBusy} onClick={() => { setCalendarImportRows([]); setCalendarImportName(''); setCalendarImportError('') }}>Cancelar</button>
         </div>
       </div>}
@@ -306,7 +306,7 @@ export default function CalendarPage() {
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
         <strong>{label.charAt(0).toUpperCase() + label.slice(1)}</strong>
-        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (t('eventCount', { count: visibleEvents.length }))}</span><select aria-label={t('filterEventType')} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{t('allEventTypes')}</option><option value="INCOME">{t('monthIncome')}</option><option value="EXPENSE">{t('monthExpenses')}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option><option value="FITNESS">{isPortuguese ? 'Eventos Fitness' : 'Fitness events'}</option></select><input aria-label={t('searchEvent')} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={t('searchPlaceholder')} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
+        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (t('eventCount', { total: visibleEvents.length }))}</span><select aria-label={t('filterEventType')} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{t('allEventTypes')}</option><option value="INCOME">{t('monthIncome')}</option><option value="EXPENSE">{t('monthExpenses')}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option><option value="FITNESS">{isPortuguese ? 'Eventos Fitness' : 'Fitness events'}</option></select><input aria-label={t('searchEvent')} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={t('searchPlaceholder')} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
       </div>
       <div className="calendar-weekdays">{(isPortuguese ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map(day => <span key={day}>{day}</span>)}</div>
       <div className="calendar-grid">
