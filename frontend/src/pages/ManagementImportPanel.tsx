@@ -106,6 +106,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState('')
   const [skipped, setSkipped] = useState(0)
+  const [duplicateLessonsSkipped, setDuplicateLessonsSkipped] = useState(0)
 
   const chooseFile = async (file?: File) => {
     setRows([])
@@ -114,6 +115,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
     setError('')
     setFilename(file?.name ?? '')
     setSkipped(0)
+    setDuplicateLessonsSkipped(0)
     if (!file) return
     if (file.size > 10 * 1024 * 1024) {
       setError('O arquivo excede 10 MB. Exporte e importe em arquivos menores.')
@@ -126,6 +128,9 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
         const total = importOrder.reduce((sum, key) => sum + (backup[key]?.length ?? 0), 0)
         const rawData = (parsed as Record<string, unknown>).data as Record<string, unknown>
         const totalRaw = importOrder.reduce((sum, key) => sum + (Array.isArray(rawData[key]) ? (rawData[key] as unknown[]).length : 0), 0)
+        const rawLessons = normalizeRows(rawData.lessons)
+        const duplicateLessonCount = lessonQuality(rawLessons.rows).excess
+        setDuplicateLessonsSkipped(duplicateLessonCount)
         setBackupRows(backup)
         setSkipped(totalRaw - total)
         if (!total) setError('O backup foi reconhecido, mas não contém registros importáveis.')
@@ -178,7 +183,6 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
     ? importOrder.filter(key => (backupRows[key]?.length ?? 0) > 0).map(key => `${key}: ${backupRows[key]?.length}`).join(' · ')
     : `${resource}: ${rows.length}`
   const readyCount = backupRows ? backupCount : rows.length
-  const duplicateLessonStats = lessonQuality(backupRows?.lessons ?? [])
   const unmatchedModalities = backupRows ? unmatchedStudentModalities(backupRows) : []
 
   return <section className="panel data-panel">
@@ -203,7 +207,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       </div>}
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" className="primary" disabled={busy} onClick={() => void runImport()}>{busy ? 'Importando…' : `Confirmar importação de ${readyCount} registro(s)`}</button>
-        <button type="button" className="secondary" disabled={busy} onClick={() => { setRows([]); setBackupRows(null); setFilename(''); setError(''); setSkipped(0) }}>Cancelar</button>
+        <button type="button" className="secondary" disabled={busy} onClick={() => { setRows([]); setBackupRows(null); setFilename(''); setError(''); setSkipped(0); setDuplicateLessonsSkipped(0) }}>Cancelar</button>
       </div>
     </div>}
   </section>
