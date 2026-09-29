@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { FileUp, ShieldCheck } from 'lucide-react'
-import { importManagementRecords, type ManagementResource } from '../lib/api'
+import { clearFinanceSession, FinanceApiError, importManagementRecords, loginFinance, type ManagementResource } from '../lib/api'
 import { removeDuplicateLessons } from '../lib/managementImportNormalization'
 
 type ImportRow = { sourceId: string; data: Record<string, unknown> }
@@ -99,6 +99,29 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
   const [result, setResult] = useState('')
   const [skipped, setSkipped] = useState(0)
   const [duplicateLessonsSkipped, setDuplicateLessonsSkipped] = useState(0)
+  const [authenticated, setAuthenticated] = useState(() => {
+    try { return Boolean(localStorage.getItem('access_token')) } catch { return false }
+  })
+  const [authEmail, setAuthEmail] = useState('')
+  const [authPassword, setAuthPassword] = useState('')
+  const [authBusy, setAuthBusy] = useState(false)
+  const [authError, setAuthError] = useState('')
+
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (authBusy) return
+    setAuthBusy(true)
+    setAuthError('')
+    try {
+      await loginFinance(authEmail, authPassword)
+      setAuthenticated(true)
+      setAuthPassword('')
+    } catch (cause) {
+      setAuthError(cause instanceof Error ? cause.message : 'Não foi possível entrar. Tente novamente.')
+    } finally {
+      setAuthBusy(false)
+    }
+  }
 
   const chooseFile = async (file?: File) => {
     setRows([])
@@ -164,7 +187,16 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       setBackupRows(null)
       onImported()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha na importação. Confira a conexão e tente novamente.')
+      const needsAuthentication = (cause instanceof FinanceApiError && cause.status === 401)
+        || (cause instanceof Error && cause.message === 'AUTHENTICATION_REQUIRED')
+      if (needsAuthentication) {
+        clearFinanceSession()
+        setAuthenticated(false)
+        setAuthError('Sua sessão expirou ou não está autenticada. Entre novamente para continuar a importação.')
+        setError('')
+      } else {
+        setError(cause instanceof Error ? cause.message : 'Falha na importação. Confira a conexão e tente novamente.')
+      }
     } finally {
       setBusy(false)
     }
@@ -180,6 +212,20 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
   return <section className="panel data-panel">
     <div className="section-title"><div><span className="eyebrow"><FileUp size={14} /></span><h2>Importar dados do Gestão antigo</h2></div></div>
     <p className="text-sm text-muted-foreground">Selecione o backup JSON completo do Gestão ou um arquivo JSON de um único recurso. A prévia não grava nada; a gravação só começa após sua confirmação.</p>
+    {!authenticated && <form className="mt-3 rounded-xl border border-border p-4" onSubmit={handleLogin}>
+      <h3 className="font-semibold">Autenticação necessária</h3>
+      <p className="mt-1 text-sm text-muted-foreground">Entre com sua conta do KOVIAN Finance para autorizar a importação. A senha não será salva.</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-sm">E-mail
+          <input className="input" type="email" autoComplete="username" required value={authEmail} onChange={event => setAuthEmail(event.target.value)} />
+        </label>
+        <label className="grid gap-1 text-sm">Senha
+          <input className="input" type="password" autoComplete="current-password" required value={authPassword} onChange={event => setAuthPassword(event.target.value)} />
+        </label>
+      </div>
+      {authError && <p className="notice mt-3" role="alert">{authError}</p>}
+      <button className="primary mt-3" type="submit" disabled={authBusy}>{authBusy ? 'Entrando…' : 'Entrar no Finance'}</button>
+    </form>}
     <div className="mt-3 flex flex-wrap items-center gap-3">
       <label className="secondary cursor-pointer"><FileUp size={15} /> Selecionar JSON<input className="sr-only" type="file" accept=".json,application/json" onChange={event => void chooseFile(event.target.files?.[0])} /></label>
       {filename && <span className="text-sm">{filename}</span>}
@@ -198,7 +244,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
         <strong>Modalidade sem correspondência:</strong> {unmatchedModalities.join(', ')}. Os alunos serão preservados, mas essa modalidade não aparece na lista de modalidades exportada. Confira o cadastro após a importação.
       </div>}
       <div className="mt-3 flex flex-wrap gap-2">
-        <button type="button" className="primary" disabled={busy} onClick={() => void runImport()}>{busy ? 'Importando…' : `Confirmar importação de ${readyCount} registro(s)`}</button>
+        <button type="button" className="primary" disabled={busy || !authenticated} onClick={() => void runImport()}>{busy ? 'Importando…' : !authenticated ? 'Entre para importar' : `Confirmar importação de ${readyCount} registro(s)`}</button>
         <button type="button" className="secondary" disabled={busy} onClick={() => { setRows([]); setBackupRows(null); setFilename(''); setError(''); setSkipped(0); setDuplicateLessonsSkipped(0) }}>Cancelar</button>
       </div>
     </div>}
