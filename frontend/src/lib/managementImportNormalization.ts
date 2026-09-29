@@ -4,7 +4,7 @@ export function removeDuplicateLessons(rows: ImportRow[]): ImportRow[] {
   const seen = new Set<string>()
   return rows.filter(row => {
     const data = row.data
-    const values = [data.studentId, data.date, data.time, data.modality, data.status]
+    const values = [data.studentId, data.date, data.time, data.modality]
       .map(value => String(value ?? '').trim())
     // Missing fields are not enough evidence to call two lessons duplicates.
     if (values.some(value => !value)) return true
