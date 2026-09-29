@@ -9,8 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class CreditCardInvoiceTest {
     @Test
     void acceptsPurchasesOnlyWhileOpenAndTracksInvoiceTotal() {
-        var invoice = new CreditCardInvoice(UUID.randomUUID(), UUID.randomUUID(),
-                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10), LocalDate.of(2026, 10, 5));
+        var invoice = invoice();
         invoice.addAmount(new BigDecimal("125.50"));
         assertEquals(new BigDecimal("125.50"), invoice.getTotalAmount());
         invoice.close();
@@ -18,14 +17,43 @@ class CreditCardInvoiceTest {
     }
 
     @Test
-    void paidInvoiceCannotBePaidTwiceAndCannotBeClosedAgain() {
-        var invoice = new CreditCardInvoice(UUID.randomUUID(), UUID.randomUUID(),
-                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10), LocalDate.of(2026, 10, 5));
+    void supportsMultiplePartialPaymentsAndClosesAtExactTotal() {
+        var invoice = invoice();
+        invoice.addAmount(new BigDecimal("100.00"));
+        invoice.close();
+
+        invoice.applyPayment(new BigDecimal("35.00"));
+        assertEquals(new BigDecimal("35.00"), invoice.getPaidAmount());
+        assertEquals(new BigDecimal("65.00"), invoice.getRemainingAmount());
+        assertEquals(InvoiceStatus.CLOSED, invoice.getStatus());
+
+        invoice.applyPayment(new BigDecimal("65.00"));
+        assertEquals(new BigDecimal("100.00"), invoice.getPaidAmount());
+        assertEquals(BigDecimal.ZERO, invoice.getRemainingAmount());
+        assertEquals(InvoiceStatus.PAID, invoice.getStatus());
+    }
+
+    @Test
+    void rejectsPaymentsThatAreInvalidOrExceedTheRemainingBalance() {
+        var invoice = invoice();
+        invoice.addAmount(new BigDecimal("50.00"));
+        assertThrows(IllegalArgumentException.class, () -> invoice.applyPayment(BigDecimal.ZERO));
+        assertThrows(IllegalArgumentException.class, () -> invoice.applyPayment(new BigDecimal("50.01")));
+    }
+
+    @Test
+    void paidInvoiceCannotBePaidAgainAndCannotBeClosedAgain() {
+        var invoice = invoice();
         invoice.addAmount(new BigDecimal("90.00"));
-        invoice.markPaid();
-        invoice.markPaid();
+        invoice.applyPayment(new BigDecimal("90.00"));
         assertEquals(InvoiceStatus.PAID, invoice.getStatus());
         assertEquals(new BigDecimal("90.00"), invoice.getPaidAmount());
         assertThrows(IllegalStateException.class, invoice::close);
+        assertThrows(IllegalStateException.class, () -> invoice.applyPayment(BigDecimal.ONE));
+    }
+
+    private CreditCardInvoice invoice() {
+        return new CreditCardInvoice(UUID.randomUUID(), UUID.randomUUID(),
+                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10), LocalDate.of(2026, 10, 5));
     }
 }
