@@ -95,6 +95,14 @@ describe('expandCalendarEventDates', () => {
     )).toEqual(['2026-09-01', '2026-09-03', '2026-09-05', '2026-09-07'])
   })
 
+  it('anchors monthly recurrence to the original day instead of drifting after short months', () => {
+    expect(expandCalendarEventDates(
+      { date: '2026-01-31', recurrenceRule: 'FREQ=MONTHLY;COUNT=4' },
+      '2026-01-01',
+      '2026-06-01',
+    )).toEqual(['2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30'])
+  })
+
   it('does not pretend to expand unsupported BY rules', () => {
     expect(expandCalendarEventDates(
       { date: '2026-09-01', recurrenceRule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR' },
