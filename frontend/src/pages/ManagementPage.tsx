@@ -7,6 +7,10 @@ import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus,
 import {
   archiveManagementRecord,
   createManagementRecord,
+  createTransaction,
+  FinanceApiError,
+  getAccounts,
+  getCategories,
   getManagementRecords,
   getManagementRecordsPage,
   restoreManagementRecord,
@@ -14,6 +18,7 @@ import {
   type ManagementRecord,
   type ManagementResource,
 } from '../lib/api'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 
 const allTabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }> = [
   { id: 'students', label: 'Alunos', icon: Users },
@@ -53,11 +58,13 @@ function fieldsFor(resource: ManagementResource) {
   ] as const
   if (resource === 'payments') return [
     ['amount', 'Valor (R$)', 'number'], ['dueDate', 'Vencimento', 'date'],
-    ['paidDate', 'Data do pagamento', 'date'], ['status', 'Status', 'text'], ['notes', 'Observações', 'text'],
+    ['paidDate', 'Data do pagamento', 'date'], ['status', 'Status', 'text'],
+    ['accountId', 'Conta financeira', 'select'], ['categoryId', 'Categoria de receita', 'select'], ['notes', 'Observações', 'text'],
   ] as const
   if (resource === 'expenses') return [
     ['description', 'Descrição', 'text'], ['amount', 'Valor (R$)', 'number'],
-    ['date', 'Data', 'date'], ['category', 'Categoria', 'text'], ['paymentMethod', 'Forma de pagamento', 'text'], ['notes', 'Observações', 'text'],
+    ['date', 'Data', 'date'], ['accountId', 'Conta financeira', 'select'],
+    ['categoryId', 'Categoria de despesa', 'select'], ['paymentMethod', 'Forma de pagamento', 'text'], ['notes', 'Observações', 'text'],
   ] as const
   return [
     ['name', 'Nome', 'text'], ['phone', 'Telefone', 'tel'], ['email', 'E-mail', 'email'],
@@ -74,6 +81,7 @@ function recordTitle(record: ManagementRecord, resource: ManagementResource) {
 
 export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMode }) {
   const queryClient = useQueryClient()
+  const ownerId = useFinanceOwnerId()
   const tabs = tabsForMode(mode)
   const [resource, setResource] = useState<ManagementResource>(() => mode === 'transactions' ? 'payments' : mode === 'calendar' ? 'lessons' : 'students')
   const [formOpen, setFormOpen] = useState(false)
@@ -104,8 +112,24 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
     queryFn: () => getManagementRecords('modalities'),
     enabled: resource === 'students' || resource === 'lessons',
   })
+  const accountsQuery = useQuery({
+    queryKey: ['finance', 'accounts', ownerId],
+    queryFn: () => getAccounts(ownerId!),
+    enabled: mode === 'transactions' && Boolean(ownerId),
+    staleTime: 30_000,
+  })
+  const categoriesQuery = useQuery({
+    queryKey: ['finance', 'categories', ownerId, 'management'],
+    queryFn: async () => {
+      const income = await getCategories(ownerId!, 'INCOME')
+      const expense = await getCategories(ownerId!, 'EXPENSE')
+      return [...income, ...expense]
+    },
+    enabled: mode === 'transactions' && Boolean(ownerId),
+    staleTime: 30_000,
+  })
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const data: Record<string, unknown> = { ...form }
       if (resource === 'lessons' || resource === 'payments') {
         const student = (studentsQuery.data ?? []).find(item => item.id === form.studentId)
@@ -126,16 +150,100 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
       if (resource === 'expenses' && (data.amount == null || data.amount === '' || Number(data.amount) <= 0)) throw new Error('Informe um valor válido para a despesa.')
       if (resource === 'waitlist' && !String(data.name ?? '').trim()) throw new Error('Informe o nome da pessoa.')
       if ((resource === 'lessons' || resource === 'payments') && !form.studentId) throw new Error('Selecione um aluno.')
-      return editing
-        ? updateManagementRecord(resource, editing.id, data)
-        : createManagementRecord(resource, data)
+
+      const paidStatus = ['pago', 'paid'].includes(String(data.status ?? '').trim().toLowerCase())
+      const wasPaid = ['pago', 'paid'].includes(String(editing?.data.status ?? '').trim().toLowerCase())
+      const existingSyncStatus = String(editing?.data.financeSyncStatus ?? data.financeSyncStatus ?? '')
+      const shouldSyncFinance = mode === 'transactions' && (
+        resource === 'expenses'
+          ? !editing || existingSyncStatus === 'PENDING'
+          : resource === 'payments'
+            ? paidStatus && (!wasPaid || existingSyncStatus === 'PENDING')
+            : false
+      )
+
+      if (shouldSyncFinance) {
+        if (!ownerId) throw new Error('Não foi possível identificar a conta financeira.')
+        if (!String(data.accountId ?? '').trim() || !String(data.categoryId ?? '').trim()) {
+          throw new Error('Selecione a conta e a categoria financeira antes de lançar esta movimentação.')
+        }
+        if (!accountsQuery.data?.some(account => account.id === data.accountId)) throw new Error('A conta financeira selecionada não está disponível.')
+        if (!categoriesQuery.data?.some(category => category.id === data.categoryId)) throw new Error('A categoria financeira selecionada não está disponível.')
+        data.financeExternalId = String(data.financeExternalId ?? editing?.data.financeExternalId ?? '') || (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `management-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+        data.financeSyncStatus = 'PENDING'
+      }
+
+      if (editing && editing.data.financeSyncStatus === 'SYNCED') {
+        const financialFields = resource === 'expenses'
+          ? ['amount', 'date', 'accountId', 'categoryId']
+          : ['amount', 'paidDate', 'accountId', 'categoryId']
+        const changed = financialFields.some(key => String(data[key] ?? '') !== String(editing.data[key] ?? ''))
+        if (changed || (resource === 'payments' && !paidStatus)) {
+          throw new Error('Esta movimentação já foi lançada no Finance. Para evitar divergência, não altere valor, data, conta, categoria ou status pago aqui. Faça o ajuste financeiro em Transações.')
+        }
+      }
+
+      const saved = editing
+        ? await updateManagementRecord(resource, editing.id, data)
+        : await createManagementRecord(resource, data)
+
+      if (shouldSyncFinance) {
+        const amount = Number(data.amount)
+        const dateValue = String(resource === 'payments' ? data.paidDate || data.dueDate || today() : data.date || today())
+        const description = resource === 'payments'
+          ? `Recebimento de aluno · ${String(data.studentName ?? data.student ?? 'Aluno')} · ${String(data.dueDate ?? dateValue)}`
+          : String(data.description ?? 'Despesa do estúdio')
+        try {
+          const transaction = await createTransaction({
+            accountId: String(data.accountId),
+            categoryId: String(data.categoryId),
+            description,
+            amount,
+            type: resource === 'payments' ? 'INCOME' : 'EXPENSE',
+            occurredAt: new Date(`${dateValue.slice(0, 10)}T12:00:00`).toISOString(),
+            externalId: String(data.financeExternalId),
+          })
+          await updateManagementRecord(resource, saved.id, {
+            ...saved.data,
+            financeExternalId: String(data.financeExternalId),
+            financeSyncStatus: 'SYNCED',
+            financeTransactionId: transaction.id,
+          })
+        } catch (cause) {
+          if (cause instanceof FinanceApiError && cause.status === 409) {
+            await updateManagementRecord(resource, saved.id, {
+              ...saved.data,
+              financeExternalId: String(data.financeExternalId),
+              financeSyncStatus: 'SYNCED',
+            })
+          } else {
+            return {
+              saved: { ...saved, data: { ...saved.data, financeExternalId: String(data.financeExternalId), financeSyncStatus: 'PENDING' } },
+              syncWarning: 'O registro foi salvo, mas o lançamento financeiro ainda não foi confirmado. Edite o registro e salve novamente para retomar a sincronização sem duplicar.',
+            }
+          }
+        }
+      }
+      return { saved, syncWarning: '' }
     },
-    onSuccess: async () => {
-      setForm({})
-      setEditing(null)
-      setFormOpen(false)
-      setNotice(editing ? 'Alterações salvas.' : 'Registro salvo.')
+    onSuccess: async ({ saved, syncWarning }) => {
+      if (syncWarning) {
+        setEditing(saved)
+        setForm(previous => ({
+          ...previous,
+          financeExternalId: String(saved.data.financeExternalId ?? ''),
+          financeSyncStatus: String(saved.data.financeSyncStatus ?? 'PENDING'),
+        }))
+        setFormOpen(true)
+        setNotice(syncWarning)
+      } else {
+        setForm({})
+        setEditing(null)
+        setFormOpen(false)
+        setNotice(editing ? 'Alterações salvas.' : 'Registro salvo.')
+      }
       await queryClient.invalidateQueries({ queryKey: ['finance', 'management'] })
+      await queryClient.invalidateQueries({ queryKey: ['finance', 'transactions'] })
       if (mode === 'calendar') await queryClient.invalidateQueries({ queryKey: ['finance', 'calendar'] })
     },
     onError: error => setNotice(error instanceof Error ? error.message : 'Não foi possível salvar.'),
@@ -216,7 +324,17 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
         </label>}
         {fields.map(([key, label, type]) => <label key={key}>
           {label}
-          {key === 'status' && resource === 'lessons' ? (
+          {key === 'accountId' && (resource === 'payments' || resource === 'expenses') ? (
+            <select required={resource === 'expenses' || String(form.status ?? '').toLowerCase() === 'pago'} value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
+              <option value="">Selecione uma conta</option>
+              {(accountsQuery.data ?? []).map(account => <option key={account.id} value={account.id}>{account.name} · {account.currency}</option>)}
+            </select>
+          ) : key === 'categoryId' && (resource === 'payments' || resource === 'expenses') ? (
+            <select required={resource === 'expenses' || String(form.status ?? '').toLowerCase() === 'pago'} value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
+              <option value="">Selecione uma categoria</option>
+              {(categoriesQuery.data ?? []).filter(category => category.kind === (resource === 'payments' ? 'INCOME' : 'EXPENSE')).map(category => <option key={category.id} value={category.id}>{category.name}</option>)}
+            </select>
+          ) : key === 'status' && resource === 'lessons' ? (
             <select value={form[key] ?? 'Agendada'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
               {['Agendada', 'Realizada', 'Cancelada', 'Falta'].map(status => <option key={status} value={status}>{status}</option>)}
             </select>
@@ -275,6 +393,8 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
           </span>
           {record.archived ? <button type="button" className="secondary" disabled={restore.isPending} onClick={() => restore.mutate(record.id)}>Restaurar</button> : <div className="flex gap-2"><button type="button" className="secondary" aria-label={`Editar ${recordTitle(record, resource)}`} onClick={() => {
             const nextForm: Record<string, string> = Object.fromEntries(Object.entries(record.data).map(([key, value]) => [key, value == null ? '' : String(value)]))
+            nextForm.financeExternalId = String(record.data.financeExternalId ?? '')
+            nextForm.financeSyncStatus = String(record.data.financeSyncStatus ?? '')
             setEditing(record)
             setForm(nextForm)
             setFormOpen(true)
