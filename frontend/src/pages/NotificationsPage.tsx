@@ -1,12 +1,13 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { useState } from 'react'
 import { Bell, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { getNotifications, getOwnerId, markNotificationRead } from '../lib/api'
+import { getNotifications, markNotificationRead } from '../lib/api'
 import PageHeader from '../components/ui/PageHeader'
 
 export default function NotificationsPage(){
- const {t}=useTranslation(); const qc=useQueryClient(); const ownerId=getOwnerId(); const [readingId,setReadingId]=useState<string|null>(null); const [actionError,setActionError]=useState<string|null>(null)
+ const {t}=useTranslation(); const qc=useQueryClient(); const ownerId=useFinanceOwnerId(); const [readingId,setReadingId]=useState<string|null>(null); const [actionError,setActionError]=useState<string|null>(null)
  const q=useQuery({queryKey:['finance','notifications',ownerId],queryFn:()=>getNotifications(false),enabled:Boolean(ownerId),staleTime:30_000})
  const unread=(q.data??[]).filter(x=>!x.readAt).length
  const read=async(id:string)=>{setReadingId(id);setActionError(null);try{await markNotificationRead(id);await qc.invalidateQueries({queryKey:['finance','notifications',ownerId]})}catch{setActionError(t('saveError'))}finally{setReadingId(null)}}
