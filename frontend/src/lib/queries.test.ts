@@ -13,9 +13,12 @@ describe('finance dashboard query window', () => {
     expect(second).toEqual(first)
   })
 
-  it('covers the trailing 90-day period through the end of the day', () => {
+  it('covers the trailing 90 local calendar days through the end of the day', () => {
     const { fromIso, toIso } = getDashboardWindow('2026-09-23')
-    expect(fromIso).toBe('2026-06-25T23:59:59.999Z')
-    expect(toIso).toBe('2026-09-23T23:59:59.999Z')
+    const expectedEnd = new Date(2026, 8, 23, 23, 59, 59, 999)
+    const expectedStart = new Date(expectedEnd)
+    expectedStart.setDate(expectedStart.getDate() - 90)
+    expect(fromIso).toBe(expectedStart.toISOString())
+    expect(toIso).toBe(expectedEnd.toISOString())
   })
 })
