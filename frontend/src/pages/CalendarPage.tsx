@@ -225,6 +225,17 @@ export default function CalendarPage() {
   const isPortuguese = locale.startsWith('pt')
   const label = month.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   const monthEvents = visibleEvents.filter(event => event.date.startsWith(from.slice(0, 7)))
+  const monthSummary = useMemo(() => {
+    const byCurrency = new Map<string, { income: number; expense: number }>()
+    for (const event of monthEvents) {
+      if (event.kind !== 'INCOME' && event.kind !== 'EXPENSE') continue
+      const row = byCurrency.get(event.currency) ?? { income: 0, expense: 0 }
+      if (event.kind === 'INCOME') row.income += Number(event.amount)
+      else row.expense += Number(event.amount)
+      byCurrency.set(event.currency, row)
+    }
+    return [...byCurrency.entries()].sort(([a], [b]) => a.localeCompare(b))
+  }, [monthEvents])
   const selectedEvents = byDay[selectedDate] ?? []
   const loading = transactions.isLoading || recurring.isLoading || accounts.isLoading || lessons.isLoading || payments.isLoading || expenses.isLoading || fitnessEvents.isLoading
   const today = iso(new Date())
@@ -323,6 +334,14 @@ export default function CalendarPage() {
         })}
       </div>
     </section>
+    {monthSummary.length > 0 && <section className="stat-grid">
+      {monthSummary.map(([currency, totals]) => <article className="stat-card" key={currency}>
+        <CircleDollarSign size={17} />
+        <span>{isPortuguese ? 'Fluxo do mês' : 'Month cash flow'} · {currency}</span>
+        <strong>{money(totals.income - totals.expense, currency)}</strong>
+        <small>{isPortuguese ? 'Entradas' : 'Income'} {money(totals.income, currency)} · {isPortuguese ? 'Saídas' : 'Expenses'} {money(totals.expense, currency)}</small>
+      </article>)}
+    </section>}
     <section className="panel data-panel">
       <div className="section-title">
         <div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Eventos do dia' : 'Selected day events'}</h2></div>
