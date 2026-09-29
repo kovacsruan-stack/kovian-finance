@@ -52,7 +52,10 @@ function lessonQuality(rows: ImportRow[]) {
   const groups = new Map<string, number>()
   for (const row of rows) {
     const data = row.data
-    const key = JSON.stringify([data.studentId, data.date, data.time, data.modality, data.status].map(value => String(value ?? '').trim()))
+    const values = [data.studentId, data.date, data.time, data.modality, data.status]
+      .map(value => String(value ?? '').trim())
+    if (values.some(value => !value)) continue
+    const key = JSON.stringify(values)
     groups.set(key, (groups.get(key) ?? 0) + 1)
   }
   const duplicateGroups = [...groups.values()].filter(count => count > 1)
