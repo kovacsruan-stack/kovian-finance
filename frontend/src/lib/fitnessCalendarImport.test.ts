@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseCalendarFile } from './fitnessCalendarImport'
+import { expandCalendarEventDates, parseCalendarFile } from './fitnessCalendarImport'
 
 describe('parseCalendarFile', () => {
   it('imports basic events and unescapes text', () => {
@@ -75,5 +75,31 @@ describe('parseCalendarFile', () => {
 
     expect(result[0].sourceId).toBe('event-3')
     expect(result[0].data.title).toBe('Treino de força comcontinuação')
+  })
+})
+
+describe('expandCalendarEventDates', () => {
+  it('expands weekly recurrence within the requested month', () => {
+    expect(expandCalendarEventDates(
+      { date: '2026-09-01', recurrenceRule: 'FREQ=WEEKLY;COUNT=5' },
+      '2026-09-10',
+      '2026-10-01',
+    )).toEqual(['2026-09-15', '2026-09-22', '2026-09-29'])
+  })
+
+  it('honors interval, count, and until bounds', () => {
+    expect(expandCalendarEventDates(
+      { date: '2026-09-01', recurrenceRule: 'FREQ=DAILY;INTERVAL=2;COUNT=4;UNTIL=20260908' },
+      '2026-09-01',
+      '2026-09-15',
+    )).toEqual(['2026-09-01', '2026-09-03', '2026-09-05', '2026-09-07'])
+  })
+
+  it('does not pretend to expand unsupported BY rules', () => {
+    expect(expandCalendarEventDates(
+      { date: '2026-09-01', recurrenceRule: 'FREQ=WEEKLY;BYDAY=MO,WE,FR' },
+      '2026-09-01',
+      '2026-10-01',
+    )).toEqual(['2026-09-01'])
   })
 })
