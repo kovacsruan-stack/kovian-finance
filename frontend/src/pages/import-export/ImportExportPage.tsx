@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useFinanceOwnerId } from '../../lib/useFinanceOwnerId'
 import { Download, FileUp, RefreshCw } from 'lucide-react'
 import { getAccounts, getImportErrors, getImportHistory, importCsv, getTransactions, type FinanceAccount, type FinanceImport, type FinanceImportError, type FinanceTransaction } from '../../lib/api'
-import { getOwnerId } from '../../lib/api'
 import { useTranslation } from 'react-i18next'
 import { buildCsv } from '../../lib/csv'
 import PageHeader from '../../components/ui/PageHeader'
@@ -14,7 +14,7 @@ function download(name: string, content: string, type: string) {
 }
 export default function ImportExportPage() {
   const { t } = useTranslation()
-  const ownerId=getOwnerId()
+  const ownerId=useFinanceOwnerId()
   const [accounts,setAccounts]=useState<FinanceAccount[]>([])
   const [history,setHistory]=useState<FinanceImport[]>([])
   const [accountId,setAccountId]=useState('')
