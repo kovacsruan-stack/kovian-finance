@@ -18,6 +18,7 @@ import com.kovian.finance.account.repository.FinancialAccountRepository; import 
  }
  @PostMapping("/{id}/cancel") @Transactional ResponseEntity<Void> cancel(@PathVariable UUID id){
   UUID owner=CurrentUser.ownerId(); var tx=transactions.findByIdAndOwnerId(id,owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Transaction not found"));
+  if(tx.getTransactionType()==TransactionType.CARD_PAYMENT)throw new ResponseStatusException(HttpStatus.CONFLICT,"Card invoice payments must be reversed through the invoice payment workflow");
   if(tx.getStatus()==TransactionStatus.CANCELLED)return ResponseEntity.noContent().build();
   if(tx.getTransactionType()==TransactionType.INCOME)tx.getAccount().applyExpense(tx.getAmount());else tx.getAccount().applyIncome(tx.getAmount());
   tx.cancel(); audit.record("TRANSACTION_CANCELLED","FinancialTransaction",tx.getId(),"amount="+tx.getAmount()); outbox.record("FinancialTransaction",tx.getId(),KovianEventType.TRANSACTION_CANCELLED,Map.of("transactionId",tx.getId(),"amount",tx.getAmount())); return ResponseEntity.noContent().build();
