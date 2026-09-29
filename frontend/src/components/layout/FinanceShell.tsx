@@ -15,7 +15,7 @@ const primaryItems: Item[] = [
 const navigationGroups = [
   {
     id: 'money',
-    title: 'Contas e cartões',
+    title: 'navGroupMoney',
     items: [
       { to: '/contas', key: 'accounts', icon: Wallet },
       { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
@@ -25,7 +25,7 @@ const navigationGroups = [
   },
   {
     id: 'planning',
-    title: 'Organização',
+    title: 'navGroupPlanning',
     items: [
       { to: '/metas', key: 'goals', icon: Target },
       { to: '/orcamentos', key: 'budgets', icon: Wallet },
@@ -35,7 +35,7 @@ const navigationGroups = [
   },
   {
     id: 'analysis',
-    title: 'Análises',
+    title: 'navGroupAnalysis',
     items: [
       { to: '/previsao', key: 'forecast', icon: CalendarClock },
       { to: '/relatorios', key: 'reports', icon: BarChart3 },
@@ -45,14 +45,14 @@ const navigationGroups = [
   },
   {
     id: 'routine',
-    title: 'Rotina',
+    title: 'navGroupRoutine',
     items: [
       { to: '/gestao', key: 'management', icon: Users },
     ],
   },
   {
     id: 'system',
-    title: 'Sistema',
+    title: 'navGroupSystem',
     items: [
       { to: '/notificacoes', key: 'notifications', icon: Bell },
       { to: '/import-export', key: 'importExport', icon: FileText },
@@ -207,7 +207,7 @@ function Shell({ children }: { children: ReactNode }) {
 
         <nav aria-label={t('mainNavigation')} className="nav-groups">
           <div className="nav-group nav-primary-group">
-            <span className="nav-group-title">Principal</span>
+            <span className="nav-group-title">{t('principal')}</span>
             {primaryItems.map(item => (
               <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                 <item.icon size={18} strokeWidth={1.9} /><span>{t(item.key)}</span>
@@ -226,7 +226,7 @@ function Shell({ children }: { children: ReactNode }) {
                   aria-expanded={expanded}
                   onClick={() => setOpenGroups(previous => ({ ...previous, [group.id]: !previous[group.id] }))}
                 >
-                  <span>{group.title}</span>
+                  <span>{t(group.title)}</span>
                   <ChevronDown size={16} className={expanded ? 'nav-section-chevron open' : 'nav-section-chevron'} />
                 </button>
                 {expanded && <div className="nav-section-items">
