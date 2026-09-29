@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ManagementImportPanel from './ManagementImportPanel'
 import ManagementReconciliationPanel from './ManagementReconciliationPanel'
 import PageHeader from '../components/ui/PageHeader'
@@ -83,6 +83,12 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
   const [showArchived, setShowArchived] = useState(false)
   const [page, setPage] = useState(0)
   const [notice, setNotice] = useState('')
+  useEffect(() => {
+    setResource(mode === 'transactions' ? 'payments' : mode === 'calendar' ? 'lessons' : 'students')
+    setPage(0)
+    setFormOpen(false)
+    setForm({})
+  }, [mode])
   const query = useQuery({
     queryKey: ['finance', 'management', resource, showArchived, page],
     queryFn: () => getManagementRecordsPage(resource, showArchived, page, 50),
