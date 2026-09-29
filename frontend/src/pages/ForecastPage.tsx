@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
+import { formatLocalDateKey } from '../lib/queries'
 import { CalendarRange, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { getForecastCashFlow } from '../lib/api'
@@ -9,12 +10,11 @@ import { summarizeForecast } from '../lib/forecastAnalysis'
 import { formatCurrency as money } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 
-const localDateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 export default function ForecastPage() {
   const { t } = useTranslation()
   const ownerId=useFinanceOwnerId()
   const [days,setDays]=useState<30|90|180|365>(90)
-  const from=localDateKey(new Date())
+  const from=formatLocalDateKey()
   const query=useQuery({queryKey:['finance','forecast','cash-flow',ownerId,from,days],queryFn:()=>getForecastCashFlow(ownerId!,from,days),enabled:Boolean(ownerId),staleTime:60_000, retry:2})
   const data:CashFlowForecast[]=query.data ?? []
   const summary = useMemo(() => summarizeForecast(data), [data])
