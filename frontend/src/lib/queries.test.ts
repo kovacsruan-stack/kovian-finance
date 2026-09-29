@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { getDashboardWindow } from './queries'
+import { formatLocalDateKey, getDashboardWindow } from './queries'
 
 describe('finance dashboard query window', () => {
   it('uses the local calendar date instead of the UTC date', () => {
     const date = new Date(2026, 8, 23, 23, 30)
-    expect(getLocalDayKey(date)).toBe('2026-09-23')
+    expect(formatLocalDateKey(date)).toBe('2026-09-23')
+  })
+
+  it('formats dates with zero-padded month and day', () => {
+    expect(formatLocalDateKey(new Date(2026, 0, 5, 12))).toBe('2026-01-05')
   })
 
   it('is deterministic for the same calendar day', () => {
