@@ -9,5 +9,6 @@ import com.kovian.finance.outbox.application.OutboxEventService; import com.kovi
   try{Notification saved=repository.save(new Notification(owner,type,severity,title,message,entityType,entityId,key)); outbox.recordForOwner(owner,"Notification",saved.getId(),"NOTIFICATION_CREATED",1,Map.of("notificationId",saved.getId(),"type",type,"severity",severity)); return Optional.of(saved);}catch(DataIntegrityViolationException e){return Optional.empty();}
  }
  @Transactional public void markRead(UUID id){repository.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new IllegalArgumentException("Notification not found")).markRead();}
+ @Transactional public int markAllRead(){UUID owner=CurrentUser.ownerId();var items=repository.findTop100ByOwnerIdAndReadAtIsNullOrderByCreatedAtDesc(owner);items.forEach(Notification::markRead);return items.size();}
  @Transactional(readOnly=true) public List<Notification> list(boolean unreadOnly){UUID owner=CurrentUser.ownerId();return unreadOnly?repository.findTop100ByOwnerIdAndReadAtIsNullOrderByCreatedAtDesc(owner):repository.findTop100ByOwnerIdOrderByCreatedAtDesc(owner);}
 }
