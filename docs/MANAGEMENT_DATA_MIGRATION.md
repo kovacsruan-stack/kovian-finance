@@ -43,3 +43,8 @@ Não apagar nem desativar o sistema de origem até a reconciliação dos totais 
 ## Backend de referência
 
 O repositório contém o backend principal Java/Spring e um backend Python/FastAPI separado. O fluxo documentado para o Finance em produção refere-se ao contrato Java/Spring e às migrations Flyway em `src/main/resources/db/migration`. As migrations Alembic e as rotas Python mantêm uma implementação paralela; não se deve presumir que sejam executadas pelo deploy Java. Antes de importar dados, confirme qual serviço está conectado ao ambiente de destino.
+## Importação pela interface
+
+Na tela **Gestão**, selecione o recurso e use **Importar dados do Gestão antigo** para carregar um JSON exportado. A interface mostra uma prévia e só grava após confirmação; envia lotes de até 500 registros e usa o ID da origem como `sourceId`. Faça a importação recurso por recurso, começando por alunos e modalidades. Arquivos com mais de 10 MB devem ser divididos antes do envio.
+
+Na tela **Calendário**, a área **Trazer agenda do Kovian Fitness** aceita um arquivo `.ics` exportado pelo Fitness. Cada evento com data é importado como um registro de aula, com UID como `sourceId`, permitindo reimportação idempotente. Isso migra eventos, mas não recria regras de recorrência, turmas, presença, nem conexões com Google Calendar/Outlook. Essas funções exigem integração própria com os serviços e modelos correspondentes.
