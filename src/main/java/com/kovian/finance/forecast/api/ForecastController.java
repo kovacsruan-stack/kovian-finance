@@ -67,6 +67,7 @@ public class ForecastController {
 
         for (var tx : transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(authenticatedOwner, start, end)) {
             if (tx.getStatus() == TransactionStatus.CANCELLED) continue;
+            if (tx.getExternalId() != null && tx.getExternalId().startsWith("recurring:")) continue;
             if (tx.getTransactionType() == TransactionType.INCOME) historicalIncome = historicalIncome.add(tx.getAmount());
             else if (tx.getTransactionType() == TransactionType.EXPENSE) historicalExpense = historicalExpense.add(tx.getAmount());
         }
