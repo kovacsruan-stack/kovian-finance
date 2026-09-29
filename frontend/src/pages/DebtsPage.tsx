@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { CreditCard, TrendingDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { getDebts, getOwnerId } from '../lib/api'
+import { getDebts } from '../lib/api'
 import { formatCurrency as money } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 
 
 export default function DebtsPage(){
   const {t}=useTranslation()
-  const ownerId=getOwnerId()
+  const ownerId=useFinanceOwnerId()
   const q=useQuery({queryKey:['finance','debts',ownerId],queryFn:()=>getDebts(ownerId!),enabled:Boolean(ownerId),staleTime:60_000})
   const debts=q.data??[]
   const outstanding=debts.filter(x=>x.status!=='PAID').reduce((s,x)=>s+Number(x.outstandingAmount||0),0)
