@@ -20,7 +20,14 @@ export function parseCalendarFile(text: string): ImportedCalendarLesson[] {
     const rawStart = readProperty(body, 'DTSTART')
     const date = parseDate(rawStart)
     const summary = unescapeText(readProperty(body, 'SUMMARY') || 'Evento importado do Fitness')
-    const uid = unescapeText(readProperty(body, 'UID') || 'fitness-calendar-' + index).trim()
+    const explicitUid = unescapeText(readProperty(body, 'UID')).trim()
+    const fallbackSource = [date, rawStart, summary, readProperty(body, 'LOCATION')].join('|')
+    let fallbackHash = 2166136261
+    for (let charIndex = 0; charIndex < fallbackSource.length; charIndex += 1) {
+      fallbackHash ^= fallbackSource.charCodeAt(charIndex)
+      fallbackHash = Math.imul(fallbackHash, 16777619)
+    }
+    const uid = explicitUid || 'fitness-calendar-' + (fallbackHash >>> 0).toString(36)
     if (!date || !uid) return []
     const rawEnd = readProperty(body, 'DTEND')
     const endDate = rawEnd ? parseDate(rawEnd) : ''
