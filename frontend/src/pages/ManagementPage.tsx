@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import ManagementImportPanel from './ManagementImportPanel'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
 import {
@@ -240,6 +241,8 @@ export default function ManagementPage() {
         <button type="button" className="primary" disabled={save.isPending} onClick={() => save.mutate()}><Check size={16} /> {save.isPending ? 'Salvando…' : 'Salvar'}</button>
       </div>
     </section>}
+
+    <ManagementImportPanel resource={resource} onImported={() => { void queryClient.invalidateQueries({ queryKey: ['finance', 'management'] }) }} />
 
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${records.length} registros`}</span></div>
