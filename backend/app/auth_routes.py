@@ -1,6 +1,7 @@
 """Registration and login endpoints using hashed passwords and short-lived JWTs."""
 from datetime import datetime, timezone
 from uuid import uuid4
+import secrets
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -27,6 +28,15 @@ class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     email: str = Field(min_length=3, max_length=254, pattern="^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,}$")
     password: str = Field(min_length=1, max_length=256)
+
+
+class AnonymousSessionRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    device_id: str = Field(
+        min_length=36,
+        max_length=36,
+        pattern="^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$",
+    )
 
 
 def public_user(user: User) -> dict:
@@ -68,6 +78,44 @@ async def register(body: RegisterRequest, db: AsyncSession = Depends(get_session
         raise HTTPException(status_code=409, detail="Email already registered")
     return {"user": public_user(user), "access_token": access_token,
             "token_type": "bearer", "expires_in": 1800}
+
+
+@router.post("/anonymous")
+async def anonymous_session(body: AnonymousSessionRequest, db: AsyncSession = Depends(get_session)):
+    """Create or resume a browser-scoped account without asking for credentials.
+
+    The random device ID acts as a local bearer secret. It never grants access
+    to another device's records unless that device ID is known.
+    """
+    device_id = body.device_id.lower()
+    email = f"anonymous-{device_id}@anonymous.kovian.invalid"
+    user = await db.scalar(select(User).where(User.email == email))
+    if user is None:
+        user = User(
+            id=str(uuid4()),
+            email=email,
+            password_hash=hash_password(secrets.token_urlsafe(32)),
+            role="anonymous",
+            is_active=True,
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(user)
+        try:
+            await db.commit()
+            await db.refresh(user)
+        except IntegrityError:
+            await db.rollback()
+            user = await db.scalar(select(User).where(User.email == email))
+            if user is None:
+                raise HTTPException(status_code=503, detail="Could not initialize anonymous session")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Anonymous session is unavailable")
+    return {
+        "user": public_user(user),
+        "access_token": create_access_token(user.id),
+        "token_type": "bearer",
+        "expires_in": 1800,
+    }
 
 
 @router.post("/login")
