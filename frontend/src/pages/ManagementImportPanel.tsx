@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { FileUp, ShieldCheck } from 'lucide-react'
-import { clearFinanceSession, FinanceApiError, importManagementRecords, loginFinance, type ManagementResource } from '../lib/api'
+import { clearFinanceSession, FinanceApiError, importManagementRecords, loginFinance, reconcileManagement, type ManagementResource } from '../lib/api'
 import { removeDuplicateLessons } from '../lib/managementImportNormalization'
 
 type ImportRow = { sourceId: string; data: Record<string, unknown> }
@@ -182,7 +182,20 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       const importedCount = backupRows
         ? importOrder.reduce((sum, key) => sum + (backupRows[key]?.length ?? 0), 0)
         : rows.length
-      setResult(`Importação concluída (${importedCount} registro(s) processados): ${totals.inserted} novos, ${totals.updated} atualizados, ${totals.unchanged} sem alteração.${totals.unresolvedStudentLinks ? ` ${totals.unresolvedStudentLinks} vínculo(s) de aluno precisam de conferência.` : ''}`)
+      let reconciliationMessage = ''
+      if (backupRows) {
+        const expectedCounts = Object.fromEntries(
+          importOrder.filter(key => (backupRows[key]?.length ?? 0) > 0).map(key => [key, backupRows[key]?.length ?? 0]),
+        ) as Partial<Record<ManagementResource, number>>
+        const expectedSourceIds = Object.fromEntries(
+          importOrder.filter(key => (backupRows[key]?.length ?? 0) > 0).map(key => [key, (backupRows[key] ?? []).map(row => row.sourceId)]),
+        ) as Partial<Record<ManagementResource, string[]>>
+        const reconciliation = await reconcileManagement(expectedCounts, expectedSourceIds)
+        reconciliationMessage = reconciliation.reconciled
+          ? ' Reconciliação automática confirmou contagens, IDs de origem e vínculos de alunos.'
+          : ` Reconciliação automática encontrou divergências: ${Object.entries(reconciliation.resources).filter(([, value]) => value.delta !== null && value.delta !== 0).length} recurso(s) com diferença, ${reconciliation.unresolvedStudentLinks} vínculo(s) de aluno pendente(s).`
+      }
+      setResult(`Importação concluída (${importedCount} registro(s) processados): ${totals.inserted} novos, ${totals.updated} atualizados, ${totals.unchanged} sem alteração.${totals.unresolvedStudentLinks ? ` ${totals.unresolvedStudentLinks} vínculo(s) de aluno precisam de conferência.` : ''}${reconciliationMessage}`)
       setRows([])
       setBackupRows(null)
       onImported()
