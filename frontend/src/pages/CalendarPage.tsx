@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
+import { importManagementRecords } from '../lib/api'
 
 const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
@@ -59,6 +60,28 @@ function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
   return isPortuguese ? 'Saída' : 'Expense'
 }
 
+type ImportedCalendarLesson = { sourceId: string; data: Record<string, unknown> }
+
+function parseCalendarFile(text: string): ImportedCalendarLesson[] {
+  const unfolded = text.replace(/\r?\n[ \t]/g, '')
+  const blocks = unfolded.split('BEGIN:VEVENT').slice(1)
+  const unescapeText = (value: string) => value.replace(/\\n/gi, '\n').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\')
+  return blocks.flatMap((block, index) => {
+    const body = block.split('END:VEVENT')[0] ?? ''
+    const property = (name: string) => {
+      const line = body.split(/\r?\n/).find(item => item.startsWith(name + ':') || item.startsWith(name + ';'))
+      return line ? line.slice(line.indexOf(':') + 1).trim() : ''
+    }
+    const rawDate = property('DTSTART')
+    const dateMatch = rawDate.match(/^(\d{4})(\d{2})(\d{2})/)
+    const date = dateMatch ? dateMatch[1] + '-' + dateMatch[2] + '-' + dateMatch[3] : ''
+    const summary = unescapeText(property('SUMMARY') || 'Evento importado do Fitness')
+    const uid = unescapeText(property('UID') || 'fitness-calendar-' + index)
+    if (!date) return []
+    return [{ sourceId: uid.slice(0, 120), data: { date, title: summary, notes: unescapeText(property('DESCRIPTION')), status: 'Agendada', source: 'Kovian Fitness calendar import' } }]
+  })
+}
+
 export default function CalendarPage() {
   const { t } = useTranslation()
   const ownerId = getOwnerId()
@@ -66,6 +89,11 @@ export default function CalendarPage() {
   const [selectedDate, setSelectedDate] = useState(() => iso(new Date()))
   const [kindFilter, setKindFilter] = useState<'ALL' | CalendarEvent['kind']>('ALL')
   const [eventSearch, setEventSearch] = useState('')
+  const [calendarImportRows, setCalendarImportRows] = useState<ImportedCalendarLesson[]>([])
+  const [calendarImportName, setCalendarImportName] = useState('')
+  const [calendarImportError, setCalendarImportError] = useState('')
+  const [calendarImportBusy, setCalendarImportBusy] = useState(false)
+  const [calendarImportResult, setCalendarImportResult] = useState('')
   const from = iso(startOfMonth(month))
   const to = iso(new Date(month.getFullYear(), month.getMonth() + 1, 1))
   const transactions = useQuery({
@@ -226,6 +254,49 @@ export default function CalendarPage() {
       </div>
     </section>
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
+    <section className="panel data-panel">
+      <div className="section-title"><div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Trazer agenda do Kovian Fitness' : 'Import Kovian Fitness calendar'}</h2></div></div>
+      <p className="text-sm text-muted-foreground">{isPortuguese ? 'Exporte o calendário do Fitness em .ics e importe aqui. Os eventos serão criados como aulas no Gestão; revise a prévia antes de confirmar.' : 'Export the Fitness calendar as .ics and import it here. Events become Management lessons; review before confirming.'}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <label className="secondary cursor-pointer"><Download size={15} /> {isPortuguese ? 'Selecionar arquivo .ics' : 'Choose .ics file'}<input className="sr-only" type="file" accept=".ics,text/calendar" onChange={async event => {
+          const file = event.target.files?.[0]
+          setCalendarImportRows([]); setCalendarImportResult(''); setCalendarImportError(''); setCalendarImportName(file?.name ?? '')
+          if (!file) return
+          if (file.size > 10 * 1024 * 1024) { setCalendarImportError('Arquivo maior que 10 MB.'); return }
+          try {
+            const rows = parseCalendarFile(await file.text())
+            const unique = new Map(rows.map(row => [row.sourceId, row]))
+            setCalendarImportRows([...unique.values()])
+            if (!unique.size) setCalendarImportError('Nenhum evento com data reconhecível foi encontrado no .ics.')
+          } catch { setCalendarImportError('Não foi possível ler esse arquivo .ics.') }
+        }} /></label>
+        {calendarImportName && <span className="text-sm">{calendarImportName}</span>}
+        {calendarImportRows.length > 0 && <span className="text-sm">{calendarImportRows.length} evento(s) na prévia</span>}
+      </div>
+      {calendarImportError && <div className="notice mt-3" role="alert">{calendarImportError}</div>}
+      {calendarImportResult && <div className="notice mt-3" role="status">{calendarImportResult}</div>}
+      {calendarImportRows.length > 0 && <div className="mt-3 rounded-xl border border-border p-4">
+        <p className="text-sm">A importação é idempotente pelo UID do evento. Os eventos importados aparecerão na aba Aulas. Isso importa eventos como registros, não recria automaticamente turmas recorrentes ou integrações Google/Outlook.</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" className="primary" disabled={calendarImportBusy || !ownerId} onClick={async () => {
+            setCalendarImportBusy(true); setCalendarImportError(''); setCalendarImportResult('')
+            try {
+              let inserted = 0, updated = 0, unchanged = 0, unresolvedStudentLinks = 0
+              for (let offset = 0; offset < calendarImportRows.length; offset += 500) {
+                const result = await importManagementRecords('lessons', calendarImportRows.slice(offset, offset + 500))
+                inserted += result.inserted; updated += result.updated; unchanged += result.unchanged; unresolvedStudentLinks += result.unresolvedStudentLinks
+              }
+              setCalendarImportResult(`Importação concluída: ${inserted} novos, ${updated} atualizados, ${unchanged} sem alteração.${unresolvedStudentLinks ? ` ${unresolvedStudentLinks} vínculo(s) precisam de conferência.` : ''}`)
+              setCalendarImportRows([])
+              await Promise.all([lessons.refetch(), transactions.refetch(), recurring.refetch()])
+            } catch (error) { setCalendarImportError(error instanceof Error ? error.message : 'Falha ao importar calendário.') }
+            finally { setCalendarImportBusy(false) }
+          }}>{calendarImportBusy ? 'Importando…' : `Confirmar importação de ${calendarImportRows.length} evento(s)`}</button>
+          <button type="button" className="secondary" disabled={calendarImportBusy} onClick={() => { setCalendarImportRows([]); setCalendarImportName(''); setCalendarImportError('') }}>Cancelar</button>
+        </div>
+      </div>}
+    </section>
+
     {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError || expenses.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
