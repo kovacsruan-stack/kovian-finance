@@ -12,6 +12,13 @@ describe('removeDuplicateLessons', () => {
     expect(removeDuplicateLessons([first, duplicate, distinct])).toEqual([first, distinct])
   })
 
+  it('treats status as mutable and deduplicates the same lesson across statuses', () => {
+    const scheduled = row('lesson-1', { studentId: 'student-1', date: '2026-09-01', time: '08:00', modality: 'Funcional', status: 'Agendada' })
+    const completed = row('lesson-2', { studentId: 'student-1', date: '2026-09-01', time: '08:00', modality: 'Funcional', status: 'Realizada' })
+
+    expect(removeDuplicateLessons([scheduled, completed])).toEqual([scheduled])
+  })
+
   it('preserves rows when any comparison field is missing', () => {
     const first = row('lesson-1', { studentId: 'student-1', date: '2026-09-01' })
     const second = row('lesson-2', { studentId: 'student-1', date: '2026-09-01' })
