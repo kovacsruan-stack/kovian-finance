@@ -60,6 +60,8 @@ function Shell({ children }: { children: ReactNode }) {
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
 
+  useEffect(() => { setOpen(false) }, [location.pathname])
+
   useEffect(() => {
     if (moreItems.some(item => item.to === location.pathname)) setOrganizationOpen(true)
     if (advancedItems.some(item => item.to === location.pathname)) setPlanningOpen(true)
@@ -166,7 +168,7 @@ function Shell({ children }: { children: ReactNode }) {
   }, [palette, filtered.length])
 
   return (
-    <div className="app-shell"><a href="#finance-main" className="skip-link">Pular para o conteúdo</a>
+    <div className="app-shell"><a href="#finance-main" className="skip-link">{t('skipToContent')}</a>
       {open && <button type="button" className="scrim" aria-label={t('closeMenu')} onClick={() => setOpen(false)} />}
 
       <aside id="finance-navigation" ref={drawerRef} className={open ? 'drawer drawer-open' : 'drawer'} aria-hidden={isMobile && !open} inert={isMobile && !open}>
@@ -177,7 +179,7 @@ function Shell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav aria-label="Navegação principal" className="nav-groups">
+        <nav aria-label={t('mainNavigation')} className="nav-groups">
           <div className="nav-group">
             <span className="nav-group-title">{t('group_principal')}</span>
             {items.map(item => (
@@ -230,7 +232,7 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="top-actions">
-            <NavLink className="primary shell-create-transaction" to="/transacoes" onClick={() => setOpen(false)}><Plus size={16} /><span>{t('newTransaction')}</span></NavLink>
+            <NavLink className="primary shell-create-transaction" to="/transacoes" onClick={() => setOpen(false)} aria-label={t('newTransaction')} title={t('newTransaction')}><Plus size={16} aria-hidden="true" /><span>{t('newTransaction')}</span></NavLink>
             <button type="button" className="search-icon-button" aria-label={t('search')} title={`${t('search')} · Ctrl K`} onClick={openPalette}>
               <Search size={17} aria-hidden="true" />
             </button>
