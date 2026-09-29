@@ -130,6 +130,7 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
       setFormOpen(false)
       setNotice(editing ? 'Alterações salvas.' : 'Registro salvo.')
       await queryClient.invalidateQueries({ queryKey: ['finance', 'management'] })
+      if (mode === 'calendar') await queryClient.invalidateQueries({ queryKey: ['finance', 'calendar'] })
     },
     onError: error => setNotice(error instanceof Error ? error.message : 'Não foi possível salvar.'),
   })
