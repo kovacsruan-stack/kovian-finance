@@ -16,5 +16,5 @@ export default function InsightsPage(){
  <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('analysis')}</span><h2>{t('recentInsights')}</h2></div><BrainCircuit size={18}/></div>
  {q.isLoading&&<div className="empty-inline">{t('loading')}</div>}
  {q.data?.slice().sort((a,b)=>severityRank(b.severity)-severityRank(a.severity)||new Date(b.generatedAt).getTime()-new Date(a.generatedAt).getTime()).map(x=><article className="feature-card" key={x.type+'-'+x.generatedAt}><div className="feature-icon">{icon(x.severity)}</div><div><strong>{x.title}</strong><span>{x.explanation}</span><small>{new Date(x.generatedAt).toLocaleString(document.documentElement.lang||'pt-BR')}</small></div></article>)}
- {!q.isLoading&&!q.data?.length&&<div className="empty-inline">{t('noInsights')}</div>}</section></main>
+ {!q.isLoading&&!q.isError&&!q.data?.length&&<div className="empty-inline">{t('noInsights')}</div>}</section></main>
 }
