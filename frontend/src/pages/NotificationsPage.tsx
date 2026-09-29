@@ -104,7 +104,7 @@ export default function NotificationsPage() {
       </div>
 
       {query.isLoading && <div className="empty-inline">{t('loading')}</div>}
-      {!query.isLoading && !filtered.length && <div className="empty-inline">{t('noNotifications')}</div>}
+      {!query.isLoading && !query.isError && !filtered.length && <div className="empty-inline">{t('noNotifications')}</div>}
       {filtered.map(notification => {
         const target = notificationTarget(notification.type, notification.entityType)
         return <article className={`feature-card ${notification.readAt ? '' : 'is-unread'}`} key={notification.id}>
