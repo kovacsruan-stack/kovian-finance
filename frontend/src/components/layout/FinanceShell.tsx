@@ -10,13 +10,13 @@ const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3 },
   { to: '/transacoes', key: 'transactions', icon: Receipt },
   { to: '/contas', key: 'accounts', icon: Wallet },
-  { to: '/gestao', key: 'management', icon: Users },
-  { to: '/cartoes', key: 'cards', icon: CreditCard },
-  { to: '/orcamentos', key: 'budgets', icon: Target },
   { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
+  { to: '/gestao', key: 'management', icon: Users },
 ]
 
 const moreItems: Item[] = [
+  { to: '/cartoes', key: 'cards', icon: CreditCard },
+  { to: '/orcamentos', key: 'budgets', icon: Target },
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/categorias', key: 'categories', icon: FolderTree },
