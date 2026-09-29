@@ -34,14 +34,14 @@ export default function NetWorthPage(){
     <div className="dashboard-grid">
       <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('assets')}</span><h2>{t('assetList')}</h2></div></div>
         {(assets.data??[]).map(x=><div className="account-row" key={x.id}><i/><span><strong>{x.name}</strong><small>{x.assetType} · {x.liquidity}</small></span><b>{money(x.currentValue)}</b></div>)}
-        {!loading&&!assets.data?.length&&<div className="empty-inline">{t('noAssets')}</div>}
+        {!loading&&!assets.isError&&!assets.data?.length&&<div className="empty-inline">{t('noAssets')}</div>}
       </section>
       <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('liabilities')}</span><h2>{t('liabilityList')}</h2></div></div>
         {(liabilities.data??[]).map(x=><div className="account-row" key={x.id}><i/><span><strong>{x.name}</strong><small>{x.liabilityType}</small></span><b>{money(x.amount)}</b></div>)}
-        {!loading&&!liabilities.data?.length&&<div className="empty-inline">{t('noLiabilities')}</div>}
+        {!loading&&!liabilities.isError&&!liabilities.data?.length&&<div className="empty-inline">{t('noLiabilities')}</div>}
       </section>
     </div>
     <section className="panel"><div className="section-title"><div><span className="eyebrow">{t('analysis')}</span><h2>{t('netWorthMethod')}</h2></div><Landmark size={18}/></div><p>{t('netWorthFormula',{assets:money(assetTotal),liabilities:money(liabilityTotal),netWorth:money(netWorth)})}</p><p>{t('debtObligationNote',{debts:money(debtTotal),total:money(totalObligations)})}</p></section>
-    <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('history')}</span><h2>{t('netWorthHistory')}</h2></div></div>{snapshots.isLoading&&<div className="empty-inline">{t('loading')}</div>}{snapshotHistory.slice(0,12).map(snapshot=><div className="account-row" key={snapshot.id}><i/><span><strong>{new Date(`${snapshot.snapshotDate}T00:00:00`).toLocaleDateString(document.documentElement.lang||'pt-BR')}</strong><small>{t('income')}: {money(snapshot.totalIncome)} · {t('expense')}: {money(snapshot.totalExpense)}</small></span><b>{money(snapshot.netWorth)}</b></div>)}{!snapshots.isLoading&&!snapshotHistory.length&&<div className="empty-inline">{t('noSnapshotHistory')}</div>}</section>
+    <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('history')}</span><h2>{t('netWorthHistory')}</h2></div></div>{snapshots.isLoading&&<div className="empty-inline">{t('loading')}</div>}{snapshotHistory.slice(0,12).map(snapshot=><div className="account-row" key={snapshot.id}><i/><span><strong>{new Date(`${snapshot.snapshotDate}T00:00:00`).toLocaleDateString(document.documentElement.lang||'pt-BR')}</strong><small>{t('income')}: {money(snapshot.totalIncome)} · {t('expense')}: {money(snapshot.totalExpense)}</small></span><b>{money(snapshot.netWorth)}</b></div>)}{!snapshots.isLoading&&!snapshots.isError&&!snapshotHistory.length&&<div className="empty-inline">{t('noSnapshotHistory')}</div>}</section>
   </main>
 }
