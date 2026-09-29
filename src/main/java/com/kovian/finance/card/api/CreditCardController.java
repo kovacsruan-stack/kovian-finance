@@ -65,6 +65,7 @@ public class CreditCardController {
         requireOwner(ownerId, current);
         var invoice = invoices.findByIdAndOwnerId(id, current)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        if (invoice.getStatus() == InvoiceStatus.PAID && amount == null) return;
         var account = accounts.findByIdAndOwnerId(accountId, current)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account does not belong to owner"));
 
