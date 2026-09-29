@@ -176,11 +176,9 @@ export default function ManagementPage() {
         {resource === 'payments' && <label>
           Aluno
           <select required value={form.studentId ?? ''} onChange={event => {
-            const selected = activeStudents.find(item => item.id === event.target.value)
             setForm(previous => ({
               ...previous,
               studentId: event.target.value,
-              
             }))
           }}>
             <option value="">Selecione um aluno</option>
