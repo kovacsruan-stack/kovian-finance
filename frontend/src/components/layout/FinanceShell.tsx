@@ -10,19 +10,17 @@ const items: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3 },
   { to: '/transacoes', key: 'transactions', icon: Receipt },
   { to: '/contas', key: 'accounts', icon: Wallet },
+  { to: '/gestao', key: 'management', icon: Users },
+  { to: '/cartoes', key: 'cards', icon: CreditCard },
+  { to: '/orcamentos', key: 'budgets', icon: Target },
+  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
 ]
 
 const moreItems: Item[] = [
-  { to: '/gestao', key: 'management', icon: Users },
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
-  { to: '/cartoes', key: 'cards', icon: CreditCard },
-  { to: '/orcamentos', key: 'budgets', icon: Target },
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/categorias', key: 'categories', icon: FolderTree },
   { to: '/import-export', key: 'importExport', icon: FileText },
-]
-
-const advancedItems: Item[] = [
   { to: '/metas', key: 'goals', icon: Target },
   { to: '/relatorios', key: 'reports', icon: BarChart3 },
   { to: '/previsao', key: 'forecast', icon: CalendarClock },
@@ -30,7 +28,6 @@ const advancedItems: Item[] = [
   { to: '/inteligencia', key: 'insights', icon: Sparkles },
   { to: '/dividas', key: 'debts', icon: CreditCard },
   { to: '/notificacoes', key: 'notifications', icon: Bell },
-  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
 ]
 
 const localAppUrl = (port: number, configured: string) => {
@@ -48,8 +45,7 @@ const koviUrl = (import.meta.env.VITE_KOVI_APP_URL || '').trim() || (['localhost
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
   const location = useLocation()
-  const [organizationOpen, setOrganizationOpen] = useState(false)
-  const [planningOpen, setPlanningOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches)
   const drawerRef = useRef<HTMLElement | null>(null)
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null)
@@ -61,11 +57,10 @@ function Shell({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
 
   useEffect(() => {
-    if (moreItems.some(item => item.to === location.pathname)) setOrganizationOpen(true)
-    if (advancedItems.some(item => item.to === location.pathname)) setPlanningOpen(true)
+    if (moreItems.some(item => item.to === location.pathname)) setMoreOpen(true)
   }, [location.pathname])
 
-  const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
+  const commands = [...items, ...moreItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
 
   const openPalette = () => {
@@ -188,24 +183,11 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="nav-group">
-            <button type="button" className="nav-section-toggle" aria-expanded={organizationOpen} onClick={() => setOrganizationOpen(value => !value)}>
-              <span>{t('group_organizacao')}</span><span className="nav-section-count">{moreItems.length}</span><ChevronDown size={15} className={organizationOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
+            <button type="button" className="nav-section-toggle" aria-expanded={moreOpen} onClick={() => setMoreOpen(value => !value)}>
+              <span>{t('more')}</span><span className="nav-section-count">{moreItems.length}</span><ChevronDown size={15} className={moreOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
             </button>
-            {organizationOpen && <div className="nav-section-items">
+            {moreOpen && <div className="nav-section-items">
               {moreItems.map(item => (
-                <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                  <item.icon size={17} /><span>{t(item.key)}</span>
-                </NavLink>
-              ))}
-            </div>}
-          </div>
-
-          <div className="nav-group">
-            <button type="button" className="nav-section-toggle" aria-expanded={planningOpen} onClick={() => setPlanningOpen(value => !value)}>
-              <span>{t('group_planejamento')}</span><span className="nav-section-count">{advancedItems.length}</span><ChevronDown size={15} className={planningOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
-            </button>
-            {planningOpen && <div className="nav-section-items">
-              {advancedItems.map(item => (
                 <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
                   <item.icon size={17} /><span>{t(item.key)}</span>
                 </NavLink>
@@ -222,7 +204,7 @@ function Shell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="content" id="finance-main" tabIndex={-1}>
-        <header className="topbar">
+        <header className={open && isMobile ? 'topbar topbar-menu-open' : 'topbar'}>
           <div className="top-left">
             <div className="flex min-w-0 items-center">
               <strong className="topbar-wordmark">KOVIAN <span>FINANCE</span></strong>
