@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import ManagementImportPanel from './ManagementImportPanel'
 import PageHeader from '../components/ui/PageHeader'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
+import { Archive, Check, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
 import {
   archiveManagementRecord,
   createManagementRecord,
@@ -16,7 +16,6 @@ import {
 const tabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }> = [
   { id: 'students', label: 'Alunos', icon: Users },
   { id: 'modalities', label: 'Modalidades', icon: GraduationCap },
-  { id: 'lessons', label: 'Aulas', icon: ClipboardList },
   { id: 'payments', label: 'Pagamentos', icon: CreditCard },
   { id: 'expenses', label: 'Despesas', icon: Receipt },
   { id: 'waitlist', label: 'Lista de espera', icon: UserPlus },
@@ -37,10 +36,6 @@ function fieldsFor(resource: ManagementResource) {
     ['name', 'Nome da modalidade', 'text'], ['price', 'Valor (R$)', 'number'],
     ['frequency', 'Frequência semanal', 'number'], ['description', 'Descrição', 'text'],
   ] as const
-  if (resource === 'lessons') return [
-    ['date', 'Data', 'date'], ['time', 'Horário', 'time'], ['modality', 'Modalidade', 'text'],
-    ['status', 'Status', 'text'], ['notes', 'Observações', 'text'],
-  ] as const
   if (resource === 'payments') return [
     ['amount', 'Valor (R$)', 'number'], ['dueDate', 'Vencimento', 'date'],
     ['paidDate', 'Data do pagamento', 'date'], ['status', 'Status', 'text'], ['notes', 'Observações', 'text'],
@@ -57,7 +52,7 @@ function fieldsFor(resource: ManagementResource) {
 
 function recordTitle(record: ManagementRecord, resource: ManagementResource) {
   const data = record.data
-  if (resource === 'lessons' || resource === 'payments') return String(data.studentName ?? data.student ?? data.name ?? 'Registro')
+  if (resource === 'payments') return String(data.studentName ?? data.student ?? data.name ?? 'Registro')
   if (resource === 'expenses') return String(data.description ?? data.name ?? 'Despesa')
   return String(data.name ?? data.description ?? 'Registro')
 }
@@ -79,17 +74,17 @@ export default function ManagementPage() {
   const studentsQuery = useQuery({
     queryKey: ['finance', 'management', 'students', false],
     queryFn: () => getManagementRecords('students'),
-    enabled: resource === 'lessons' || resource === 'payments',
+    enabled: resource === 'payments',
   })
   const modalitiesQuery = useQuery({
     queryKey: ['finance', 'management', 'modalities', false],
     queryFn: () => getManagementRecords('modalities'),
-    enabled: resource === 'students' || resource === 'lessons',
+    enabled: resource === 'students',
   })
   const save = useMutation({
     mutationFn: () => {
       const data: Record<string, unknown> = { ...form }
-      if (resource === 'lessons' || resource === 'payments') {
+      if (resource === 'payments') {
         const student = (studentsQuery.data ?? []).find(item => item.id === form.studentId)
         if (!student) throw new Error('Selecione um aluno cadastrado.')
         data.studentId = student.id
@@ -107,7 +102,7 @@ export default function ManagementPage() {
       if (resource === 'expenses' && !String(data.description ?? '').trim()) throw new Error('Informe a descrição da despesa.')
       if (resource === 'expenses' && (data.amount == null || data.amount === '' || Number(data.amount) <= 0)) throw new Error('Informe um valor válido para a despesa.')
       if (resource === 'waitlist' && !String(data.name ?? '').trim()) throw new Error('Informe o nome da pessoa.')
-      if ((resource === 'lessons' || resource === 'payments') && !form.studentId) throw new Error('Selecione um aluno.')
+      if (resource === 'payments' && !form.studentId) throw new Error('Selecione um aluno.')
       return editing
         ? updateManagementRecord(resource, editing.id, data)
         : createManagementRecord(resource, data)
@@ -149,7 +144,7 @@ export default function ManagementPage() {
   const Icon = tabs.find(tab => tab.id === resource)?.icon ?? Users
 
   return <main className="page">
-    <PageHeader title="Gestão de alunos" description="Cadastros, modalidades, aulas e pagamentos." actions={<button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
+    <PageHeader title="Gestão" description="Organize alunos, modalidades, pagamentos, despesas e lista de espera." actions={<button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
         <Plus size={16} /> Novo registro
       </button>} />
 
@@ -176,16 +171,16 @@ export default function ManagementPage() {
     {(query.isError || studentsQuery.isError) && <div className="notice" role="alert">Não foi possível carregar os dados. Verifique sua sessão e tente novamente.</div>}
 
     {formOpen && <section className="panel form-panel">
-      <h2>{editing ? 'Editar registro' : resource === 'students' ? 'Novo aluno' : resource === 'modalities' ? 'Nova modalidade' : resource === 'lessons' ? 'Registrar aula' : resource === 'payments' ? 'Registrar pagamento' : resource === 'expenses' ? 'Registrar despesa' : 'Adicionar à lista de espera'}</h2>
+      <h2>{editing ? 'Editar registro' : resource === 'students' ? 'Novo aluno' : resource === 'modalities' ? 'Nova modalidade' : resource === 'payments' ? 'Registrar pagamento' : resource === 'expenses' ? 'Registrar despesa' : 'Adicionar à lista de espera'}</h2>
       <div className="form-grid">
-        {(resource === 'lessons' || resource === 'payments') && <label>
+        {resource === 'payments' && <label>
           Aluno
           <select required value={form.studentId ?? ''} onChange={event => {
             const selected = activeStudents.find(item => item.id === event.target.value)
             setForm(previous => ({
               ...previous,
               studentId: event.target.value,
-              ...(resource === 'lessons' ? { modality: String(selected?.data.modality ?? '') } : {}),
+              
             }))
           }}>
             <option value="">Selecione um aluno</option>
@@ -194,11 +189,7 @@ export default function ManagementPage() {
         </label>}
         {fields.map(([key, label, type]) => <label key={key}>
           {label}
-          {key === 'status' && resource === 'lessons' ? (
-            <select value={form[key] ?? 'Agendada'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
-              {['Agendada', 'Realizada', 'Cancelada', 'Falta'].map(status => <option key={status} value={status}>{status}</option>)}
-            </select>
-          ) : key === 'status' && resource === 'payments' ? (
+          {key === 'status' && resource === 'payments' ? (
             <select value={form[key] ?? 'Pendente'} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
               {['Pendente', 'Pago', 'Atrasado', 'Cancelado'].map(status => <option key={status} value={status}>{status}</option>)}
             </select>
@@ -215,14 +206,6 @@ export default function ManagementPage() {
                 ))}
               </datalist>
             </>
-          ) : key === 'modality' && resource === 'lessons' ? (
-            <select value={form[key] ?? ''} onChange={event => setForm(previous => ({ ...previous, [key]: event.target.value }))}>
-              <option value="">Selecione uma modalidade</option>
-              {form[key] && !(modalitiesQuery.data ?? []).some(item => !item.archived && String(item.data.name ?? '') === form[key]) && <option value={form[key]}>{form[key]}</option>}
-              {(modalitiesQuery.data ?? []).filter(item => !item.archived).map(item => (
-                <option key={item.id} value={String(item.data.name ?? '')}>{String(item.data.name ?? 'Modalidade')}</option>
-              ))}
-            </select>
           ) : (
             <input type={type} required={key === 'name' || key === 'description' && resource === 'expenses' || key === 'date' && resource === 'expenses' || key === 'amount' && resource === 'expenses' || key === 'dueDate'}
               min={type === 'number' ? '0' : undefined} step={type === 'number' ? '0.01' : undefined}
