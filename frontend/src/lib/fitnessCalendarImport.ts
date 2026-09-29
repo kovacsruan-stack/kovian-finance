@@ -60,10 +60,13 @@ export function expandCalendarEventDates(
   if (Number.isNaN(start.getTime()) || start.toISOString().slice(0, 10) !== startValue) return []
   const rule = String(data.recurrenceRule ?? '').trim()
   if (!rule) return startValue >= from && startValue < toExclusive ? [startValue] : []
-  const parts = Object.fromEntries(rule.split(';').map(part => {
+  const parts: Record<string, string> = {}
+  for (const part of rule.split(';')) {
     const separator = part.indexOf('=')
-    return separator > 0 ? [part.slice(0, separator).toUpperCase(), part.slice(separator + 1).toUpperCase()] : ['', '']
-  }).filter(([key]) => key))
+    if (separator > 0) {
+      parts[part.slice(0, separator).toUpperCase()] = part.slice(separator + 1).toUpperCase()
+    }
+  }
   const frequency = parts.FREQ
   if (!['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'].includes(frequency) || Object.keys(parts).some(key => key.startsWith('BY'))) {
     return startValue >= from && startValue < toExclusive ? [startValue] : []
