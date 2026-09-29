@@ -46,6 +46,21 @@ describe('parseCalendarFile', () => {
     })
   })
 
+  it('creates stable, distinct fallback identifiers when UID is missing', () => {
+    const makeEvent = (date: string, title: string) => [
+      'BEGIN:VEVENT',
+      'DTSTART;VALUE=DATE:' + date,
+      'SUMMARY:' + title,
+      'END:VEVENT',
+    ].join('\\n')
+    const first = parseCalendarFile(makeEvent('20260928', 'Treino'))
+    const same = parseCalendarFile(makeEvent('20260928', 'Treino'))
+    const different = parseCalendarFile(makeEvent('20260929', 'Treino'))
+
+    expect(first[0].sourceId).toBe(same[0].sourceId)
+    expect(first[0].sourceId).not.toBe(different[0].sourceId)
+  })
+
   it('marks cancelled events and ignores invalid dates', () => {
     const result = parseCalendarFile([
       'BEGIN:VEVENT',
