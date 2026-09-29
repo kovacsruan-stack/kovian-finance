@@ -216,10 +216,10 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       <h3 className="font-semibold">Autenticação necessária</h3>
       <p className="mt-1 text-sm text-muted-foreground">Entre com sua conta do KOVIAN Finance para autorizar a importação. A senha não será salva.</p>
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm">E-mail
+        <label className="field">E-mail
           <input className="input" type="email" autoComplete="username" required value={authEmail} onChange={event => setAuthEmail(event.target.value)} />
         </label>
-        <label className="grid gap-1 text-sm">Senha
+        <label className="field">Senha
           <input className="input" type="password" autoComplete="current-password" required value={authPassword} onChange={event => setAuthPassword(event.target.value)} />
         </label>
       </div>
