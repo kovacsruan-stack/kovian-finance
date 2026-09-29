@@ -195,3 +195,23 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Regras existentes continuam gerando alertas de orçamento, recorrências vencidas, dívidas, risco de fluxo e picos de gastos com deduplicação.
 
 **Status dos blocos 10 e 11:** implementação funcional ampla registrada no backend e frontend. A validação final de build/testes/QA no navegador permanece pendente.
+
+
+## 2026-09-29 — Blocos 12 e 13: integração, reconciliação, segurança e operação
+
+### Bloco 12 — Importação, reconciliação e integrações externas
+- Importação do Gestão agora usa o endpoint paginado para a listagem do workspace, evitando dependência de uma resposta única para grandes volumes.
+- A reconciliação do Gestão passou a comparar, além das contagens, conjuntos de `sourceId` fornecidos pelo backup, com amostras de IDs faltantes e extras.
+- A importação de backup completo dispara reconciliação automática após os lotes, verificando contagens, IDs de origem e vínculos de alunos.
+- O remapeamento de aluno aceita tanto o identificador de origem quanto um UUID de registro Finance quando aplicável, preservando o ID legado no histórico.
+- O painel operacional passou a expor o estado dos adaptadores Lago/Kill Bill e as filas do outbox por proprietário, sem revelar segredos.
+
+### Bloco 13 — Segurança, qualidade e operação
+- Filtros de correlação, isolamento de proprietário e rate limit passaram a ser registrados na cadeia de segurança.
+- Rate limit agora cobre sessões anônimas de autenticação por endereço de origem com limite separado, além do limite por proprietário autenticado; falha do Redis permanece fail-closed.
+- Cabeçalhos de segurança foram endurecidos com frame denial, Referrer-Policy e HSTS quando suportado pelo canal seguro.
+- Respostas de erro preservam o `X-Correlation-Id` para rastreabilidade ponta a ponta.
+- O endpoint de health deixou de inventar `UP` e voltou a delegar ao health real do Actuator, adicionando apenas headers operacionais seguros.
+- Foram adicionados testes unitários para o health filter e para a fronteira do rate limit anônimo.
+
+**Status:** implementação dos blocos 12 e 13 registrada no código. Migração real de dados do AppDeploy, build/testes completos e homologação de produção continuam dependendo de execução no ambiente autorizado. O deploy frontend na Vercel será verificado após a integração na `main`.
