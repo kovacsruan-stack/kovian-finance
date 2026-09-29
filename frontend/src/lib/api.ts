@@ -405,8 +405,20 @@ export type ManagementRecord = {
   createdAt: string
   updatedAt: string
 }
+export type ManagementPage = {
+  page: number
+  size: number
+  totalElements: number
+  hasNext: boolean
+  records: ManagementRecord[]
+}
 export function getManagementRecords(resource: ManagementResource, includeArchived = false) {
   return get<ManagementRecord[]>(`/management/${resource}${includeArchived ? '?includeArchived=true' : ''}`)
+}
+export function getManagementRecordsPage(resource: ManagementResource, includeArchived = false, page = 0, size = 50) {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  if (includeArchived) params.set('includeArchived', 'true')
+  return get<ManagementPage>(`/management/${resource}/page?${params.toString()}`)
 }
 export function createManagementRecord(resource: ManagementResource, data: Record<string, unknown>, sourceId?: string) {
   return post<ManagementRecord>(`/management/${resource}`, { data, ...(sourceId ? { sourceId } : {}) })
@@ -435,9 +447,13 @@ export function restoreManagementRecord(resource: ManagementResource, id: string
 
 export type ManagementReconciliation = {
   resources: Record<string, { expectedCount: number; actualCount: number; delta: number | null }>
+  sourceIds: Record<string, { expectedCount: number; actualCount: number; missingCount: number; unexpectedCount: number; missingSample: string[]; unexpectedSample: string[] }>
   unresolvedStudentLinks: number
   reconciled: boolean
 }
-export function reconcileManagement(expectedCounts: Partial<Record<ManagementResource, number>>) {
-  return post<ManagementReconciliation>('/management/reconcile', { expectedCounts })
+export function reconcileManagement(
+  expectedCounts: Partial<Record<ManagementResource, number>>,
+  expectedSourceIds: Partial<Record<ManagementResource, string[]>> = {},
+) {
+  return post<ManagementReconciliation>('/management/reconcile', { expectedCounts, expectedSourceIds })
 }
