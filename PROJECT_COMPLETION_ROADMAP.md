@@ -152,3 +152,24 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - A contribuição é explicitamente um registro de progresso: não movimenta saldo de contas nem cria transação financeira.
 
 **Status:** implementação dos fluxos principais dos blocos 7 e 8 registrada no código. Build, testes automatizados e QA de navegador ainda não foram executados; portanto, não marcar como tecnicamente validados até essa etapa.
+
+
+## 2026-09-29 — Blocos 9 e 10: Orçamentos e recorrências
+
+### Bloco 9 — Orçamentos
+- Criada tela dedicada em `/orcamentos`, ligada ao endpoint real de orçamentos e às categorias de despesa.
+- Implementados criação de orçamento por categoria, periodicidade semanal/mensal/anual e data inicial do período.
+- Implementados filtros por intervalo de datas e periodicidade, totais de limite/gasto/saldo, progresso de consumo e indicação de estouro do limite.
+- Incluídos estados de carregamento, erro, vazio, atualização e validação de formulário.
+- Navegação já existente conectada à nova tela; traduções PT-BR/EN adicionadas.
+- Limitação explícita: a API atual não oferece edição nem exclusão de orçamentos; a interface informa isso e não simula operações inexistentes.
+
+### Bloco 10 — Lançamentos recorrentes
+- Criada tela dedicada em `/recorrentes`, ligada aos endpoints reais de recorrências.
+- Implementados cadastro de receitas/despesas recorrentes, conta, categoria compatível com o tipo, valor, periodicidade semanal/mensal/anual, próxima ocorrência e data final opcional.
+- Implementados pausar e retomar recorrências, visão de próximas ocorrências e equivalentes mensais estimados para receitas/despesas ativas.
+- Adicionada ação explícita e confirmada para processar ocorrências vencidas até a data atual; o resultado informa quantas transações foram criadas.
+- Processamento continua sob ação do usuário; cadastrar uma recorrência não lança transações automaticamente.
+- Navegação já existente conectada à nova tela; traduções PT-BR/EN adicionadas.
+
+**Status dos blocos 9 e 10:** fluxos principais de interface conectados às APIs existentes e registrados no código. Build TypeScript/Vite, testes automatizados e QA no navegador ainda não foram executados. Não declarar validação técnica concluída até essa etapa.
