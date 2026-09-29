@@ -57,6 +57,21 @@ describe('finance api', () => {
     })
   })
 
+  it('uses Spring Problem Details when the backend returns a detail field', async () => {
+    localStorage.setItem('access_token', 'header.e30.signature')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      type: 'about:blank',
+      title: 'Unprocessable Entity',
+      status: 422,
+      detail: 'Student is not available to this owner',
+    }), { status: 422, headers: { 'content-type': 'application/problem+json' } })))
+
+    const error = await getAccounts('owner-123').catch(value => value as FinanceApiError)
+    expect(error).toBeInstanceOf(FinanceApiError)
+    expect(error.status).toBe(422)
+    expect(error.message).toBe('Student is not available to this owner')
+  })
+
   it('uses the backend request id and message when available', async () => {
     localStorage.setItem('access_token', 'header.e30.signature')
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
