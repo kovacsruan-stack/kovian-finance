@@ -16,16 +16,16 @@ const moreItems: Item[] = [
   { to: '/gestao', key: 'management', icon: Users },
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
   { to: '/cartoes', key: 'cards', icon: CreditCard },
-  { to: '/orcamentos', key: 'budgets', icon: Target },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/categorias', key: 'categories', icon: FolderTree },
   { to: '/import-export', key: 'importExport', icon: FileText },
 ]
 
 const advancedItems: Item[] = [
+  { to: '/orcamentos', key: 'budgets', icon: Target },
+  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/metas', key: 'goals', icon: Target },
-  { to: '/relatorios', key: 'reports', icon: BarChart3 },
   { to: '/previsao', key: 'forecast', icon: CalendarClock },
+  { to: '/relatorios', key: 'reports', icon: BarChart3 },
   { to: '/patrimonio', key: 'netWorth', icon: Wallet },
   { to: '/inteligencia', key: 'insights', icon: Sparkles },
   { to: '/dividas', key: 'debts', icon: CreditCard },
