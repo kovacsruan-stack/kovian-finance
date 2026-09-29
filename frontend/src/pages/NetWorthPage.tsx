@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Landmark, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { getAssets, getDebts, getFinancialSnapshots, getLiabilities, getOwnerId } from '../lib/api'
 import { useTranslation } from 'react-i18next'
+import PageHeader from '../components/ui/PageHeader'
 
 const money=(value:number)=>value.toLocaleString(document.documentElement.lang||'pt-BR',{style:'currency',currency:'BRL'})
 
@@ -20,7 +21,7 @@ export default function NetWorthPage(){
   const loading=assets.isLoading||liabilities.isLoading||debts.isLoading
   const snapshotHistory=(snapshots.data??[]).slice().sort((a,b)=>b.snapshotDate.localeCompare(a.snapshotDate))
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('netWorthTitle')}</h1><p>{t('netWorthDesc')}</p></div></section>
+    <PageHeader title={t('netWorthTitle')} description={t('netWorthDesc')} />
     {!ownerId&&<div className="notice">{t('loginToLoadData')}</div>}
     {(assets.isError||liabilities.isError||debts.isError||snapshots.isError)&&<div className="notice">{t('netWorthError')}</div>}
     <div className="stat-grid">

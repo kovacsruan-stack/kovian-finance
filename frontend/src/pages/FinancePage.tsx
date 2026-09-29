@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FolderTree, Plus, Receipt, ShieldCheck, Settings2, Sparkles, Target, Wallet } from 'lucide-react'
 import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getOwnerId, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import PageHeader from '../components/ui/PageHeader'
 import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds, periodStartFor } from '../lib/budgetUtils'
 import { useTranslation } from 'react-i18next'
 import Modal from '../components/ui/Modal'
@@ -13,7 +14,7 @@ const getLocale = () => typeof document !== 'undefined' ? (document.documentElem
 const money = (value: number, currency = 'BRL') => value.toLocaleString(getLocale(), { style: 'currency', currency })
 const isPositiveAmount = (value: string) => Number.isFinite(Number(value)) && Number(value) > 0
 const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <section className="page-header"><div><h1>{title}</h1><p>{desc}</p></div>{action}</section> }
+export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <PageHeader title={title} description={desc} actions={action} /> }
 export function Dashboard() {
   const { t } = useTranslation()
   const ownerId = getOwnerId(); const dashboard = useFinanceDashboard(ownerId); const accounts = dashboard.accounts.data ?? []; const goals = dashboard.goals.data ?? []; const transactions = dashboard.transactions.data ?? []; const analytics = dashboard.analytics.data; const loading = dashboard.isLoading; const error = ownerId ? (dashboard.isError ? t('financeLoadError') : null) : t('loginToLoadData')

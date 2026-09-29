@@ -5,6 +5,7 @@ import { getForecastCashFlow, getOwnerId } from '../lib/api'
 import type { CashFlowForecast } from '../lib/forecastTypes'
 import { useTranslation } from 'react-i18next'
 import { summarizeForecast } from '../lib/forecastAnalysis'
+import PageHeader from '../components/ui/PageHeader'
 
 const money = (value:number) => value.toLocaleString(document.documentElement.lang || 'pt-BR',{style:'currency',currency:'BRL'})
 const localDateKey = (date: Date) => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
@@ -18,7 +19,7 @@ export default function ForecastPage() {
   const summary = useMemo(() => summarizeForecast(data), [data])
   const hasFiniteData=data.every(row=>Number.isFinite(row.income)&&Number.isFinite(row.expense)&&Number.isFinite(row.netCashFlow)&&Number.isFinite(row.projectedBalance))
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('forecastTitle')}</h1><p>{t('forecastDesc')}</p></div><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value) as 30|90|180|365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount',{count:30})}</option><option value={90}>{t('daysCount',{count:90})}</option><option value={180}>{t('daysCount',{count:180})}</option><option value={365}>{t('daysCount',{count:365})}</option></select></label></section>
+    <PageHeader title={t('forecastTitle')} description={t('forecastDesc')} actions={<><label className="secondary"><CalendarRange size={16}/><select value={days} onChange={e=>setDays(Number(e.target.value) as 30|90|180|365)} aria-label={t('forecastHorizon')}><option value={30}>{t('daysCount',{count:30})}</option><option value={90}>{t('daysCount',{count:90})}</option><option value={180}>{t('daysCount',{count:180})}</option><option value={365}>{t('daysCount',{count:365})}</option></select></label></>} />
     {!ownerId && <div className="notice">{t('loginToLoadData')}</div>}
     {query.isError && <div className="notice">{t('forecastError')}</div>}
     <div className="stat-grid"><article className="stat-card"><TrendingUp size={17}/><span>{t('projectedIncome')}</span><strong>{query.isLoading||query.isError||!hasFiniteData?'—':money(summary.projectedIncome)}</strong></article><article className="stat-card"><TrendingDown size={17}/><span>{t('projectedExpense')}</span><strong>{query.isLoading||query.isError||!hasFiniteData?'—':money(summary.projectedExpense)}</strong></article><article className="stat-card"><Wallet size={17}/><span>{t('projectedEndingBalance')}</span><strong>{query.isLoading||query.isError||!hasFiniteData||summary.endingBalance===null?'—':money(summary.endingBalance)}</strong></article></div>
