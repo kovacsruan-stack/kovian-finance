@@ -98,19 +98,20 @@ export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMod
     setForm({})
   }, [mode])
   const query = useQuery({
-    queryKey: ['finance', 'management', resource, showArchived, page],
+    queryKey: ['finance', 'management', ownerId, resource, showArchived, page],
     queryFn: () => getManagementRecordsPage(resource, showArchived, page, 50),
+    enabled: Boolean(ownerId),
     staleTime: 20_000,
   })
   const studentsQuery = useQuery({
-    queryKey: ['finance', 'management', 'students', false],
+    queryKey: ['finance', 'management', 'students', ownerId, false],
     queryFn: () => getManagementRecords('students'),
-    enabled: resource === 'lessons' || resource === 'payments',
+    enabled: Boolean(ownerId) && (resource === 'lessons' || resource === 'payments'),
   })
   const modalitiesQuery = useQuery({
-    queryKey: ['finance', 'management', 'modalities', false],
+    queryKey: ['finance', 'management', 'modalities', ownerId, false],
     queryFn: () => getManagementRecords('modalities'),
-    enabled: resource === 'students' || resource === 'lessons',
+    enabled: Boolean(ownerId) && (resource === 'students' || resource === 'lessons'),
   })
   const accountsQuery = useQuery({
     queryKey: ['finance', 'accounts', ownerId],
