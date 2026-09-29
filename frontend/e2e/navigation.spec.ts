@@ -58,8 +58,8 @@ test('Finance expanded routes expose their page heading', async ({ page }) => {
 test('primary navigation stays focused on five daily destinations', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Navegação principal' })
-  for (const label of ['Visão geral', 'Transações', 'Contas', 'Calendário', 'Gestão']) {
-    await expect(nav.getByRole('link', { name: new RegExp(label, 'i') })).toBeVisible()
+  for (const label of [/Visão geral|Overview/i, /Transações|Transactions/i, /Contas|Accounts/i, /Calendário|Financial calendar/i, /Gestão|Management/i]) {
+    await expect(nav.getByRole('link', { name: label })).toBeVisible()
   }
   await expect(nav.getByRole('link')).toHaveCount(5)
 })
@@ -76,6 +76,6 @@ test('lessons are scheduled from the calendar, not duplicated in management tabs
   const tabs = page.getByRole('tablist', { name: 'Seções de Gestão' })
   await expect(tabs.getByRole('tab', { name: 'Aulas' })).toHaveCount(0)
   await page.goto('/calendario')
-  await expect(page.getByRole('heading', { name: 'Aulas' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Agendar aula' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /Aulas|Lessons/i })).toBeVisible()
+  await expect(page.getByRole('button', { name: /Agendar aula|Schedule lesson/i })).toBeVisible()
 })
