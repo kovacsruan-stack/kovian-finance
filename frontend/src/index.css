@@ -334,3 +334,28 @@ html,body,#root{background:var(--bg);color:var(--text)}
 /* Global finance action in the shell header */
 .shell-create-transaction{min-height:40px;padding:8px 11px;white-space:nowrap}
 @media(max-width:560px){.shell-create-transaction{width:40px;min-width:40px;padding:0;gap:0}.shell-create-transaction span{display:none}}
+
+
+/* Navigation block completion: resilient scrolling, touch targets and keyboard states. */
+.nav-groups{flex:1;min-height:0;overscroll-behavior:contain;scrollbar-width:thin}
+.nav-section-toggle{flex:none;cursor:pointer}
+.nav-section-toggle:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.nav-section-items{min-width:0}
+.nav-section-items .nav-item,.nav-groups .nav-item{overflow-wrap:anywhere}
+.shell-create-transaction{min-width:44px;min-height:44px;flex:none}
+.shell-create-transaction:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(max-width:560px){
+  .shell-create-transaction{width:44px;min-width:44px;height:44px;min-height:44px}
+  .top-actions{flex:0 0 auto}
+  .topbar{gap:8px}
+  .topbar-wordmark{letter-spacing:0}
+}
+@media(min-width:901px){
+  .drawer{height:100dvh}
+  .nav-groups{padding-bottom:8px}
+}
+@media(max-width:900px){
+  .drawer{height:100dvh;max-height:100dvh}
+  .nav-groups{flex:1;min-height:0}
+  .ecosystem-links{flex:none}
+}
