@@ -15,7 +15,7 @@ import {
   type ManagementResource,
 } from '../lib/api'
 
-const tabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }> = [
+const allTabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }> = [
   { id: 'students', label: 'Alunos', icon: Users },
   { id: 'modalities', label: 'Modalidades', icon: GraduationCap },
   { id: 'lessons', label: 'Aulas', icon: ClipboardList },
@@ -23,6 +23,14 @@ const tabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }>
   { id: 'expenses', label: 'Despesas', icon: Receipt },
   { id: 'waitlist', label: 'Lista de espera', icon: UserPlus },
 ]
+
+type ManagementMode = 'full' | 'transactions' | 'calendar'
+
+function tabsForMode(mode: ManagementMode) {
+  if (mode === 'transactions') return allTabs.filter(tab => tab.id === 'payments' || tab.id === 'expenses')
+  if (mode === 'calendar') return allTabs.filter(tab => tab.id === 'lessons')
+  return allTabs.filter(tab => tab.id === 'students' || tab.id === 'modalities' || tab.id === 'waitlist')
+}
 
 const today = () => {
   const date = new Date()
@@ -64,9 +72,10 @@ function recordTitle(record: ManagementRecord, resource: ManagementResource) {
   return String(data.name ?? data.description ?? 'Registro')
 }
 
-export default function ManagementPage() {
+export default function ManagementPage({ mode = 'full' }: { mode?: ManagementMode }) {
   const queryClient = useQueryClient()
-  const [resource, setResource] = useState<ManagementResource>('students')
+  const tabs = tabsForMode(mode)
+  const [resource, setResource] = useState<ManagementResource>(() => mode === 'transactions' ? 'payments' : mode === 'calendar' ? 'lessons' : 'students')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<ManagementRecord | null>(null)
   const [search, setSearch] = useState('')
@@ -150,9 +159,12 @@ export default function ManagementPage() {
   const activeStudents = useMemo(() => (studentsQuery.data ?? []).filter(item => !item.archived), [studentsQuery.data])
   const fields = fieldsFor(resource)
   const Icon = tabs.find(tab => tab.id === resource)?.icon ?? Users
+  const embedded = mode !== 'full'
+  const pageTitle = mode === 'transactions' ? 'Pagamentos e despesas da Gestão' : mode === 'calendar' ? 'Aulas e agenda' : 'Gestão de alunos'
+  const pageDescription = mode === 'transactions' ? 'Consulte e registre pagamentos de alunos e despesas do estúdio junto às suas transações.' : mode === 'calendar' ? 'Registre aulas vinculadas aos alunos e acompanhe os horários no calendário.' : 'Cadastros de alunos, modalidades e lista de espera.'
 
-  return <main className="page">
-    <PageHeader title="Gestão de alunos" description="Cadastros, modalidades, aulas e pagamentos." actions={<button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
+  return <section className={embedded ? "page embedded-management-page" : "page"}>
+    <PageHeader title={pageTitle} description={pageDescription} actions={<button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
         <Plus size={16} /> Novo registro
       </button>} />
 
@@ -239,8 +251,8 @@ export default function ManagementPage() {
       </div>
     </section>}
 
-    <ManagementImportPanel resource={resource} onImported={() => { void queryClient.invalidateQueries({ queryKey: ['finance', 'management'] }) }} />
-    <ManagementReconciliationPanel />
+    {!embedded && <ManagementImportPanel resource={resource} onImported={() => { void queryClient.invalidateQueries({ queryKey: ['finance', 'management'] }) }} />}
+    {!embedded && <ManagementReconciliationPanel />}
 
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${query.data?.totalElements ?? records.length} registros · página ${page + 1}`}</span></div>
@@ -267,5 +279,5 @@ export default function ManagementPage() {
       })}
       {!query.isLoading && (page > 0 || Boolean(query.data?.hasNext)) && <div className="form-actions mt-4"><button type="button" className="secondary" disabled={page === 0} onClick={() => setPage(current => Math.max(0, current - 1))}>Anterior</button><button type="button" className="secondary" disabled={!query.data?.hasNext} onClick={() => setPage(current => current + 1)}>Próxima</button></div>}
     </section>
-  </main>
+  </section>
 }
