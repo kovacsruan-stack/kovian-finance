@@ -311,3 +311,16 @@ html,body,#root{background:var(--bg);color:var(--text)}
 .topbar-wordmark{font-size:14px}
 @media(max-width:900px){.page{padding-bottom:24px}.drawer{width:min(320px,88vw);padding:18px 14px}.nav-groups{gap:18px}.nav-group{gap:2px}.nav-group-title{padding-top:6px}.nav-item{min-height:42px;font-size:13px}.ecosystem-links{margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}}
 @media(max-width:560px){.topbar{height:62px}.topbar-wordmark{font-size:13px}.page{padding-bottom:24px}}
+
+/* Navegação por grupos: menos links simultâneos, sem menus aninhados. */
+.nav-section-toggle{display:flex;align-items:center;gap:8px;width:100%;min-height:40px;padding:8px 12px;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);text-align:left;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.nav-section-toggle:hover,.nav-section-toggle:focus-visible{background:#f1f8f4;color:var(--text);outline:none}
+.nav-section-count{margin-left:auto;min-width:22px;padding:2px 6px;border-radius:999px;background:#f1f5f2;color:#7a8b80;text-align:center;font-size:10px;letter-spacing:0}
+.nav-section-chevron{flex:none;color:#94a3b8;transition:transform .16s ease}
+.nav-section-chevron.open{transform:rotate(180deg)}
+.nav-section-items{display:grid;gap:2px;padding:3px 0 5px}
+.nav-section-items .nav-item{min-height:38px;padding:8px 12px 8px 16px}
+.page-header .eyebrow{display:none}
+.page-header h1{margin-top:0}
+@media(max-width:900px){.nav-section-toggle{min-height:42px}.nav-section-items .nav-item{min-height:42px}}
+@media(prefers-reduced-motion:reduce){.nav-section-chevron{transition:none}}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { NavLink } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
+import { NavLink, useLocation } from 'react-router-dom'
+import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -48,6 +48,9 @@ const koviUrl = (import.meta.env.VITE_KOVI_APP_URL || '').trim() || (['localhost
 
 function Shell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false)
+  const location = useLocation()
+  const [organizationOpen, setOrganizationOpen] = useState(false)
+  const [planningOpen, setPlanningOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 900px)').matches)
   const drawerRef = useRef<HTMLElement | null>(null)
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null)
@@ -57,6 +60,11 @@ function Shell({ children }: { children: ReactNode }) {
   const paletteReturnFocus = useRef<HTMLElement | null>(null)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
+
+  useEffect(() => {
+    if (moreItems.some(item => item.to === location.pathname)) setOrganizationOpen(true)
+    if (advancedItems.some(item => item.to === location.pathname)) setPlanningOpen(true)
+  }, [location.pathname])
 
   const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
@@ -170,35 +178,42 @@ function Shell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav aria-label="Primary navigation" className="nav-groups">
+        <nav aria-label="Navegação principal" className="nav-groups">
           <div className="nav-group">
             <span className="nav-group-title">{t('group_principal')}</span>
             {items.map(item => (
               <NavLink key={item.to} to={item.to} end={item.to === '/'} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                <item.icon size={17} />
-                <span>{t(item.key)}</span>
+                <item.icon size={17} /><span>{t(item.key)}</span>
               </NavLink>
             ))}
           </div>
+
+          <div className="nav-group">
+            <button type="button" className="nav-section-toggle" aria-expanded={organizationOpen} onClick={() => setOrganizationOpen(value => !value)}>
+              <span>{t('group_organizacao')}</span><span className="nav-section-count">{moreItems.length}</span><ChevronDown size={15} className={organizationOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
+            </button>
+            {organizationOpen && <div className="nav-section-items">
+              {moreItems.map(item => (
+                <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                  <item.icon size={17} /><span>{t(item.key)}</span>
+                </NavLink>
+              ))}
+            </div>}
+          </div>
+
+          <div className="nav-group">
+            <button type="button" className="nav-section-toggle" aria-expanded={planningOpen} onClick={() => setPlanningOpen(value => !value)}>
+              <span>{t('group_planejamento')}</span><span className="nav-section-count">{advancedItems.length}</span><ChevronDown size={15} className={planningOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
+            </button>
+            {planningOpen && <div className="nav-section-items">
+              {advancedItems.map(item => (
+                <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                  <item.icon size={17} /><span>{t(item.key)}</span>
+                </NavLink>
+              ))}
+            </div>}
+          </div>
         </nav>
-
-        <div className="nav-group">
-          <span className="nav-group-title">{t('management')}</span>
-          {moreItems.map(item => (
-            <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              <item.icon size={17} /><span>{t(item.key)}</span>
-            </NavLink>
-          ))}
-        </div>
-
-        <div className="nav-group">
-          <span className="nav-group-title">{t('planning')}</span>
-          {advancedItems.map(item => (
-            <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              <item.icon size={17} /><span>{t(item.key)}</span>
-            </NavLink>
-          ))}
-        </div>
 
         <div className="nav-group ecosystem-links">
           <span className="nav-group-title">{t('ecosystem')}</span>
