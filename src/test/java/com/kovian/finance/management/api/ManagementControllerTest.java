@@ -5,6 +5,8 @@ import com.kovian.finance.management.repository.ManagementRecordRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -126,6 +128,22 @@ class ManagementControllerTest {
         assertEquals("legacy-lead-1", lead.sourceId());
         assertEquals("Pessoa interessada", lead.data().get("name"));
         verify(repository, times(2)).save(any(ManagementRecord.class));
+    }
+
+    @Test
+    void paginatesManagementRecordsWithStableMetadata() {
+        ManagementRecord record = new ManagementRecord(ownerId, "students", "legacy-paged",
+                Map.of("name", "Aluno paginado"));
+        when(repository.findByOwnerIdAndResourceAndArchived(eq(ownerId), eq("students"), eq(false), any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(record), PageRequest.of(1, 1), 2));
+
+        var response = controller.page("students", 1, 1, false);
+
+        assertEquals(1, response.page());
+        assertEquals(1, response.size());
+        assertEquals(2, response.totalElements());
+        assertFalse(response.hasNext());
+        assertEquals("legacy-paged", response.records().getFirst().sourceId());
     }
 
     @Test
