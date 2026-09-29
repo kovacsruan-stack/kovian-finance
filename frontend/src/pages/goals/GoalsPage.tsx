@@ -79,7 +79,7 @@ export default function GoalsPage() {
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow">{t('objectives')}</span><h2>{t('goalsListTitle')}</h2></div><button className="secondary" type="button" onClick={() => setShowArchived(value => !value)}>{showArchived ? t('goalsActiveOnly') : t('goalsShowArchived')}</button></div>
       {query.isLoading && <div className="empty-inline">{t('loading')}</div>}
-      {!query.isLoading && !visible.length && <div className="empty-inline">{showArchived ? t('goalsNoArchived') : t('noActiveGoals')}</div>}
+      {!query.isLoading && !query.isError && !visible.length && <div className="empty-inline">{showArchived ? t('goalsNoArchived') : t('noActiveGoals')}</div>}
       {visible.map(goal => {
         const target = Number(goal.targetAmount); const saved = Number(goal.currentAmount)
         const percent = target > 0 ? Math.min(100, Math.round(saved / target * 100)) : 0
