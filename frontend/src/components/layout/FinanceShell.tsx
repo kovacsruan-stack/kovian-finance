@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Settings, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -28,6 +28,7 @@ const moreItems: Item[] = [
   { to: '/inteligencia', key: 'insights', icon: Sparkles },
   { to: '/dividas', key: 'debts', icon: CreditCard },
   { to: '/notificacoes', key: 'notifications', icon: Bell },
+  { to: '/configuracoes', key: 'financeSettings', icon: Settings },
 ]
 
 const localAppUrl = (port: number, configured: string) => {
