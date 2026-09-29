@@ -115,6 +115,36 @@ public class ManagementController {
         return new ImportResult(resource, inserted, updated, unchanged, unresolvedStudentLinks);
     }
 
+    @PostMapping("/reconcile")
+    @Transactional(readOnly = true)
+    public ReconciliationResult reconcile(@Valid @RequestBody ReconciliationRequest request) {
+        UUID ownerId = CurrentUser.ownerId();
+        Map<String, Long> expected = request.expectedCounts() == null ? Map.of() : request.expectedCounts();
+        Map<String, ResourceReconciliation> resources = new LinkedHashMap<>();
+        for (String resource : RESOURCES) {
+            List<ManagementRecord> records = repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, resource);
+            long expectedCount = expected.getOrDefault(resource, -1L);
+            long actualCount = records.size();
+            resources.put(resource, new ResourceReconciliation(
+                    expectedCount,
+                    actualCount,
+                    expectedCount < 0 ? null : actualCount - expectedCount));
+        }
+
+        Set<String> studentIds = repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, "students")
+                .stream().map(record -> record.getId().toString()).collect(Collectors.toSet());
+        long unresolvedLinks = java.util.stream.Stream.of("lessons", "payments")
+                .flatMap(resource -> repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, resource).stream())
+                .filter(record -> {
+                    Object studentId = record.getData().get("studentId");
+                    return studentId == null || !studentIds.contains(String.valueOf(studentId));
+                }).count();
+
+        boolean countsMatch = resources.values().stream()
+                .allMatch(item -> item.expectedCount() < 0 || item.delta() == 0);
+        return new ReconciliationResult(resources, unresolvedLinks, countsMatch && unresolvedLinks == 0);
+    }
+
     private void validateStudentLink(String resource, Map<String, Object> data, UUID ownerId) {
         if (!resource.equals("lessons") && !resource.equals("payments")) return;
         Object studentIdValue = data.get("studentId");
@@ -186,6 +216,10 @@ public class ManagementController {
                              @NotEmpty Map<String, Object> data) {}
     public record ImportBatch(@NotEmpty @Size(max = 500) List<@Valid ImportItem> records) {}
     public record ImportResult(String resource, int inserted, int updated, int unchanged, int unresolvedStudentLinks) {}
+    public record ReconciliationRequest(Map<String, Long> expectedCounts) {}
+    public record ResourceReconciliation(long expectedCount, long actualCount, Long delta) {}
+    public record ReconciliationResult(Map<String, ResourceReconciliation> resources,
+                                       long unresolvedStudentLinks, boolean reconciled) {}
     public record RecordResponse(UUID id, String sourceId, Map<String, Object> data, boolean archived,
                                  OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         static RecordResponse from(ManagementRecord record) {
