@@ -330,3 +330,7 @@ html,body,#root{background:var(--bg);color:var(--text)}
 .page-header-copy h1{margin-top:0}
 .page-header-copy p{max-width:68ch}
 @media(max-width:640px){.page-header{align-items:flex-start;gap:12px}.page-header .header-actions{width:100%;flex-wrap:wrap}.page-header .header-actions>*{max-width:100%}}
+
+/* Global finance action in the shell header */
+.shell-create-transaction{min-height:40px;padding:8px 11px;white-space:nowrap}
+@media(max-width:560px){.shell-create-transaction{width:40px;min-width:40px;padding:0;gap:0}.shell-create-transaction span{display:none}}
