@@ -293,6 +293,7 @@ export default function CalendarPage() {
               }
               setCalendarImportResult(`${t('importCompletedSummary', { inserted, updated, unchanged })}${unresolvedStudentLinks ? ` ${t('unresolvedLinksSummary', { total: unresolvedStudentLinks })}` : ''}`)
               setCalendarImportRows([])
+              setCalendarImportName('')
               await Promise.all([fitnessEvents.refetch(), lessons.refetch(), transactions.refetch(), recurring.refetch()])
             } catch (error) { setCalendarImportError(error instanceof Error ? error.message : t('importFailed')) }
             finally { setCalendarImportBusy(false) }
