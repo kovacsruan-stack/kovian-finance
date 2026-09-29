@@ -262,3 +262,44 @@ html,body,#root,.app-shell{background:var(--bg);color:var(--text)}
 .calendar-day-button.selected{box-shadow:inset 0 0 0 2px var(--primary);background:rgba(16,185,129,.06)}
 .calendar-day-button.today .calendar-day{color:var(--primary)}
 .calendar-day-button .calendar-day{padding:2px 3px}
+
+
+/* FitHub-inspired visual system: emerald monochrome, light surfaces, quiet borders. */
+:root{
+  color-scheme:light;
+  --bg:#f7faf8;
+  --card:#ffffff;
+  --line:#e5ece7;
+  --muted:#64756b;
+  --text:#14251b;
+  --primary:#059669;
+  --danger:#dc2626;
+  --kovian-accent:#059669;
+}
+html,body,#root{background:var(--bg);color:var(--text)}
+.drawer{background:#ffffff;border-color:var(--line)}
+.nav-item{color:#64756b}
+.nav-item.active,.nav-item:hover{background:#ecfdf5;color:#047857}
+.runtime-card{color:#047857;background:#f0fdf4;border-color:#d1fae5}
+.topbar{background:rgba(255,255,255,.94);border-color:var(--line)}
+.palette{background:#ffffff;border-color:var(--line)}
+.palette-item:hover,.palette-item:focus-visible{background:#ecfdf5;color:#047857}
+.avatar,.hero-orb,.feature-icon{background:#d1fae5;color:#047857}
+.hero-card{border-color:#d1fae5;background:linear-gradient(135deg,#ecfdf5,#ffffff)}
+.hero-card small,.eyebrow,.section-title a,.quick-card,.feature-card,.empty-state{color:#047857}
+.bottom-nav{background:rgba(255,255,255,.96);border-color:var(--line)}
+.bottom-nav a.active{color:#047857;background:#ecfdf5}
+.modal{background:#ffffff;border-color:var(--line)}
+.field input,.field select{background:#ffffff;color:var(--text);border-color:var(--line)}
+.language-switcher option{background:#ffffff}
+.calendar-cell{background:#ffffff}
+.calendar-event{background:#ecfdf5;color:#065f46}
+.calendar-event.expense{background:#fef2f2;color:#991b1b}
+.primary{background:#059669;color:#ffffff}
+.secondary{border-color:#dbe5de;background:#ffffff;color:#24382b}
+.panel,.stat-card,.feature-card,.quick-card{border-color:var(--line);background:#ffffff}
+.notice{border-color:#a7f3d0;background:#ecfdf5;color:#065f46}
+.form-error{border-color:#fecaca;background:#fef2f2;color:#991b1b}
+.budget-progress{background:#e5ece7}
+.budget-progress span{background:linear-gradient(90deg,#059669,#34d399)}
+@media(prefers-color-scheme:dark){:root{color-scheme:light}}
