@@ -12,8 +12,17 @@ import com.kovian.finance.account.repository.*; import com.kovian.finance.catego
   return recurring.save(new RecurringTransaction(owner,r.accountId(),r.categoryId(),r.description(),r.amount(),r.transactionType(),r.frequency(),r.nextOccurrence(),r.endDate()));
  }
  @GetMapping public List<RecurringTransaction> list(){return recurring.findByOwnerIdOrderByNextOccurrence(CurrentUser.ownerId());}
+ @PutMapping("/{id}") @Transactional public RecurringTransaction update(@PathVariable UUID id,@Valid @RequestBody Request r){
+  UUID owner=CurrentUser.ownerId();
+  accounts.findByIdAndOwnerId(r.accountId(),owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Account does not belong to owner"));
+  if(r.categoryId()!=null){var category=categories.findByIdAndOwnerId(r.categoryId(),owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Category does not belong to owner"));if(category.getKind()!=CategoryKind.valueOf(r.transactionType().name()))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Category kind does not match transaction type");}
+  var item=recurring.findByIdAndOwnerId(id,owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Recurring transaction not found"));
+  try{item.update(r.accountId(),r.categoryId(),r.description(),r.amount(),r.transactionType(),r.frequency(),r.nextOccurrence(),r.endDate());}catch(IllegalArgumentException|IllegalStateException ex){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,ex.getMessage());}
+  return item;
+ }
  @PostMapping("/{id}/pause") @Transactional public void pause(@PathVariable UUID id){recurring.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Recurring transaction not found")).pause();}
- @PostMapping("/{id}/resume") @Transactional public void resume(@PathVariable UUID id){recurring.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Recurring transaction not found")).resume();}
+ @PostMapping("/{id}/resume") @Transactional public void resume(@PathVariable UUID id){var item=recurring.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Recurring transaction not found"));try{item.resume();}catch(IllegalStateException ex){throw new ResponseStatusException(HttpStatus.CONFLICT,ex.getMessage());}}
+ @DeleteMapping("/{id}") @Transactional public void archive(@PathVariable UUID id){recurring.findByIdAndOwnerId(id,CurrentUser.ownerId()).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Recurring transaction not found")).archive();}
  @PostMapping("/process-due") @Transactional public int processDue(@RequestParam LocalDate date){
   UUID owner=CurrentUser.ownerId();
   if(date.isAfter(LocalDate.now()))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Cannot process recurring transactions beyond today");
