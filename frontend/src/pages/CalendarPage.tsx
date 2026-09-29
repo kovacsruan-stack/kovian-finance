@@ -260,20 +260,20 @@ export default function CalendarPage() {
       </>} />
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
     <section className="panel data-panel">
-      <div className="section-title"><div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Trazer agenda do Kovian Fitness' : 'Import Kovian Fitness calendar'}</h2></div></div>
-      <p className="text-sm text-muted-foreground">{isPortuguese ? 'Exporte o calendário do Fitness em .ics e importe aqui. Os eventos serão salvos separadamente no calendário; revise a prévia antes de confirmar.' : 'Export the Fitness calendar as .ics and import it here. Events are stored separately in the calendar; review before confirming.'}</p>
+      <div className="section-title"><div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{t('importFitnessCalendar')}</h2></div></div>
+      <p className="text-sm text-muted-foreground">{t('importFitnessCalendarDesc')}</p>
       <div className="mt-3 flex flex-wrap items-center gap-3">
-        <label className="secondary cursor-pointer"><Download size={15} /> {isPortuguese ? 'Selecionar arquivo .ics' : 'Choose .ics file'}<input className="sr-only" type="file" accept=".ics,text/calendar" onChange={async event => {
+        <label className="secondary cursor-pointer"><Download size={15} /> {t('chooseIcsFile')}<input className="sr-only" type="file" accept=".ics,text/calendar" onChange={async event => {
           const file = event.target.files?.[0]
           setCalendarImportRows([]); setCalendarImportResult(''); setCalendarImportError(''); setCalendarImportName(file?.name ?? '')
           if (!file) return
-          if (file.size > 10 * 1024 * 1024) { setCalendarImportError('Arquivo maior que 10 MB.'); return }
+          if (file.size > 10 * 1024 * 1024) { setCalendarImportError(t('fileTooLarge')); return }
           try {
             const rows = parseCalendarFile(await file.text())
             const unique = new Map(rows.map(row => [row.sourceId, row]))
             setCalendarImportRows([...unique.values()])
-            if (!unique.size) setCalendarImportError('Nenhum evento com data reconhecível foi encontrado no .ics.')
-          } catch { setCalendarImportError('Não foi possível ler esse arquivo .ics.') }
+            if (!unique.size) setCalendarImportError(t('noRecognizableEvents'))
+          } catch { setCalendarImportError(t('cannotReadIcs')) }
         }} /></label>
         {calendarImportName && <span className="text-sm">{calendarImportName}</span>}
         {calendarImportRows.length > 0 && <span className="text-sm">{calendarImportRows.length} evento(s) na prévia</span>}
@@ -281,7 +281,7 @@ export default function CalendarPage() {
       {calendarImportError && <div className="notice mt-3" role="alert">{calendarImportError}</div>}
       {calendarImportResult && <div className="notice mt-3" role="status">{calendarImportResult}</div>}
       {calendarImportRows.length > 0 && <div className="mt-3 rounded-xl border border-border p-4">
-        <p className="text-sm">A importação é idempotente pelo UID do evento. Os eventos importados aparecerão no calendário. Isso não recria automaticamente turmas recorrentes, presenças ou integrações Google/Outlook.</p>
+        <p className="text-sm">{t('importIdempotentNote')}</p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button type="button" className="primary" disabled={calendarImportBusy || !ownerId} onClick={async () => {
             setCalendarImportBusy(true); setCalendarImportError(''); setCalendarImportResult('')
@@ -291,12 +291,12 @@ export default function CalendarPage() {
                 const result = await importManagementRecords('calendar_events', calendarImportRows.slice(offset, offset + 500))
                 inserted += result.inserted; updated += result.updated; unchanged += result.unchanged; unresolvedStudentLinks += result.unresolvedStudentLinks
               }
-              setCalendarImportResult(`Importação concluída: ${inserted} novos, ${updated} atualizados, ${unchanged} sem alteração.${unresolvedStudentLinks ? ` ${unresolvedStudentLinks} vínculo(s) precisam de conferência.` : ''}`)
+              setCalendarImportResult(`${t('importCompletedSummary', { inserted, updated, unchanged })}${unresolvedStudentLinks ? ` ${t('unresolvedLinksSummary', { count: unresolvedStudentLinks })}` : ''}`)
               setCalendarImportRows([])
               await Promise.all([fitnessEvents.refetch(), lessons.refetch(), transactions.refetch(), recurring.refetch()])
-            } catch (error) { setCalendarImportError(error instanceof Error ? error.message : 'Falha ao importar calendário.') }
+            } catch (error) { setCalendarImportError(error instanceof Error ? error.message : t('importFailed')) }
             finally { setCalendarImportBusy(false) }
-          }}>{calendarImportBusy ? 'Importando…' : `Confirmar importação de ${calendarImportRows.length} evento(s)`}</button>
+          }}>{calendarImportBusy ? t('importing') : t('confirmImportEvents', { count: calendarImportRows.length })}</button>
           <button type="button" className="secondary" disabled={calendarImportBusy} onClick={() => { setCalendarImportRows([]); setCalendarImportName(''); setCalendarImportError('') }}>Cancelar</button>
         </div>
       </div>}
@@ -306,7 +306,7 @@ export default function CalendarPage() {
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
         <strong>{label.charAt(0).toUpperCase() + label.slice(1)}</strong>
-        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (isPortuguese ? visibleEvents.length + ' eventos' : visibleEvents.length + ' events')}</span><select aria-label={isPortuguese ? 'Filtrar tipo de evento' : 'Filter event type'} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{isPortuguese ? 'Todos os tipos' : 'All types'}</option><option value="INCOME">{isPortuguese ? 'Entradas' : 'Income'}</option><option value="EXPENSE">{isPortuguese ? 'Saídas' : 'Expenses'}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option><option value="FITNESS">{isPortuguese ? 'Eventos Fitness' : 'Fitness events'}</option></select><input aria-label={isPortuguese ? 'Buscar evento' : 'Search events'} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={isPortuguese ? 'Buscar...' : 'Search...'} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
+        <div className="flex flex-wrap items-center gap-2"><span>{loading ? t('loading') : (t('eventCount', { count: visibleEvents.length }))}</span><select aria-label={t('filterEventType')} value={kindFilter} onChange={event => setKindFilter(event.target.value as typeof kindFilter)} className="h-9 rounded-lg border border-border bg-background px-2 text-sm"><option value="ALL">{t('allEventTypes')}</option><option value="INCOME">{t('monthIncome')}</option><option value="EXPENSE">{t('monthExpenses')}</option><option value="TRANSFER">{isPortuguese ? 'Transferências' : 'Transfers'}</option><option value="RECURRING">{isPortuguese ? 'Recorrentes' : 'Recurring'}</option><option value="LESSON">{isPortuguese ? 'Aulas' : 'Lessons'}</option><option value="PAYMENT">{isPortuguese ? 'Pagamentos' : 'Payments'}</option><option value="FITNESS">{isPortuguese ? 'Eventos Fitness' : 'Fitness events'}</option></select><input aria-label={t('searchEvent')} value={eventSearch} onChange={event => setEventSearch(event.target.value)} placeholder={t('searchPlaceholder')} className="h-9 w-32 rounded-lg border border-border bg-background px-2 text-sm" /></div>
       </div>
       <div className="calendar-weekdays">{(isPortuguese ? ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'] : ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']).map(day => <span key={day}>{day}</span>)}</div>
       <div className="calendar-grid">
@@ -337,9 +337,9 @@ export default function CalendarPage() {
     {monthSummary.length > 0 && <section className="stat-grid">
       {monthSummary.map(([currency, totals]) => <article className="stat-card" key={currency}>
         <CircleDollarSign size={17} />
-        <span>{isPortuguese ? 'Fluxo do mês' : 'Month cash flow'} · {currency}</span>
+        <span>{t('monthCashFlow')} · {currency}</span>
         <strong>{money(totals.income - totals.expense, currency)}</strong>
-        <small>{isPortuguese ? 'Entradas' : 'Income'} {money(totals.income, currency)} · {isPortuguese ? 'Saídas' : 'Expenses'} {money(totals.expense, currency)}</small>
+        <small>{t('monthIncome')} {money(totals.income, currency)} · {t('monthExpenses')} {money(totals.expense, currency)}</small>
       </article>)}
     </section>}
     <section className="panel data-panel">
