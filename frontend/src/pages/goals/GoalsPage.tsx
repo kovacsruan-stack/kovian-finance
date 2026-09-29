@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Archive, CalendarClock, CheckCircle2, Pencil, Plus, Target, Wallet } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
@@ -51,7 +51,7 @@ export default function GoalsPage() {
     catch (cause) { setError(cause instanceof Error ? cause.message : t('goalsSaveError')) }
     finally { setBusy(false) }
   }
-  const submitGoal = (event: React.FormEvent) => {
+  const submitGoal = (event: FormEvent) => {
     event.preventDefault()
     const target = Number(targetAmount)
     if (!name.trim() || !Number.isFinite(target) || target <= 0) { setError(t('goalsValidation')); return }
@@ -99,7 +99,7 @@ export default function GoalsPage() {
     </section>
     {editor && <Modal title={editor === 'create' ? t('goalsNew') : editor === 'edit' ? t('goalsEdit') : t('goalsAddContribution')} onClose={() => setEditor(null)}>
       {editor === 'contribute' ? <form className="form-grid" onSubmit={submitContribution}>
-        <p>{selected?.name} · {t('goalsRemaining')}: {money(Math.max(0, Number(selected?.targetAmount ?? 0) - Number(selected?.currentAmount ?? 0)))}</p>
+        <p>{selected?.name} · {t('goalsRemaining')}: {money(Math.max(0, Number(selected?.targetAmount ?? 0) - Number(selected?.currentAmount ?? 0)))}</p><p className="muted">{t('goalsContributionNote')}</p>
         <Field label={t('goalsContributionAmount')}><input autoFocus type="number" min="0.01" step="0.01" value={contribution} onChange={event => setContribution(event.target.value)} required /></Field>
         {error && <div className="form-error" role="alert">{error}</div>}
         <button className="primary form-submit" type="submit" disabled={busy}>{busy ? t('saving') : t('goalsConfirmContribution')}</button>
