@@ -9,6 +9,7 @@ type Item = { to: string; key: string; icon: typeof Wallet }
 const primaryItems: Item[] = [
   { to: '/', key: 'financeOverview', icon: BarChart3 },
   { to: '/transacoes', key: 'transactions', icon: Receipt },
+  { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
 ]
 
 const navigationGroups = [
@@ -41,12 +42,17 @@ const navigationGroups = [
     ],
   },
   {
-    id: 'tools',
-    title: 'Mais ferramentas',
+    id: 'routine',
+    title: 'Rotina',
     items: [
-      { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
-      { to: '/notificacoes', key: 'notifications', icon: Bell },
       { to: '/gestao', key: 'management', icon: Users },
+    ],
+  },
+  {
+    id: 'system',
+    title: 'Sistema',
+    items: [
+      { to: '/notificacoes', key: 'notifications', icon: Bell },
       { to: '/import-export', key: 'importExport', icon: FileText },
     ],
   },
