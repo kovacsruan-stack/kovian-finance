@@ -68,7 +68,7 @@ describe('parseCalendarFile', () => {
       'DTSTART;VALUE=DATE:20260928',
       'SUMMARY:Treino',
       'END:VEVENT',
-    ].join('\\n')
+    ].join('\n')
     const prefix = 'x'.repeat(130)
     const first = parseCalendarFile(makeEvent(prefix + 'a'))
     const second = parseCalendarFile(makeEvent(prefix + 'b'))
