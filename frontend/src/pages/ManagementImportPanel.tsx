@@ -97,6 +97,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState('')
+  const [importProgress, setImportProgress] = useState('')
   const [skipped, setSkipped] = useState(0)
   const [duplicateLessonsSkipped, setDuplicateLessonsSkipped] = useState(0)
   const [authenticated, setAuthenticated] = useState(() => {
@@ -127,6 +128,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
     setRows([])
     setBackupRows(null)
     setResult('')
+    setImportProgress('')
     setError('')
     setFilename(file?.name ?? '')
     setSkipped(0)
@@ -166,19 +168,30 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
     setBusy(true)
     setError('')
     setResult('')
+    setImportProgress('Preparando importação…')
+    let activeResource: ManagementResource = resource
+    let activeBatch = 1
+    let activeBatchCount = 1
+    let completedBatches = 0
     try {
       const totals = { inserted: 0, updated: 0, unchanged: 0, unresolvedStudentLinks: 0 }
       const resources = backupRows ? importOrder : [resource]
       for (const currentResource of resources) {
+        activeResource = currentResource
         const currentRows = backupRows ? (backupRows[currentResource] ?? []) : rows
-        for (let offset = 0; offset < currentRows.length; offset += 500) {
-          const response = await importManagementRecords(currentResource, currentRows.slice(offset, offset + 500))
+        activeBatchCount = Math.ceil(currentRows.length / 100)
+        for (let offset = 0; offset < currentRows.length; offset += 100) {
+          activeBatch = Math.floor(offset / 100) + 1
+          setImportProgress(`Importando ${currentResource}: lote ${activeBatch} de ${activeBatchCount}…`)
+          const response = await importManagementRecords(currentResource, currentRows.slice(offset, offset + 100))
           totals.inserted += response.inserted
           totals.updated += response.updated
           totals.unchanged += response.unchanged
           totals.unresolvedStudentLinks += response.unresolvedStudentLinks
+          completedBatches += 1
         }
       }
+      setImportProgress('')
       const importedCount = backupRows
         ? importOrder.reduce((sum, key) => sum + (backupRows[key]?.length ?? 0), 0)
         : rows.length
@@ -195,7 +208,12 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
         setAuthError('Sua sessão expirou ou não está autenticada. Entre novamente para continuar a importação.')
         setError('')
       } else {
-        setError(cause instanceof Error ? cause.message : 'Falha na importação. Confira a conexão e tente novamente.')
+        const detail = cause instanceof Error ? cause.message : 'Falha na importação. Confira a conexão e tente novamente.'
+        const partial = completedBatches > 0
+          ? ' Parte da importação já foi concluída; os registros importados usam os IDs de origem e podem ser reprocessados sem duplicar.'
+          : ''
+        setError(`Falha em ${activeResource}, lote ${activeBatch}/${activeBatchCount}: ${detail}.${partial}`)
+        setImportProgress('')
       }
     } finally {
       setBusy(false)
@@ -245,7 +263,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       </div>}
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" className="primary" disabled={busy || !authenticated} onClick={() => void runImport()}>{busy ? 'Importando…' : !authenticated ? 'Entre para importar' : `Confirmar importação de ${readyCount} registro(s)`}</button>
-        <button type="button" className="secondary" disabled={busy} onClick={() => { setRows([]); setBackupRows(null); setFilename(''); setError(''); setSkipped(0); setDuplicateLessonsSkipped(0) }}>Cancelar</button>
+        <button type="button" className="secondary" disabled={busy} onClick={() => { setRows([]); setBackupRows(null); setFilename(''); setError(''); setResult(''); setImportProgress(''); setSkipped(0); setDuplicateLessonsSkipped(0) }}>Cancelar</button>
       </div>
     </div>}
   </section>
