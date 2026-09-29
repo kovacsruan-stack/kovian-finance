@@ -26,8 +26,6 @@ const navigationGroups = [
     id: 'planning',
     title: 'Planejamento',
     items: [
-      { to: '/orcamentos', key: 'budgets', icon: Target },
-      { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
       { to: '/metas', key: 'goals', icon: Target },
       { to: '/dividas', key: 'debts', icon: CreditCard },
     ],
