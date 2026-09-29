@@ -14,20 +14,25 @@ export function periodStartFor(period: FinanceBudget['period'], reference = new 
 }
 
 export function periodBounds(budget: FinanceBudget): { from: Date; to: Date } {
-  const start = new Date(budget.periodStart)
+  const reference = new Date(budget.periodStart)
+  if (!Number.isFinite(reference.getTime())) {
+    return { from: new Date(Number.NaN), to: new Date(Number.NaN) }
+  }
+
   if (budget.period === 'WEEKLY') {
-    const to = new Date(start)
+    const from = new Date(reference.getFullYear(), reference.getMonth(), reference.getDate())
+    const day = from.getDay()
+    from.setDate(from.getDate() + (day === 0 ? -6 : 1 - day))
+    const to = new Date(from)
     to.setDate(to.getDate() + 7)
-    return { from: start, to }
+    return { from, to }
   }
   if (budget.period === 'YEARLY') {
-    const to = new Date(start)
-    to.setFullYear(to.getFullYear() + 1)
-    return { from: start, to }
+    const from = new Date(reference.getFullYear(), 0, 1)
+    return { from, to: new Date(reference.getFullYear() + 1, 0, 1) }
   }
-  const to = new Date(start)
-  to.setMonth(to.getMonth() + 1)
-  return { from: start, to }
+  const from = new Date(reference.getFullYear(), reference.getMonth(), 1)
+  return { from, to: new Date(reference.getFullYear(), reference.getMonth() + 1, 1) }
 }
 
 export function budgetSpent(budget: FinanceBudget, transactions: FinanceTransaction[]): number {
