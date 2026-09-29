@@ -77,27 +77,29 @@ export function expandCalendarEventDates(
   const untilMatch = untilRaw.match(/^(\d{4})(\d{2})(\d{2})/)
   const until = untilMatch ? untilMatch[1] + '-' + untilMatch[2] + '-' + untilMatch[3] : '9999-12-31'
   const results: string[] = []
-  let occurrence = new Date(start)
+  const startYear = start.getUTCFullYear()
+  const startMonth = start.getUTCMonth()
+  const startDay = start.getUTCDate()
   for (let index = 0; index < countLimit && index < 10000; index++) {
+    let occurrence: Date
+    if (frequency === 'DAILY') {
+      occurrence = new Date(Date.UTC(startYear, startMonth, startDay + index * interval))
+    } else if (frequency === 'WEEKLY') {
+      occurrence = new Date(Date.UTC(startYear, startMonth, startDay + index * 7 * interval))
+    } else if (frequency === 'YEARLY') {
+      const targetYear = startYear + index * interval
+      const lastDay = new Date(Date.UTC(targetYear, startMonth + 1, 0)).getUTCDate()
+      occurrence = new Date(Date.UTC(targetYear, startMonth, Math.min(startDay, lastDay)))
+    } else {
+      const targetMonth = startMonth + index * interval
+      const targetYear = startYear + Math.floor(targetMonth / 12)
+      const normalizedMonth = targetMonth % 12
+      const lastDay = new Date(Date.UTC(targetYear, normalizedMonth + 1, 0)).getUTCDate()
+      occurrence = new Date(Date.UTC(targetYear, normalizedMonth, Math.min(startDay, lastDay)))
+    }
     const date = occurrence.toISOString().slice(0, 10)
     if (date > until || date >= toExclusive) break
     if (date >= from) results.push(date)
-    const year = occurrence.getUTCFullYear()
-    const month = occurrence.getUTCMonth()
-    const day = occurrence.getUTCDate()
-    if (frequency === 'DAILY') occurrence = new Date(Date.UTC(year, month, day + interval))
-    else if (frequency === 'WEEKLY') occurrence = new Date(Date.UTC(year, month, day + 7 * interval))
-    else if (frequency === 'YEARLY') {
-      const targetYear = year + interval
-      const lastDay = new Date(Date.UTC(targetYear, month + 1, 0)).getUTCDate()
-      occurrence = new Date(Date.UTC(targetYear, month, Math.min(day, lastDay)))
-    } else {
-      const targetMonth = month + interval
-      const targetYear = year + Math.floor(targetMonth / 12)
-      const normalizedMonth = targetMonth % 12
-      const lastDay = new Date(Date.UTC(targetYear, normalizedMonth + 1, 0)).getUTCDate()
-      occurrence = new Date(Date.UTC(targetYear, normalizedMonth, Math.min(day, lastDay)))
-    }
   }
   return results
 }
