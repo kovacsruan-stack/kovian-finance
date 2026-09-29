@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { BarChart3, Bell, CalendarClock, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
@@ -11,8 +11,6 @@ const items: Item[] = [
   { to: '/transacoes', key: 'transactions', icon: Receipt },
   { to: '/contas', key: 'accounts', icon: Wallet },
 ]
-
-const isRouteActive = (pathname: string, route: string) => pathname === route || (route !== '/' && pathname.startsWith(`${route}/`))
 
 const moreItems: Item[] = [
   { to: '/gestao', key: 'management', icon: Users },
@@ -59,7 +57,6 @@ function Shell({ children }: { children: ReactNode }) {
   const paletteReturnFocus = useRef<HTMLElement | null>(null)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
-  const location = useLocation()
 
   const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
