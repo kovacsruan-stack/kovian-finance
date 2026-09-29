@@ -10,6 +10,7 @@ import com.kovian.finance.security.CurrentUser;
 import com.kovian.finance.transaction.domain.TransactionStatus;
 import com.kovian.finance.transaction.domain.TransactionType;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +31,7 @@ public class ForecastController {
     private final RecurringTransactionRepository recurring;
     private final CreditCardInvoiceRepository invoices;
 
+    @Autowired
     public ForecastController(FinancialTransactionRepository transactions,
                               FinancialAccountRepository accounts,
                               RecurringTransactionRepository recurring,
@@ -38,6 +40,10 @@ public class ForecastController {
         this.accounts = accounts;
         this.recurring = recurring;
         this.invoices = invoices;
+    }
+
+    ForecastController(FinancialTransactionRepository transactions, FinancialAccountRepository accounts) {
+        this(transactions, accounts, null, null);
     }
 
     @GetMapping("/cash-flow")
@@ -72,7 +78,7 @@ public class ForecastController {
 
         Map<LocalDate, BigDecimal> scheduledIncome = new HashMap<>();
         Map<LocalDate, BigDecimal> scheduledExpense = new HashMap<>();
-        for (var item : recurring.findByOwnerIdOrderByNextOccurrence(authenticatedOwner)) {
+        for (var item : recurring == null ? List.<com.kovian.finance.recurring.domain.RecurringTransaction>of() : recurring.findByOwnerIdOrderByNextOccurrence(authenticatedOwner)) {
             if (!item.isActive() || item.getTransactionType() == TransactionType.TRANSFER) continue;
             LocalDate occurrence = item.getNextOccurrence();
             int guard = 0;
@@ -89,7 +95,7 @@ public class ForecastController {
             }
         }
 
-        for (var invoice : invoices.findDueBetweenForOwner(authenticatedOwner, from, from.plusDays(days - 1))) {
+        for (var invoice : invoices == null ? List.<com.kovian.finance.card.domain.CreditCardInvoice>of() : invoices.findDueBetweenForOwner(authenticatedOwner, from, from.plusDays(days - 1))) {
             if (invoice.getStatus() != InvoiceStatus.PAID && !invoice.getDueDate().isBefore(from)) {
                 scheduledExpense.merge(invoice.getDueDate(), invoice.getTotalAmount().subtract(invoice.getPaidAmount()), BigDecimal::add);
             }
