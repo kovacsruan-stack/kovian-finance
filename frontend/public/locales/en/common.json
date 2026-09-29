@@ -35,5 +35,11 @@
   "goalsSaveError": "Could not save the goal. Please try again.",
   "goalsValidation": "Enter a name and a target amount greater than zero.",
   "goalsContributionValidation": "Enter a contribution greater than zero.",
-  "goalsContributionTooLarge": "The contribution cannot exceed the remaining amount."
+  "goalsContributionTooLarge": "The contribution cannot exceed the remaining amount.",
+  "cashFlow90Days": "Net cash flow (90 days)",
+  "lastThreeMonths": "Last 3 months",
+  "incomeExpenseChart": "Income and expense comparison over the last three months",
+  "recentTransactions": "Recent transactions",
+  "activity": "Activity",
+  "overview": "Overview"
 }
