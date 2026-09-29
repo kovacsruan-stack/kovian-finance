@@ -4,7 +4,6 @@ import com.kovian.finance.account.repository.FinancialAccountRepository;
 import com.kovian.finance.card.domain.InvoiceStatus;
 import com.kovian.finance.card.repository.CreditCardInvoiceRepository;
 import com.kovian.finance.forecast.domain.CashFlowForecast;
-import com.kovian.finance.recurring.domain.RecurringFrequency;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
 import com.kovian.finance.security.CurrentUser;
 import com.kovian.finance.transaction.domain.TransactionStatus;
