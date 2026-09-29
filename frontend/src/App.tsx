@@ -1,6 +1,8 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { FileText } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ensureFinanceSession } from './lib/api'
 import Shell from './components/layout/FinanceShell'
 import { Dashboard, Header } from './pages/FinancePage'
 import { pageConfig, FinancePage } from './pages/FinancePage'
@@ -16,6 +18,30 @@ import ManagementPage from './pages/ManagementPage'
 
 function App() {
   const { t } = useTranslation()
+  const [sessionState, setSessionState] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [sessionError, setSessionError] = useState('')
+
+  const initializeSession = () => {
+    setSessionState('loading')
+    setSessionError('')
+    void ensureFinanceSession()
+      .then(() => setSessionState('ready'))
+      .catch(error => {
+        setSessionError(error instanceof Error ? error.message : 'Não foi possível iniciar o acesso automático.')
+        setSessionState('error')
+      })
+  }
+
+  useEffect(() => { initializeSession() }, [])
+
+  if (sessionState === 'loading') {
+    return <main className="page"><section className="panel empty-state"><strong>Preparando seu Finance...</strong><p>Seu acesso é criado automaticamente, sem e-mail ou senha.</p></section></main>
+  }
+
+  if (sessionState === 'error') {
+    return <main className="page"><section className="panel empty-state"><strong>Não foi possível abrir o Finance</strong><p>{sessionError}</p><button className="primary" type="button" onClick={initializeSession}>Tentar novamente</button></section></main>
+  }
+
   return (
     <Shell>
       <Routes>
