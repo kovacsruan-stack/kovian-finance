@@ -35,5 +35,11 @@
   "goalsSaveError": "Não foi possível salvar a meta. Tente novamente.",
   "goalsValidation": "Informe um nome e um valor-alvo maior que zero.",
   "goalsContributionValidation": "Informe uma contribuição maior que zero.",
-  "goalsContributionTooLarge": "A contribuição não pode ser maior que o valor que falta para atingir a meta."
+  "goalsContributionTooLarge": "A contribuição não pode ser maior que o valor que falta para atingir a meta.",
+  "cashFlow90Days": "Fluxo líquido (90 dias)",
+  "lastThreeMonths": "Últimos 3 meses",
+  "incomeExpenseChart": "Comparativo de receitas e despesas nos últimos três meses",
+  "recentTransactions": "Movimentações recentes",
+  "activity": "Atividade",
+  "overview": "Visão geral"
 }
