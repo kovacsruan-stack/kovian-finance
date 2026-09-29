@@ -249,6 +249,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       {filename && <span className="text-sm">{filename}</span>}
       {readyCount > 0 && <span className="text-sm">{readyCount} registro(s) prontos para importar</span>}
     </div>
+    {importProgress && <div className="notice mt-3" role="status" aria-live="polite">{importProgress}</div>}
     {error && <div className="notice mt-3" role="alert">{error}</div>}
     {result && <div className="notice mt-3" role="status">{result}</div>}
     {readyCount > 0 && <div className="mt-4 rounded-xl border border-border p-4">
