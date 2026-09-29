@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useFinanceOwnerId } from '../../lib/useFinanceOwnerId'
 import { Download, FileUp, RefreshCw } from 'lucide-react'
-import { getAccounts, getImportErrors, getImportHistory, importCsv, getTransactions, type FinanceAccount, type FinanceImport, type FinanceImportError, type FinanceTransaction } from '../../lib/api'
+import { getAccounts, getImportErrors, getImportHistory, importCsv, getTransactions, type FinanceAccount, type FinanceImport, type FinanceImportError } from '../../lib/api'
 import { useTranslation } from 'react-i18next'
-import { buildCsv } from '../../lib/csv'
+import { buildTransactionImportCsv } from '../../lib/csv'
 import PageHeader from '../../components/ui/PageHeader'
 
 
@@ -29,7 +29,7 @@ export default function ImportExportPage() {
   useEffect(()=>{if(!ownerId)return; void Promise.all([getAccounts(ownerId),getImportHistory()]).then(([a,h])=>{setAccounts(a);setHistory(h);if(a[0])setAccountId(a[0].id)}).catch(()=>setError(t('financeLoadError')))},[ownerId,t])
   const submit=async()=>{if(!accountId||!file)return setError(t('importRequired'));if(file.size>5*1024*1024)return setError(t('importTooLarge'));if(!/\.(csv|txt)$/i.test(file.name))return setError(t('importCsvOnly'));setBusy(true);setError('');try{const result=await importCsv(accountId,file);setHistory(h=>[result,...h.filter(x=>x.id!==result.id)]);setMessage(t('importCompleted',{count:result.importedRows}));setFile(null)}catch(e){setError(e instanceof Error?e.message:t('importFailed'))}finally{setBusy(false)}}
   const loadImportErrors=async(id:string)=>{setSelectedImportId(id);setLoadingErrors(true);setImportErrors([]);try{setImportErrors(await getImportErrors(id))}catch(e){setError(e instanceof Error?e.message:t('financeLoadError'))}finally{setLoadingErrors(false)}}
-  const exportCsv=async()=>{if(!ownerId)return;setBusy(true);setError('');try{const end=new Date();const start=new Date(end);start.setUTCDate(start.getUTCDate()-exportRange);const rows=await getTransactions(start.toISOString(),end.toISOString());const header=['id','accountId','categoryId','description','amount','type','occurredAt','status'];const body=buildCsv(header,rows.map((x:FinanceTransaction)=>[x.id,x.accountId,x.categoryId,x.description,x.amount,x.type,x.occurredAt,x.status]));download(`kovian-transactions-${exportRange}d.csv`,body,'text/csv;charset=utf-8')}catch(e){setError(e instanceof Error?e.message:t('exportFailed'))}finally{setBusy(false)}}
+  const exportCsv=async()=>{if(!ownerId)return;setBusy(true);setError('');try{const end=new Date();const start=new Date(end);start.setUTCDate(start.getUTCDate()-exportRange);const rows=await getTransactions(start.toISOString(),end.toISOString());const body=buildTransactionImportCsv(rows);download(`kovian-transactions-${exportRange}d.csv`,body,'text/csv;charset=utf-8')}catch(e){setError(e instanceof Error?e.message:t('exportFailed'))}finally{setBusy(false)}}
   return <main className="page"><PageHeader title={t('importExportTitle')} description={t('importExportDesc')} />
     {error&&<div className="notice">{error}</div>}{message&&<div className="notice">{message}</div>}
     <div className="dashboard-grid"><section className="panel"><div className="section-title"><div><span className="eyebrow">{t('importTitle')}</span><h2>{t('importCsv')}</h2></div></div><div className="form-grid"><label className="field"><span>{t('account')}</span><select value={accountId} onChange={e=>setAccountId(e.target.value)}><option value="">{t('select')}</option>{accounts.map(a=><option key={a.id} value={a.id}>{a.name} · {a.currency}</option>)}</select></label><label className="field"><span>{t('file')}</span><input type="file" accept=".csv,.txt,text/csv" onChange={e=>setFile(e.target.files?.[0]??null)}/></label><button className="primary" type="button" disabled={busy||!file||!accountId} onClick={()=>void submit()}><FileUp size={16}/>{busy?t('saving'):t('importConfirm')}</button></div></section>
