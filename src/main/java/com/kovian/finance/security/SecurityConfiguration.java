@@ -81,7 +81,7 @@ public class SecurityConfiguration {
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(
-            @Value("${KOVIAN_CORS_ALLOWED_ORIGINS:http://localhost:5174,http://localhost:4174}") String allowedOrigins) {
+            @Value("${kovian.cors.allowed-origins:http://localhost:5174,http://localhost:4174}") String allowedOrigins) {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(java.util.Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
