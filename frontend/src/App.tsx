@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from 'react-router-dom'
+import { Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { FileText } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -16,8 +16,6 @@ import ImportExportPage from './pages/import-export/ImportExportPage'
 import CalendarPage from './pages/CalendarPage'
 import ManagementPage from './pages/ManagementPage'
 import GoalsPage from './pages/goals/GoalsPage'
-import BudgetsPage from './pages/budgets/BudgetsPage'
-import RecurringPage from './pages/recurring/RecurringPage'
 
 function App() {
   const { t } = useTranslation()
@@ -59,8 +57,8 @@ function App() {
         <Route path="/calendario" element={<><CalendarPage /><ManagementPage mode="calendar" /></>} />
         <Route path="/gestao" element={<ManagementPage />} />
         <Route path="/metas" element={<GoalsPage />} />
-        <Route path="/orcamentos" element={<BudgetsPage />} />
-        <Route path="/recorrentes" element={<RecurringPage />} />
+        <Route path="/orcamentos" element={<Navigate to="/transacoes" replace />} />
+        <Route path="/recorrentes" element={<Navigate to="/transacoes" replace />} />
         <Route path="/transacoes" element={<><FinancePage config={pageConfig['/transacoes']} /><ManagementPage mode="transactions" /></>} />
         {Object.entries(pageConfig).filter(([path]) => path !== '/transacoes').map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}
         <Route path="*" element={<main className="page"><Header title={t('notFoundTitle')} desc={t('notFoundDesc')} action={<NavLink className="secondary" to="/">{t('backHome')}</NavLink>} /><section className="panel empty-state"><FileText size={30} /><div><strong>{t('notFoundRoute')}</strong><p>{t('notFoundHelp')}</p></div></section></main>} />
