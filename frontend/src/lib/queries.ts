@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getAccounts, getAnalytics, getGoals, getTransactions, type FinanceTransaction } from './api'
 
-export function getLocalDayKey(date = new Date()) {
+export function formatLocalDateKey(date = new Date()) {
   return String(date.getFullYear()) + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0')
 }
+
+export const getLocalDayKey = formatLocalDateKey
 
 export function getDashboardWindow(dayKey: string) {
   const [year, month, day] = dayKey.split('-').map(Number)
