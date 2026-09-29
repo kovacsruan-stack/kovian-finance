@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, Download } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
-import { getAccounts, getRecurring, getTransactions, getManagementRecords, importManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { getAccounts, getRecurring, getTransactions, getManagementRecords, importManagementRecords, createManagementRecord, updateManagementRecord, type FinanceAccount, type FinanceRecurring, type FinanceTransaction, type ManagementRecord } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
 import { formatCurrency as money } from '../lib/format'
@@ -65,6 +65,7 @@ function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
 
 export default function CalendarPage() {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
   const ownerId = useFinanceOwnerId()
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selectedDate, setSelectedDate] = useState(() => iso(new Date()))
@@ -75,6 +76,11 @@ export default function CalendarPage() {
   const [calendarImportError, setCalendarImportError] = useState('')
   const [calendarImportBusy, setCalendarImportBusy] = useState(false)
   const [calendarImportResult, setCalendarImportResult] = useState('')
+  const [lessonFormOpen, setLessonFormOpen] = useState(false)
+  const [editingLesson, setEditingLesson] = useState<ManagementRecord | null>(null)
+  const [lessonForm, setLessonForm] = useState<Record<string, string>>({})
+  const [lessonFormError, setLessonFormError] = useState('')
+  const [lessonFormNotice, setLessonFormNotice] = useState('')
   const from = iso(startOfMonth(month))
   const to = iso(new Date(month.getFullYear(), month.getMonth() + 1, 1))
   const transactions = useQuery({
@@ -101,6 +107,18 @@ export default function CalendarPage() {
     enabled: Boolean(ownerId),
     staleTime: 30_000,
   })
+  const students = useQuery({
+    queryKey: ['finance', 'calendar', 'management', 'students', ownerId],
+    queryFn: () => getManagementRecords('students'),
+    enabled: Boolean(ownerId),
+    staleTime: 30_000,
+  })
+  const modalities = useQuery({
+    queryKey: ['finance', 'calendar', 'management', 'modalities', ownerId],
+    queryFn: () => getManagementRecords('modalities'),
+    enabled: Boolean(ownerId),
+    staleTime: 30_000,
+  })
   const expenses = useQuery({
     queryKey: ['finance', 'calendar', 'management', 'expenses', ownerId],
     queryFn: () => getManagementRecords('expenses'),
@@ -119,6 +137,53 @@ export default function CalendarPage() {
     enabled: Boolean(ownerId),
     staleTime: 30_000,
   })
+
+  const saveLesson = useMutation({
+    mutationFn: async () => {
+      const student = (students.data ?? []).find(item => item.id === lessonForm.studentId && !item.archived)
+      if (!student) throw new Error('Selecione um aluno ativo.')
+      if (!lessonForm.date) throw new Error('Informe a data da aula.')
+      if (!lessonForm.time) throw new Error('Informe o horário da aula.')
+      const data: Record<string, unknown> = {
+        ...lessonForm,
+        studentId: student.id,
+        studentName: String(student.data.name ?? 'Aluno'),
+        modality: lessonForm.modality || String(student.data.modality ?? ''),
+        status: lessonForm.status || 'Agendada',
+      }
+      return editingLesson
+        ? updateManagementRecord('lessons', editingLesson.id, data)
+        : createManagementRecord('lessons', data)
+    },
+    onSuccess: async () => {
+      setLessonFormOpen(false)
+      setEditingLesson(null)
+      setLessonForm({})
+      setLessonFormError('')
+      setLessonFormNotice('Aula salva no calendário.')
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['finance', 'calendar', 'management', 'lessons'] }),
+        queryClient.invalidateQueries({ queryKey: ['finance', 'management', 'lessons'] }),
+      ])
+    },
+    onError: error => setLessonFormError(error instanceof Error ? error.message : 'Não foi possível salvar a aula.'),
+  })
+  const openNewLesson = (date = selectedDate) => {
+    setEditingLesson(null)
+    setLessonForm({ date, status: 'Agendada' })
+    setLessonFormError('')
+    setLessonFormNotice('')
+    setLessonFormOpen(true)
+  }
+  const openEditLesson = (id: string) => {
+    const lesson = (lessons.data ?? []).find(item => item.id === id)
+    if (!lesson) return
+    setEditingLesson(lesson)
+    setLessonForm(Object.fromEntries(Object.entries(lesson.data).map(([key, value]) => [key, value == null ? '' : String(value)])))
+    setLessonFormError('')
+    setLessonFormNotice('')
+    setLessonFormOpen(true)
+  }
 
   const eventLanguageIsPortuguese = (document.documentElement.lang || 'pt-BR').startsWith('pt')
 
@@ -145,13 +210,14 @@ export default function CalendarPage() {
       })),
     )
     const lessonEvents = (lessons.data ?? []).flatMap(item => {
+      if (item.archived) return []
       const data = item.data
       const date = String(data.date ?? data.startDate ?? '').slice(0, 10)
       if (!date || date < from || date >= to || /cancelad|canceled/i.test(String(data.status ?? ''))) return []
       return [{
         id: 'lesson:' + item.id,
         date,
-        title: (eventLanguageIsPortuguese ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno'),
+        title: (eventLanguageIsPortuguese ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno') + (data.time ? ' · ' + String(data.time) : ''),
         amount: 0,
         currency: 'BRL',
         kind: 'LESSON' as const,
@@ -291,6 +357,56 @@ export default function CalendarPage() {
       </div>}
     </section>
 
+    <section className="panel data-panel">
+      <div className="section-title">
+        <div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Aulas' : 'Lessons'}</h2></div>
+        <button type="button" className="primary" onClick={() => openNewLesson()} disabled={!ownerId}>
+          {isPortuguese ? 'Agendar aula' : 'Schedule lesson'}
+        </button>
+      </div>
+      {lessonFormNotice && <div className="notice" role="status">{lessonFormNotice}</div>}
+      {lessonFormOpen && <div className="form-panel">
+        <h3>{editingLesson ? (isPortuguese ? 'Editar aula' : 'Edit lesson') : (isPortuguese ? 'Nova aula' : 'New lesson')}</h3>
+        <div className="form-grid">
+          <label>Aluno
+            <select required value={lessonForm.studentId ?? ''} onChange={event => {
+              const student = (students.data ?? []).find(item => item.id === event.target.value)
+              setLessonForm(previous => ({ ...previous, studentId: event.target.value, modality: String(student?.data.modality ?? previous.modality ?? '') }))
+            }}>
+              <option value="">Selecione um aluno</option>
+              {(students.data ?? []).filter(item => !item.archived).map(student => <option key={student.id} value={student.id}>{String(student.data.name ?? 'Aluno')}</option>)}
+            </select>
+          </label>
+          <label>Data
+            <input type="date" required value={lessonForm.date ?? selectedDate} onChange={event => setLessonForm(previous => ({ ...previous, date: event.target.value }))} />
+          </label>
+          <label>Horário
+            <input type="time" required value={lessonForm.time ?? ''} onChange={event => setLessonForm(previous => ({ ...previous, time: event.target.value }))} />
+          </label>
+          <label>Modalidade
+            <select value={lessonForm.modality ?? ''} onChange={event => setLessonForm(previous => ({ ...previous, modality: event.target.value }))}>
+              <option value="">Usar modalidade do aluno</option>
+              {(modalities.data ?? []).filter(item => !item.archived).map(item => <option key={item.id} value={String(item.data.name ?? '')}>{String(item.data.name ?? 'Modalidade')}</option>)}
+            </select>
+          </label>
+          <label>Status
+            <select value={lessonForm.status ?? 'Agendada'} onChange={event => setLessonForm(previous => ({ ...previous, status: event.target.value }))}>
+              {['Agendada', 'Realizada', 'Cancelada', 'Falta'].map(status => <option key={status} value={status}>{status}</option>)}
+            </select>
+          </label>
+          <label>Observações
+            <input value={lessonForm.notes ?? ''} onChange={event => setLessonForm(previous => ({ ...previous, notes: event.target.value }))} />
+          </label>
+        </div>
+        {lessonFormError && <div className="notice mt-3" role="alert">{lessonFormError}</div>}
+        <div className="form-actions">
+          <button type="button" className="secondary" onClick={() => { setLessonFormOpen(false); setEditingLesson(null); setLessonFormError('') }}>Cancelar</button>
+          <button type="button" className="primary" disabled={saveLesson.isPending || students.isLoading} onClick={() => saveLesson.mutate()}>{saveLesson.isPending ? 'Salvando…' : 'Salvar aula'}</button>
+        </div>
+      </div>}
+      {students.isError && <div className="notice" role="alert">Não foi possível carregar os alunos para agendar a aula.</div>}
+    </section>
+
     {(transactions.isError || recurring.isError || accounts.isError || lessons.isError || payments.isError || expenses.isError || fitnessEvents.isError) && <div className="notice" role="alert" aria-live="assertive"><CircleDollarSign size={17} /><span>{t('financeLoadError')}</span></div>}
     <section className="panel finance-calendar">
       <div className="calendar-toolbar">
@@ -328,11 +444,15 @@ export default function CalendarPage() {
         <div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Eventos do dia' : 'Selected day events'}</h2></div>
         <span>{new Date(selectedDate + 'T00:00:00').toLocaleDateString(locale, { dateStyle: 'medium' })}</span>
       </div>
-      {selectedEvents.length ? selectedEvents.map((event, index) => <div className="account-row" key={event.id}>
-        <i />
-        <span><strong>{event.title}</strong><small>{eventKindLabel(event.kind, isPortuguese)}</small></span>
-        <b className={event.kind === 'INCOME' ? 'positive' : event.kind === 'EXPENSE' ? 'negative' : ''}>{money(event.amount, event.currency)}</b>
-      </div>) : <div className="empty-inline">{isPortuguese ? 'Nenhum evento nesta data.' : 'No events on this date.'}</div>}
+      {selectedEvents.length ? selectedEvents.map(event => {
+        const lessonId = event.kind === 'LESSON' ? event.id.slice('lesson:'.length) : null
+        return <div className="account-row" key={event.id}>
+          <i />
+          <span><strong>{event.title}</strong><small>{eventKindLabel(event.kind, isPortuguese)}</small></span>
+          {lessonId && <button type="button" className="secondary" onClick={() => openEditLesson(lessonId)}>{isPortuguese ? 'Editar aula' : 'Edit lesson'}</button>}
+          <b className={event.kind === 'INCOME' ? 'positive' : event.kind === 'EXPENSE' ? 'negative' : ''}>{money(event.amount, event.currency)}</b>
+        </div>
+      }) : <div className="empty-inline">{isPortuguese ? 'Nenhum evento nesta data.' : 'No events on this date.'}</div>}
     </section>
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Todos os eventos do mês' : 'All month events'}</h2></div></div>
