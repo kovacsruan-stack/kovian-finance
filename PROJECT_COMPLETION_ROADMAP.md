@@ -173,3 +173,25 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Navegação já existente conectada à nova tela; traduções PT-BR/EN adicionadas.
 
 **Status dos blocos 9 e 10:** fluxos principais de interface conectados às APIs existentes e registrados no código. Build TypeScript/Vite, testes automatizados e QA no navegador ainda não foram executados. Não declarar validação técnica concluída até essa etapa.
+
+
+## 2026-09-29 — Blocos 10 e 11: Recorrências, Calendário e Notificações
+
+### Bloco 10 — Lançamentos recorrentes
+- Completo o ciclo de recorrências no backend: criação, consulta, edição, pausa, retomada, desativação e processamento idempotente de ocorrências vencidas.
+- Regras de domínio impedem edição de recorrência pausada, retomada após a data final, tipos de transferência e datas finais inválidas.
+- A tela dedicada permite criar e editar recorrências, visualizar próximas ocorrências, pausar/retomar e processar vencimentos até a data atual com confirmação.
+- Resumos mensais permanecem separados por moeda para evitar somar valores de moedas diferentes.
+- Adicionados testes de domínio para avanço de datas, edição, pausa e encerramento por data final.
+
+### Bloco 11 — Calendário e notificações
+- Calendário Finance integra transações, recorrências projetadas, contas/moeda, aulas, pagamentos, despesas e eventos do Fitness/agenda importada.
+- Mantidos navegação mensal, seleção de dia, pesquisa, filtro por tipo de evento e exportação ICS.
+- Adicionado resumo mensal de fluxo por moeda, sem misturar moedas em um único total.
+- Importação ICS permanece com prévia, limite de arquivo, deduplicação por UID, confirmação explícita, importação em lotes e reconciliação de resultado.
+- Calendário recebeu estados de carregamento/erro/vazio e navegação localizada em PT-BR/EN.
+- Notificações agora possuem filtros por lidas/não lidas e severidade, atualização manual, abertura do módulo relacionado, marcação individual e marcação em massa como lidas.
+- Backend de notificações recebeu operação owner-scoped de marcar até 100 notificações não lidas como lidas e testes de isolamento do proprietário.
+- Regras existentes continuam gerando alertas de orçamento, recorrências vencidas, dívidas, risco de fluxo e picos de gastos com deduplicação.
+
+**Status dos blocos 10 e 11:** implementação funcional ampla registrada no backend e frontend. A validação final de build/testes/QA no navegador permanece pendente.
