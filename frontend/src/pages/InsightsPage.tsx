@@ -4,10 +4,10 @@ import { AlertTriangle, BrainCircuit, CheckCircle2, Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import PageHeader from '../components/ui/PageHeader'
 import { getFinancialInsights } from '../lib/api'
+import { formatLocalDateKey } from '../lib/queries'
 export default function InsightsPage(){
  const {t}=useTranslation(); const ownerId=useFinanceOwnerId(); const to=new Date(); const from=new Date(to); from.setDate(to.getDate()-90)
- const localDateKey=(date:Date)=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
- const fromIso=localDateKey(from),toIso=localDateKey(to)
+ const fromIso=formatLocalDateKey(from),toIso=formatLocalDateKey(to)
  const severityRank=(value:string)=>value==='HIGH'?3:value==='MEDIUM'?2:1
  const q=useQuery({queryKey:['finance','insights',ownerId,fromIso,toIso],queryFn:()=>getFinancialInsights(ownerId!,fromIso,toIso),enabled:Boolean(ownerId),staleTime:120000,retry:2})
  const icon=(s:string)=>s==='HIGH'?<AlertTriangle size={18}/>:s==='MEDIUM'?<Info size={18}/>:<CheckCircle2 size={18}/>
