@@ -36,17 +36,22 @@ export function budgetSpent(budget: FinanceBudget, transactions: FinanceTransact
     .filter(tx => tx.type === 'EXPENSE' && tx.status !== 'CANCELLED' && tx.categoryId === budget.categoryId)
     .filter(tx => {
       const occurred = new Date(tx.occurredAt)
-      return occurred >= from && occurred < to
+      const amount = Number(tx.amount)
+      return Number.isFinite(occurred.getTime())
+        && Number.isFinite(amount)
+        && occurred >= from
+        && occurred < to
     })
-    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0)
+    .reduce((sum, tx) => sum + Number(tx.amount), 0)
 }
 
 export function budgetPercent(spent: number, limit: number): number {
-  if (limit <= 0) return 0
+  if (!Number.isFinite(spent) || !Number.isFinite(limit) || limit <= 0) return 0
   return Math.round((spent / limit) * 100)
 }
 
 export function budgetRemaining(spent: number, limit: number): number {
+  if (!Number.isFinite(spent) || !Number.isFinite(limit)) return 0
   return Math.max(0, limit - spent)
 }
 
