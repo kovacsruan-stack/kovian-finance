@@ -4,9 +4,9 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createTransfer, getAccounts, getOwnerId } from '../lib/api'
 import { useFinanceMutation } from '../lib/queries'
+import { formatCurrency as money } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 
-const money = (value:number, currency='BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style:'currency', currency })
 
 export default function TransferPage() {
   const { t } = useTranslation()

@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query'
 import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, importManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
+import { formatCurrency as money } from '../lib/format'
 import { expandCalendarEventDates, parseCalendarFile, type ImportedCalendarLesson } from '../lib/fitnessCalendarImport'
 import PageHeader from '../components/ui/PageHeader'
 
 const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
-const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
 const iso = (date: Date) => {
   const y = date.getFullYear()
   const m = String(date.getMonth() + 1).padStart(2, '0')

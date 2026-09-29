@@ -2,9 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Landmark, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
 import { getAssets, getDebts, getFinancialSnapshots, getLiabilities, getOwnerId } from '../lib/api'
 import { useTranslation } from 'react-i18next'
+import { formatCurrency as money } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
 
-const money=(value:number)=>value.toLocaleString(document.documentElement.lang||'pt-BR',{style:'currency',currency:'BRL'})
 
 export default function NetWorthPage(){
   const {t}=useTranslation()

@@ -9,9 +9,9 @@ import { useTranslation } from 'react-i18next'
 import Modal from '../components/ui/Modal'
 import Field from '../components/ui/Field'
 import { useFinanceDashboard, useFinanceMutation } from '../lib/queries'
+import { formatCurrency as money } from '../lib/format'
 
 const getLocale = () => typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'
-const money = (value: number, currency = 'BRL') => value.toLocaleString(getLocale(), { style: 'currency', currency })
 const isPositiveAmount = (value: string) => Number.isFinite(Number(value)) && Number(value) > 0
 const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <PageHeader title={title} description={desc} actions={action} /> }
