@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { FileUp, ShieldCheck } from 'lucide-react'
 import { clearFinanceSession, FinanceApiError, importManagementRecords, loginFinance, type ManagementResource } from '../lib/api'
 import { removeDuplicateLessons } from '../lib/managementImportNormalization'
@@ -107,7 +107,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
   const [authBusy, setAuthBusy] = useState(false)
   const [authError, setAuthError] = useState('')
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (authBusy) return
     setAuthBusy(true)
