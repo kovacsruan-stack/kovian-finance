@@ -175,8 +175,13 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
         currentStep = `Importando ${currentResource}`
         setProgress(currentStep)
         const currentRows = backupRows ? (backupRows[currentResource] ?? []) : rows
-        for (let offset = 0; offset < currentRows.length; offset += 500) {
-          const response = await importManagementRecords(currentResource, currentRows.slice(offset, offset + 500))
+        const batchSize = 50
+        const batchCount = Math.ceil(currentRows.length / batchSize)
+        for (let offset = 0; offset < currentRows.length; offset += batchSize) {
+          const batchNumber = Math.floor(offset / batchSize) + 1
+          currentStep = `Importando ${currentResource} · lote ${batchNumber}/${batchCount}`
+          setProgress(currentStep)
+          const response = await importManagementRecords(currentResource, currentRows.slice(offset, offset + batchSize))
           totals.inserted += response.inserted
           totals.updated += response.updated
           totals.unchanged += response.unchanged
