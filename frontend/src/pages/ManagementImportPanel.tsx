@@ -33,7 +33,7 @@ function normalizeRows(value: unknown): { rows: ImportRow[]; skipped: number } {
     const rawData = row.data && typeof row.data === 'object' && !Array.isArray(row.data)
       ? row.data as Record<string, unknown>
       : Object.fromEntries(Object.entries(row).filter(([key]) => !['id', 'sourceId', 'createdAt', 'updatedAt', 'archived', 'isArchived'].includes(key)))
-    const sourceId = String(row.sourceId ?? row.id ?? rawData.id ?? '')
+    const sourceId = String(row.sourceId ?? row.id ?? rawData.id ?? '').trim().slice(0, 120)
     if (!sourceId || !Object.keys(rawData).length) {
       skipped += 1
       continue
@@ -42,7 +42,7 @@ function normalizeRows(value: unknown): { rows: ImportRow[]; skipped: number } {
       skipped += 1
       continue
     }
-    unique.set(sourceId.slice(0, 120), { sourceId: sourceId.slice(0, 120), data: rawData })
+    unique.set(sourceId, { sourceId, data: rawData })
   }
   return { rows: [...unique.values()], skipped }
 }
@@ -51,8 +51,8 @@ function removeDuplicateLessons(rows: ImportRow[]): ImportRow[] {
   const seen = new Set<string>()
   return rows.filter(row => {
     const data = row.data
-    const key = [data.studentId, data.date, data.time, data.modality, data.status]
-      .map(value => String(value ?? '').trim()).join('|')
+    const key = JSON.stringify([data.studentId, data.date, data.time, data.modality, data.status]
+      .map(value => String(value ?? '').trim()))
     if (seen.has(key)) return false
     seen.add(key)
     return true
@@ -63,7 +63,7 @@ function lessonQuality(rows: ImportRow[]) {
   const groups = new Map<string, number>()
   for (const row of rows) {
     const data = row.data
-    const key = [data.studentId, data.date, data.time, data.modality, data.status].map(value => String(value ?? '').trim()).join('|')
+    const key = JSON.stringify([data.studentId, data.date, data.time, data.modality, data.status].map(value => String(value ?? '').trim()))
     groups.set(key, (groups.get(key) ?? 0) + 1)
   }
   const duplicateGroups = [...groups.values()].filter(count => count > 1)
