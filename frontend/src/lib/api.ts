@@ -203,7 +203,8 @@ async function request<T>(path: string, init?: RequestInit, timeoutMs = 15000): 
       const payload = await response.json() as { code?: unknown; error?: unknown; message?: unknown; detail?: unknown }
       const candidate = payload.code ?? payload.error
       if (typeof candidate === 'string' && candidate.trim()) code = candidate.trim().slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
-      const responseMessage = payload.message ?? payload.detail\n      if (typeof responseMessage === 'string' && responseMessage.trim()) message = responseMessage.trim().slice(0, 500)
+      const responseMessage = payload.message ?? payload.detail
+      if (typeof responseMessage === 'string' && responseMessage.trim()) message = responseMessage.trim().slice(0, 500)
     } catch {
       // Preserve the status-only error when the backend response is not JSON.
     }
