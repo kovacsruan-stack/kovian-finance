@@ -16,6 +16,8 @@ import ImportExportPage from './pages/import-export/ImportExportPage'
 import CalendarPage from './pages/CalendarPage'
 import ManagementPage from './pages/ManagementPage'
 import GoalsPage from './pages/goals/GoalsPage'
+import BudgetsPage from './pages/budgets/BudgetsPage'
+import RecurringPage from './pages/recurring/RecurringPage'
 
 function App() {
   const { t } = useTranslation()
@@ -57,6 +59,8 @@ function App() {
         <Route path="/calendario" element={<CalendarPage />} />
         <Route path="/gestao" element={<ManagementPage />} />
         <Route path="/metas" element={<GoalsPage />} />
+        <Route path="/orcamentos" element={<BudgetsPage />} />
+        <Route path="/recorrentes" element={<RecurringPage />} />
         {Object.entries(pageConfig).map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}
         <Route path="*" element={<main className="page"><Header title={t('notFoundTitle')} desc={t('notFoundDesc')} action={<NavLink className="secondary" to="/">{t('backHome')}</NavLink>} /><section className="panel empty-state"><FileText size={30} /><div><strong>{t('notFoundRoute')}</strong><p>{t('notFoundHelp')}</p></div></section></main>} />
       </Routes>
