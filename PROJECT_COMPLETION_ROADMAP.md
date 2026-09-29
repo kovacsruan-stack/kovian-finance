@@ -125,3 +125,13 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Importador passa a reconhecer IDs de origem de transações já existentes e a aceitar categoria vazia.
 - A publicação Vercel não foi acionada. Nenhum workflow de GitHub Actions foi usado.
 - Build, lint, testes unitários, testes E2E e validação no navegador continuam pendentes; não declarar essas verificações aprovadas sem execução observável.
+
+
+## 2026-09-29 — organização do menu por tarefa
+
+- O menu “Mais” foi dividido em Planejamento, Organização e Sistema, preservando os 14 destinos secundários.
+- A busca global continua reunindo os destinos de navegação, independentemente do grupo visual.
+- Teste E2E atualizado para verificar os três grupos e a presença de todas as opções secundárias.
+- Criado `docs/NAVIGATION_AUDIT.md` com responsabilidades canônicas, regras contra duplicidade e matriz de validação funcional.
+- Não houve deploy na Vercel. Não foram usados GitHub Actions.
+- Os testes foram atualizados no código, mas ainda não foram executados nesta sessão; build, lint, testes unitários, E2E e QA visual continuam pendentes.
