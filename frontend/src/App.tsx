@@ -57,8 +57,8 @@ function App() {
         <Route path="/calendario" element={<><CalendarPage /><ManagementPage mode="calendar" /></>} />
         <Route path="/gestao" element={<ManagementPage />} />
         <Route path="/metas" element={<GoalsPage />} />
-        <Route path="/orcamentos" element={<Navigate to="/transacoes" replace />} />
-        <Route path="/recorrentes" element={<Navigate to="/transacoes" replace />} />
+        <Route path="/orcamentos" element={<FinancePage config={pageConfig['/orcamentos']} />} />
+        <Route path="/recorrentes" element={<FinancePage config={pageConfig['/recorrentes']} />} />
         <Route path="/transacoes" element={<><FinancePage config={pageConfig['/transacoes']} /><ManagementPage mode="transactions" /></>} />
         {Object.entries(pageConfig).filter(([path]) => path !== '/transacoes').map(([path, config]) => <Route key={path} path={path} element={<FinancePage config={config} />} />)}
         <Route path="*" element={<main className="page"><Header title={t('notFoundTitle')} desc={t('notFoundDesc')} action={<NavLink className="secondary" to="/">{t('backHome')}</NavLink>} /><section className="panel empty-state"><FileText size={30} /><div><strong>{t('notFoundRoute')}</strong><p>{t('notFoundHelp')}</p></div></section></main>} />
