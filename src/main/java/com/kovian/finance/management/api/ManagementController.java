@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1/management")
 public class ManagementController {
-    private static final Set<String> RESOURCES = Set.of("students", "modalities", "lessons", "payments", "expenses", "waitlist");
+    private static final Set<String> RESOURCES = Set.of("students", "modalities", "lessons", "payments", "expenses", "waitlist", "calendar_events");
     private final ManagementRecordRepository repository;
 
     public ManagementController(ManagementRecordRepository repository) {
