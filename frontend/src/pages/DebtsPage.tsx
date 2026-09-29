@@ -19,7 +19,7 @@ export default function DebtsPage(){
     <div className="stat-grid"><article className="stat-card"><TrendingDown size={17}/><span>{t('outstandingDebt')}</span><strong>{q.isLoading?'—':money(outstanding)}</strong></article><article className="stat-card"><CreditCard size={17}/><span>{t('activeDebtCount')}</span><strong>{q.isLoading?'—':String(debts.filter(x=>x.status!=='PAID').length)}</strong></article></div>
     <section className="panel"><div className="section-title"><div><span className="eyebrow">{t('debts')}</span><h2>{t('debtList')}</h2></div></div>
       {debts.map(x=><article className="feature-card" key={x.id}><div className="feature-icon"><CreditCard size={18}/></div><div><strong>{x.name}</strong><span>{x.debtType} · {x.totalInstallments} {t('installments').toLowerCase()}</span><small>{t('outstandingDebt')}: {money(x.outstandingAmount)} · {x.status}</small></div></article>)}
-      {!q.isLoading&&!debts.length&&<div className="empty-inline">{t('noDebts')}</div>}
+      {!q.isLoading&&!q.isError&&!debts.length&&<div className="empty-inline">{t('noDebts')}</div>}
     </section>
   </main>
 }
