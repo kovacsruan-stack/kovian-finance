@@ -23,7 +23,7 @@ const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
 type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' | 'FITNESS' }
 
-function exportEventsToIcs(events: CalendarEvent[]) {
+function exportEventsToIcs(events: CalendarEvent[], isPortuguese: boolean) {
   const escapeIcs = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
   const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
   const lines = [
@@ -37,7 +37,7 @@ function exportEventsToIcs(events: CalendarEvent[]) {
       'DTSTAMP:' + stamp,
       'DTSTART;VALUE=DATE:' + event.date.replace(/-/g, ''),
       'SUMMARY:' + escapeIcs(event.title),
-      'DESCRIPTION:' + escapeIcs(eventKindLabel(event.kind, true) + ' · ' + money(event.amount, event.currency)),
+      'DESCRIPTION:' + escapeIcs(eventKindLabel(event.kind, isPortuguese) + ' · ' + money(event.amount, event.currency)),
       'END:VEVENT',
     ].join('\r\n')),
     'END:VCALENDAR',
@@ -50,7 +50,7 @@ function exportEventsToIcs(events: CalendarEvent[]) {
   document.body.appendChild(link)
   link.click()
   link.remove()
-  URL.revokeObjectURL(url)
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
@@ -256,7 +256,7 @@ export default function CalendarPage() {
         <button type="button" className="secondary" aria-label={t('previousMonth')} onClick={() => moveMonth(-1)}><ChevronLeft size={16} /></button>
         <button type="button" className="secondary" onClick={goToToday}>{t('today')}</button>
         <button type="button" className="secondary" aria-label={t('nextMonth')} onClick={() => moveMonth(1)}><ChevronRight size={16} /></button>
-        <button type="button" className="secondary" onClick={() => exportEventsToIcs(monthEvents)} disabled={!monthEvents.length}><Download size={15} /> {t('exportIcs')}</button>
+        <button type="button" className="secondary" onClick={() => exportEventsToIcs(monthEvents, isPortuguese)} disabled={!monthEvents.length}><Download size={15} /> {t('exportIcs')}</button>
       </>} />
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
     <section className="panel data-panel">
