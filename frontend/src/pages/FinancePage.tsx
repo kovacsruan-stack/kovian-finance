@@ -9,13 +9,12 @@ import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds
 import { useTranslation } from 'react-i18next'
 import Modal from '../components/ui/Modal'
 import Field from '../components/ui/Field'
-import { useFinanceDashboard, useFinanceMutation } from '../lib/queries'
+import { formatLocalDateKey, useFinanceDashboard, useFinanceMutation } from '../lib/queries'
 import { formatCurrency as money } from '../lib/format'
 
 const getLocale = () => typeof document !== 'undefined' ? (document.documentElement.lang || 'pt-BR') : 'pt-BR'
 const isPositiveAmount = (value: string) => Number.isFinite(Number(value)) && Number(value) > 0
 const newTransactionExternalId = () => typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `txn-${Date.now()}-${Math.random().toString(36).slice(2)}`
-const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 const formatDate = (value: string) => { const date = /^\d{4}-\d{2}-\d{2}$/.test(value) ? new Date(`${value}T12:00:00`) : new Date(value); return date.toLocaleDateString(getLocale()) }
 export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <PageHeader title={title} description={desc} actions={action} /> }
 export function Dashboard() {
