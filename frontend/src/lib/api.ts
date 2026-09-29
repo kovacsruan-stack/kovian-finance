@@ -258,19 +258,19 @@ async function post<T>(path: string, body: unknown, schema?: { parse: (value: un
 }
 
 export function getAccounts(ownerId: string) {
-  return get(`/accounts?ownerId=${encodeURIComponent(ownerId)}`, financeAccountListSchema)
+  return get<FinanceAccount[]>(`/accounts?ownerId=${encodeURIComponent(ownerId)}`, financeAccountListSchema)
 }
 
 export function getGoals(ownerId: string) {
-  return get(`/goals?ownerId=${encodeURIComponent(ownerId)}`, financeGoalListSchema)
+  return get<FinanceGoal[]>(`/goals?ownerId=${encodeURIComponent(ownerId)}`, financeGoalListSchema)
 }
 
 export function getTransactions(from: string, to: string) {
-  return get(`/transactions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeTransactionListSchema)
+  return get<FinanceTransaction[]>(`/transactions?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeTransactionListSchema)
 }
 
 export function getReconciliationHistory() {
-  return get('/reconciliation', reconciliationRunListSchema)
+  return get<ReconciliationRun[]>('/reconciliation', reconciliationRunListSchema)
 }
 
 export function reconcileAccount(accountId: string) {
@@ -278,19 +278,19 @@ export function reconcileAccount(accountId: string) {
 }
 
 export function getCards(ownerId: string) {
-  return get(`/cards?ownerId=${encodeURIComponent(ownerId)}`, financeCardListSchema)
+  return get<FinanceCard[]>(`/cards?ownerId=${encodeURIComponent(ownerId)}`, financeCardListSchema)
 }
 
 export function getInvoices(ownerId: string) {
-  return get(`/cards/invoices?ownerId=${encodeURIComponent(ownerId)}`, financeInvoiceListSchema)
+  return get<FinanceInvoice[]>(`/cards/invoices?ownerId=${encodeURIComponent(ownerId)}`, financeInvoiceListSchema)
 }
 
 export function getCategories(ownerId: string, kind: FinanceCategory['kind']) {
-  return get(`/categories?ownerId=${encodeURIComponent(ownerId)}&kind=${encodeURIComponent(kind)}`, financeCategoryListSchema)
+  return get<FinanceCategory[]>(`/categories?ownerId=${encodeURIComponent(ownerId)}&kind=${encodeURIComponent(kind)}`, financeCategoryListSchema)
 }
 
 export function getBudgets(ownerId: string, from: string, to: string) {
-  return get(`/budgets?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeBudgetListSchema)
+  return get<FinanceBudget[]>(`/budgets?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeBudgetListSchema)
 }
 
 export function createTransaction(input: { accountId: string; categoryId: string; description: string; amount: number; type: 'INCOME' | 'EXPENSE'; occurredAt: string; externalId?: string }) {
@@ -313,7 +313,7 @@ export function createBudget(input: { ownerId: string; categoryId: string; perio
 
 export function createCard(input: { ownerId: string; name: string; brand?: string; lastFour?: string; creditLimit: number; closingDay: number; dueDay: number }) { return post<FinanceCard>('/cards', input, financeCardSchema) }
 export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input, financePurchaseSchema) }
-export function getInvoicePurchases(id: string) { return get(`/cards/invoices/${encodeURIComponent(id)}/purchases`, financePurchaseListSchema) }
+export function getInvoicePurchases(id: string) { return get<FinancePurchase[]>(`/cards/invoices/${encodeURIComponent(id)}/purchases`, financePurchaseListSchema) }
 export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
 export function payInvoice(id: string, ownerId: string, accountId: string, amount?: number, idempotencyKey?: string) {
   const params = new URLSearchParams({ ownerId, accountId })
@@ -335,7 +335,7 @@ export function archiveGoal(id: string) {
   return post<FinanceGoal>(`/goals/${encodeURIComponent(id)}/archive`, {}, financeGoalSchema)
 }
 
-export function getRecurring() { return get('/recurring', financeRecurringListSchema) }
+export function getRecurring() { return get<FinanceRecurring[]>('/recurring', financeRecurringListSchema) }
 export function processRecurringDue(date: string) {
   return request<number>(`/recurring/process-due?date=${encodeURIComponent(date)}`, { method: 'POST', body: JSON.stringify({}) })
 }
@@ -348,7 +348,7 @@ export function resumeRecurring(id: string) { return post<void>(`/recurring/${en
 export function archiveRecurring(id: string) {
   return request<void>(`/recurring/${encodeURIComponent(id)}`, { method: 'DELETE', body: JSON.stringify({}) })
 }
-export function getAnalytics(from: string, to: string, ownerId: string) { return get(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeAnalyticsSchema) }
+export function getAnalytics(from: string, to: string, ownerId: string) { return get<FinanceAnalytics>(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeAnalyticsSchema) }
 export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, z.record(z.string(), z.number().finite())) }
 
 export function getForecastCashFlow(ownerId: string, from: string, days: number) { return get(`/forecast/cash-flow?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&days=${days}`, cashFlowForecastListSchema) }
@@ -386,19 +386,19 @@ const integrationStatusSchema = z.object({
 })
 export function getIntegrationStatus() { return get('/integrations/status', integrationStatusSchema) }
 
-export function getAssets(ownerId: string) { return get(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
-export function getLiabilities(ownerId: string) { return get(`/liabilities?ownerId=${encodeURIComponent(ownerId)}`, financeLiabilityListSchema) }
+export function getAssets(ownerId: string) { return get<FinanceAsset[]>(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
+export function getLiabilities(ownerId: string) { return get<FinanceLiability[]>(`/liabilities?ownerId=${encodeURIComponent(ownerId)}`, financeLiabilityListSchema) }
 export type FinanceInsight = { type: string; title: string; explanation: string; severity: string; generatedAt: string }
 const financeInsightSchema=z.object({type:z.string(),title:z.string(),explanation:z.string(),severity:z.string(),generatedAt:z.string()})
-export function getFinancialInsights(ownerId:string,from:string,to:string){return get(`/ai/finance/insights?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,z.array(financeInsightSchema))}
+export function getFinancialInsights(ownerId:string,from:string,to:string){return get<FinanceInsight[]>(`/ai/finance/insights?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,z.array(financeInsightSchema))}
 
-export function getDebts(ownerId: string) { return get(`/debts?ownerId=${encodeURIComponent(ownerId)}`, financeDebtListSchema) }
+export function getDebts(ownerId: string) { return get<FinanceDebt[]>(`/debts?ownerId=${encodeURIComponent(ownerId)}`, financeDebtListSchema) }
 
-export function getNotifications(unreadOnly = false) { return get(`/notifications?unreadOnly=${unreadOnly}`, financeNotificationListSchema) }
+export function getNotifications(unreadOnly = false) { return get<z.infer<typeof financeNotificationListSchema>>(`/notifications?unreadOnly=${unreadOnly}`, financeNotificationListSchema) }
 export function markNotificationRead(id: string) { return post<void>(`/notifications/${encodeURIComponent(id)}/read`, {}) }
 export function markAllNotificationsRead() { return post<{ markedRead: number }>('/notifications/read-all', {}) }
 
-export function getFinancialSnapshots() { return get('/snapshots', financeSnapshotListSchema) }
+export function getFinancialSnapshots() { return get<z.infer<typeof financeSnapshotListSchema>>('/snapshots', financeSnapshotListSchema) }
 
 export async function createTransfer(input: { fromAccountId: string; toAccountId: string; amount: number; description: string }, idempotencyKey?: string) {
   const key = idempotencyKey || (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`)
