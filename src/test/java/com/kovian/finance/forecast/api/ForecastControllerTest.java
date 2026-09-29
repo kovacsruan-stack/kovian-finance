@@ -95,4 +95,40 @@ class ForecastControllerTest {
             org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("110.0000"), result.get(1).projectedBalance());
         }
     }
+
+    @Test
+    void cashFlow_includesScheduledRecurringIncomeAndUnpaidInvoiceOnDueDate() {
+        UUID owner = UUID.randomUUID();
+        LocalDate from = LocalDate.of(2026, 10, 1);
+        var transactions = mock(FinancialTransactionRepository.class);
+        var accounts = mock(FinancialAccountRepository.class);
+        var recurring = mock(com.kovian.finance.recurring.repository.RecurringTransactionRepository.class);
+        var invoices = mock(com.kovian.finance.card.repository.CreditCardInvoiceRepository.class);
+        when(transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(eq(owner), any(), any())).thenReturn(List.of());
+        var account = mock(com.kovian.finance.account.domain.FinancialAccount.class);
+        when(account.getCurrentBalance()).thenReturn(new java.math.BigDecimal("100"));
+        when(accounts.findByOwnerIdOrderByName(owner)).thenReturn(List.of(account));
+        var item = mock(com.kovian.finance.recurring.domain.RecurringTransaction.class);
+        when(item.isActive()).thenReturn(true);
+        when(item.getTransactionType()).thenReturn(com.kovian.finance.transaction.domain.TransactionType.INCOME);
+        when(item.getNextOccurrence()).thenReturn(from);
+        when(item.getFrequency()).thenReturn(com.kovian.finance.recurring.domain.RecurringFrequency.MONTHLY);
+        when(item.getEndDate()).thenReturn(null);
+        when(item.getAmount()).thenReturn(new java.math.BigDecimal("50"));
+        when(recurring.findByOwnerIdOrderByNextOccurrence(owner)).thenReturn(List.of(item));
+        var invoice = mock(com.kovian.finance.card.domain.CreditCardInvoice.class);
+        when(invoice.getStatus()).thenReturn(com.kovian.finance.card.domain.InvoiceStatus.OPEN);
+        when(invoice.getDueDate()).thenReturn(from);
+        when(invoice.getTotalAmount()).thenReturn(new java.math.BigDecimal("20"));
+        when(invoice.getPaidAmount()).thenReturn(java.math.BigDecimal.ZERO);
+        when(invoices.findDueBetweenForOwner(owner, from, from)).thenReturn(List.of(invoice));
+        var controller = new ForecastController(transactions, accounts, recurring, invoices);
+        try (MockedStatic<CurrentUser> currentUser = mockStatic(CurrentUser.class)) {
+            currentUser.when(CurrentUser::ownerId).thenReturn(owner);
+            var result = controller.cashFlow(null, from, 1);
+            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("50.0000"), result.get(0).income());
+            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("20.0000"), result.get(0).expense());
+            org.junit.jupiter.api.Assertions.assertEquals(new java.math.BigDecimal("130.0000"), result.get(0).projectedBalance());
+        }
+    }
 }
