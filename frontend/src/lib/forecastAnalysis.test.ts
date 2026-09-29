@@ -43,6 +43,15 @@ describe('cashFlowForecastSchema', () => {
     expect(cashFlowForecastSchema.safeParse(validRow).success).toBe(true)
   })
 
+  it('accepts leap days only in leap years', () => {
+    expect(cashFlowForecastSchema.safeParse({ ...validRow, date: '2024-02-29' }).success).toBe(true)
+    expect(cashFlowForecastSchema.safeParse({ ...validRow, date: '2023-02-29' }).success).toBe(false)
+  })
+
+  it('validates dates in early four-digit years without Date constructor remapping', () => {
+    expect(cashFlowForecastSchema.safeParse({ ...validRow, date: '0001-01-01' }).success).toBe(true)
+  })
+
   it('rejects malformed and impossible calendar dates', () => {
     expect(cashFlowForecastSchema.safeParse({ ...validRow, date: '2026/09/29' }).success).toBe(false)
     expect(cashFlowForecastSchema.safeParse({ ...validRow, date: '2026-02-30' }).success).toBe(false)
