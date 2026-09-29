@@ -330,3 +330,7 @@ html,body,#root{background:var(--bg);color:var(--text)}
 .page-header-copy h1{margin-top:0}
 .page-header-copy p{max-width:68ch}
 @media(max-width:640px){.page-header{align-items:flex-start;gap:12px}.page-header .header-actions{width:100%;flex-wrap:wrap}.page-header .header-actions>*{max-width:100%}}
+
+/* Avoid repeating the product wordmark while the mobile drawer is open. */
+@media(max-width:900px){.topbar-menu-open .top-left{visibility:hidden}}
+@media(min-width:901px){.topbar-wordmark{display:none}}
