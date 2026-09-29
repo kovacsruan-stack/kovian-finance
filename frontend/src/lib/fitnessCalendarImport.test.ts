@@ -1,0 +1,79 @@
+import { describe, expect, it } from 'vitest'
+import { parseCalendarFile } from './fitnessCalendarImport'
+
+describe('parseCalendarFile', () => {
+  it('imports basic events and unescapes text', () => {
+    const result = parseCalendarFile([
+      'BEGIN:VCALENDAR',
+      'BEGIN:VEVENT',
+      'UID:event-1',
+      'DTSTART;VALUE=DATE:20260928',
+      'SUMMARY:Treino\, pernas',
+      'DESCRIPTION:Agendamento\\nConfirmado',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n'))
+
+    expect(result).toHaveLength(1)
+    expect(result[0].sourceId).toBe('event-1')
+    expect(result[0].data.date).toBe('2026-09-28')
+    expect(result[0].data.title).toBe('Treino, pernas')
+    expect(result[0].data.notes).toBe('Agendamento\nConfirmado')
+  })
+
+  it('preserves recurrence and useful event metadata', () => {
+    const result = parseCalendarFile([
+      'BEGIN:VEVENT',
+      'UID:event-2',
+      'DTSTART:20261001T090000Z',
+      'DTEND:20261001T100000Z',
+      'RRULE:FREQ=WEEKLY;COUNT=4',
+      'LOCATION:Studio KOVIAN',
+      'URL:https://example.com/event',
+      'CATEGORIES:Treino,Funcional',
+      'STATUS:CONFIRMED',
+      'END:VEVENT',
+    ].join('\n'))
+
+    expect(result[0].data).toMatchObject({
+      date: '2026-10-01',
+      endDate: '2026-10-01',
+      recurrenceRule: 'FREQ=WEEKLY;COUNT=4',
+      location: 'Studio KOVIAN',
+      url: 'https://example.com/event',
+      categories: 'Treino,Funcional',
+      status: 'Agendada',
+    })
+  })
+
+  it('marks cancelled events and ignores invalid dates', () => {
+    const result = parseCalendarFile([
+      'BEGIN:VEVENT',
+      'UID:cancelled',
+      'DTSTART;VALUE=DATE:20260928',
+      'STATUS:CANCELLED',
+      'END:VEVENT',
+      'BEGIN:VEVENT',
+      'UID:invalid',
+      'DTSTART;VALUE=DATE:20260230',
+      'END:VEVENT',
+    ].join('\n'))
+
+    expect(result).toHaveLength(1)
+    expect(result[0].data.status).toBe('Cancelada')
+  })
+
+  it('unfolds long lines and handles property names case-insensitively', () => {
+    const result = parseCalendarFile([
+      'BEGIN:VEVENT',
+      'uid:event-3',
+      'dtstart;value=DATE:20261215',
+      'summary:Treino de força com',
+      ' continuação',
+      'END:VEVENT',
+    ].join('\r\n'))
+
+    expect(result[0].sourceId).toBe('event-3')
+    expect(result[0].data.title).toBe('Treino de força comcontinuação')
+  })
+})
