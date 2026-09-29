@@ -115,5 +115,13 @@
   "recurringCreated": "Recorrência criada.",
   "recurringUpdated": "Recorrência atualizada.",
   "calendarTitle": "Calendário financeiro",
-  "calendarDescription": "Visualize movimentações, recorrências, aulas, pagamentos e eventos por data."
+  "calendarDescription": "Visualize movimentações, recorrências, aulas, pagamentos e eventos por data.",
+  "previousMonth": "Mês anterior",
+  "today": "Hoje",
+  "nextMonth": "Próximo mês",
+  "exportIcs": "Exportar .ics",
+  "selectedDayEvents": "Eventos do dia",
+  "noEventsOnDate": "Nenhum evento nesta data.",
+  "allMonthEvents": "Todos os eventos do mês",
+  "noEventsThisMonth": "Nenhum evento neste mês."
 }
