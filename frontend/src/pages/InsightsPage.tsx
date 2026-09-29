@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { AlertTriangle, BrainCircuit, CheckCircle2, Info } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import PageHeader from '../components/ui/PageHeader'
-import { getFinancialInsights, getOwnerId } from '../lib/api'
+import { getFinancialInsights } from '../lib/api'
 export default function InsightsPage(){
- const {t}=useTranslation(); const ownerId=getOwnerId(); const to=new Date(); const from=new Date(to); from.setDate(to.getDate()-90)
+ const {t}=useTranslation(); const ownerId=useFinanceOwnerId(); const to=new Date(); const from=new Date(to); from.setDate(to.getDate()-90)
  const fromIso=from.toISOString().slice(0,10),toIso=to.toISOString().slice(0,10)
  const severityRank=(value:string)=>value==='HIGH'?3:value==='MEDIUM'?2:1
  const q=useQuery({queryKey:['finance','insights',ownerId,fromIso,toIso],queryFn:()=>getFinancialInsights(ownerId!,fromIso,toIso),enabled:Boolean(ownerId),staleTime:120000,retry:2})
