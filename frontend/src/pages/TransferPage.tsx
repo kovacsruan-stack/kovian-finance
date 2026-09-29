@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { ArrowRightLeft, CheckCircle2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
-import { createTransfer, getAccounts, getOwnerId } from '../lib/api'
+import { createTransfer, getAccounts } from '../lib/api'
 import { useFinanceMutation } from '../lib/queries'
 import { formatCurrency as money } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
@@ -10,7 +11,7 @@ import PageHeader from '../components/ui/PageHeader'
 
 export default function TransferPage() {
   const { t } = useTranslation()
-  const ownerId = getOwnerId()
+  const ownerId = useFinanceOwnerId()
   const accounts = useQuery({ queryKey:['finance','accounts',ownerId], queryFn:()=>getAccounts(ownerId!), enabled:Boolean(ownerId), staleTime:60_000 })
   const [fromAccountId,setFromAccountId]=useState('')
   const [toAccountId,setToAccountId]=useState('')
