@@ -28,6 +28,8 @@ const navigationGroups = [
     title: 'Organização',
     items: [
       { to: '/metas', key: 'goals', icon: Target },
+      { to: '/orcamentos', key: 'budgets', icon: Wallet },
+      { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
       { to: '/dividas', key: 'debts', icon: CreditCard },
     ],
   },
