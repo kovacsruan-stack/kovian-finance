@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { NavLink } from 'react-router-dom'
 import { ArrowDownLeft, ArrowUpRight, BarChart3, CalendarClock, ChevronRight, CreditCard, FolderTree, Plus, Receipt, ShieldCheck, Settings2, Sparkles, Target, Wallet } from 'lucide-react'
-import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getOwnerId, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
+import { closeInvoice, createAccount, createBudget, createCard, createCardPurchase, createCategory, createGoal, createRecurring, createTransaction, cancelTransaction, getAccounts, getAnalytics, getBudgets, getCards, getCategories, getCategoryAnalytics, getGoals, getInvoicePurchases, getInvoices, getRecurring, getTransactions, payInvoice, pauseRecurring, resumeRecurring, type FinanceAccount, type FinanceAnalytics, type FinanceBudget, type FinanceCard, type FinanceCategory, type FinanceGoal, type FinanceInvoice, type FinancePurchase, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 import PageHeader from '../components/ui/PageHeader'
 import { budgetPercent, budgetRemaining, budgetSpent, categoryTree, periodBounds, periodStartFor } from '../lib/budgetUtils'
@@ -17,7 +18,7 @@ const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date
 export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <PageHeader title={title} description={desc} actions={action} /> }
 export function Dashboard() {
   const { t } = useTranslation()
-  const ownerId = getOwnerId(); const dashboard = useFinanceDashboard(ownerId); const accounts = dashboard.accounts.data ?? []; const goals = dashboard.goals.data ?? []; const transactions = dashboard.transactions.data ?? []; const analytics = dashboard.analytics.data; const loading = dashboard.isLoading; const error = ownerId ? (dashboard.isError ? t('financeLoadError') : null) : t('loginToLoadData')
+  const ownerId = useFinanceOwnerId(); const dashboard = useFinanceDashboard(ownerId); const accounts = dashboard.accounts.data ?? []; const goals = dashboard.goals.data ?? []; const transactions = dashboard.transactions.data ?? []; const analytics = dashboard.analytics.data; const loading = dashboard.isLoading; const error = ownerId ? (dashboard.isError ? t('financeLoadError') : null) : t('loginToLoadData')
   const brlIds = new Set(accounts.filter(a => a.currency === 'BRL').map(a => a.id)); const brlTx = transactions.filter(t => brlIds.has(t.accountId)); const balance = accounts.filter(a => a.currency === 'BRL').reduce((s, a) => s + Number(a.currentBalance || 0), 0); const allAccountsBrl = accounts.length > 0 && accounts.every(account => account.currency === 'BRL'); const income = allAccountsBrl && analytics ? Number(analytics.income) : brlTx.filter(t => t.type === 'INCOME' && t.status !== 'CANCELLED').reduce((s, t) => s + Number(t.amount || 0), 0); const expense = allAccountsBrl && analytics ? Number(analytics.expense) : brlTx.filter(t => t.type === 'EXPENSE' && t.status !== 'CANCELLED').reduce((s, t) => s + Number(t.amount || 0), 0)
   return <main className="page"><Header title={t('financeHeroTitle')} desc={t('financeHeroDesc')} action={<NavLink className="primary" to="/transacoes"><Plus size={17} /> {t('newTransaction')}</NavLink>} />
     {error && <div className="notice" role="status" aria-live="polite"><ShieldCheck size={18} /><span>{error}</span></div>}
@@ -41,7 +42,7 @@ export const pageConfig: Record<string, { titleKey: string; descKey: string; ico
 export const pageTranslationKeys: Record<string, [string, string]> = { '/contas':['pages.accounts.title','pages.accounts.desc'], '/transacoes':['pages.transactions.title','pages.transactions.desc'], '/metas':['pages.goals.title','pages.goals.desc'], '/relatorios':['pages.reports.title','pages.reports.desc'], '/cartoes':['pages.cards.title','pages.cards.desc'], '/orcamentos':['pages.budgets.title','pages.budgets.desc'], '/recorrentes':['pages.recurring.title','pages.recurring.desc'], '/categorias':['pages.categories.title','pages.categories.desc'], '/configuracoes':['pages.settings.title','pages.settings.desc'] }
 export function FinancePage({ config }: { config: typeof pageConfig[string] }) {
   const { t } = useTranslation()
-  const ownerId = getOwnerId()
+  const ownerId = useFinanceOwnerId()
   const [accounts, setAccounts] = useState<FinanceAccount[]>([])
   const [transactions, setTransactions] = useState<FinanceTransaction[]>([])
   const [goals, setGoals] = useState<FinanceGoal[]>([])
