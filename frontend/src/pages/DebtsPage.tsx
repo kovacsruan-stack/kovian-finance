@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { CreditCard, TrendingDown } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { getDebts, getOwnerId } from '../lib/api'
+import PageHeader from '../components/ui/PageHeader'
 
 const money=(value:number)=>value.toLocaleString(document.documentElement.lang||'pt-BR',{style:'currency',currency:'BRL'})
 
@@ -12,7 +13,7 @@ export default function DebtsPage(){
   const debts=q.data??[]
   const outstanding=debts.filter(x=>x.status!=='PAID').reduce((s,x)=>s+Number(x.outstandingAmount||0),0)
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('debtsTitle')}</h1><p>{t('debtsDesc')}</p></div></section>
+    <PageHeader title={t('debtsTitle')} description={t('debtsDesc')} />
     {!ownerId&&<div className="notice">{t('loginToLoadData')}</div>}{q.isError&&<div className="notice">{t('debtsError')}</div>}
     <div className="stat-grid"><article className="stat-card"><TrendingDown size={17}/><span>{t('outstandingDebt')}</span><strong>{q.isLoading?'—':money(outstanding)}</strong></article><article className="stat-card"><CreditCard size={17}/><span>{t('activeDebtCount')}</span><strong>{q.isLoading?'—':String(debts.filter(x=>x.status!=='PAID').length)}</strong></article></div>
     <section className="panel"><div className="section-title"><div><span className="eyebrow">{t('debts')}</span><h2>{t('debtList')}</h2></div></div>

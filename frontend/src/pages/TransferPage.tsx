@@ -4,6 +4,7 @@ import { useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { createTransfer, getAccounts, getOwnerId } from '../lib/api'
 import { useFinanceMutation } from '../lib/queries'
+import PageHeader from '../components/ui/PageHeader'
 
 const money = (value:number, currency='BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style:'currency', currency })
 
@@ -41,7 +42,7 @@ export default function TransferPage() {
   }
 
   return <main className="page">
-    <section className="page-header"><div><span className="eyebrow">KOVIAN FINANCE</span><h1>{t('transferTitle')}</h1><p>{t('transferDesc')}</p></div></section>
+    <PageHeader title={t('transferTitle')} description={t('transferDesc')} />
     {!ownerId&&<div className="notice">{t('loginToLoadData')}</div>}
     {accounts.isError&&<div className="notice">{t('financeLoadError')}</div>}
     <section className="panel">
