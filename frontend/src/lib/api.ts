@@ -339,8 +339,14 @@ export function processRecurringDue(date: string) {
   return request<number>(`/recurring/process-due?date=${encodeURIComponent(date)}`, { method: 'POST', body: JSON.stringify({}) })
 }
 export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input, financeRecurringSchema) }
+export function updateRecurring(id: string, input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) {
+  return request<unknown>(`/recurring/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(input) }).then(value => financeRecurringSchema.parse(value))
+}
 export function pauseRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/pause`, {}) }
 export function resumeRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/resume`, {}) }
+export function archiveRecurring(id: string) {
+  return request<void>(`/recurring/${encodeURIComponent(id)}`, { method: 'DELETE', body: JSON.stringify({}) })
+}
 export function getAnalytics(from: string, to: string, ownerId: string) { return get(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeAnalyticsSchema) }
 export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, z.record(z.string(), z.number().finite())) }
 
