@@ -13,6 +13,32 @@ describe('budgetUtils', () => {
     expect(yearly.to.getUTCFullYear()).toBe(2027)
   })
 
+  it('normalizes monthly periods even when the stored date is month-end', () => {
+    const bounds = periodBounds({
+      id: 'month-end',
+      categoryId: 'food',
+      period: 'MONTHLY',
+      periodStart: '2026-01-31T00:00:00Z',
+      limitAmount: 100,
+    })
+    expect(bounds.from.getDate()).toBe(1)
+    expect(bounds.from.getMonth()).toBe(0)
+    expect(bounds.to.getDate()).toBe(1)
+    expect(bounds.to.getMonth()).toBe(1)
+  })
+
+  it('returns invalid bounds for malformed period dates instead of counting transactions', () => {
+    const bounds = periodBounds({
+      id: 'invalid',
+      categoryId: 'food',
+      period: 'MONTHLY',
+      periodStart: 'not-a-date',
+      limitAmount: 100,
+    })
+    expect(Number.isNaN(bounds.from.getTime())).toBe(true)
+    expect(Number.isNaN(bounds.to.getTime())).toBe(true)
+  })
+
   it('counts only matching non-cancelled expenses inside the budget window', () => {
     const budget = { id: 'b', categoryId: 'food', period: 'MONTHLY' as const, periodStart: '2026-09-01T00:00:00Z', limitAmount: 500 }
     const transactions = [
