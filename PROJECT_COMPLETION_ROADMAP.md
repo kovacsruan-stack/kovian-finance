@@ -215,3 +215,14 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Foram adicionados testes unitários para o health filter e para a fronteira do rate limit anônimo.
 
 **Status:** implementação dos blocos 12 e 13 registrada no código. Migração real de dados do AppDeploy, build/testes completos e homologação de produção continuam dependendo de execução no ambiente autorizado. O deploy frontend na Vercel será verificado após a integração na `main`.
+
+## 2026-09-29 — Bloco 15: consolidação de navegação e homologação AppDeploy
+
+- A navegação principal foi reorganizada para destacar Início, Transações e Calendário; a área de alunos passou a ser identificada como Rotina/Alunos, separada das ferramentas de sistema.
+- Orçamentos e recorrências permanecem como configurações contextuais do fluxo de transação; as rotas antigas redirecionam para Transações, sem exigir telas dedicadas no menu.
+- Corrigida a expressão de data na tela de metas e reforçada a tipagem das respostas de listas da API.
+- O carregamento da página financeira foi tornado explícito e sequencial para evitar inferência inválida de resultados heterogêneos.
+- A importação JSON do Gestão passou a enviar lotes de 50 registros, com progresso por lote. A importação continua idempotente por `sourceId` e pode ser conferida/reexecutada sem apagar registros existentes.
+- O AppDeploy deixou de ser apenas um redirecionador para a Vercel e agora executa o frontend real do KOVIAN Finance, usando a API financeira existente.
+- Última implantação AppDeploy: **ready**. Snapshot de QA registrou **zero erros de frontend e zero erros de rede**.
+- Limite da validação: isso confirma a implantação e o snapshot automatizado, mas não substitui o teste manual de criação de registros, a importação de um backup real e a reconciliação dos dados do Gestão. A migração dos dados reais continua pendente até a execução e conferência com o backup original.
