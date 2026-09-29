@@ -18,6 +18,8 @@ export default function RecurringPage() {
   const accountsQuery = useQuery({ queryKey:['finance','accounts',ownerId], queryFn:()=>getAccounts(ownerId!), enabled:Boolean(ownerId) })
   const [kind,setKind] = useState<'EXPENSE'|'INCOME'>('EXPENSE')
   const categoriesQuery = useQuery({ queryKey:['finance','categories',ownerId,kind], queryFn:()=>getCategories(ownerId!,kind), enabled:Boolean(ownerId) })
+  const otherKind: 'EXPENSE'|'INCOME' = kind === 'EXPENSE' ? 'INCOME' : 'EXPENSE'
+  const otherCategoriesQuery = useQuery({ queryKey:['finance','categories',ownerId,otherKind], queryFn:()=>getCategories(ownerId!,otherKind), enabled:Boolean(ownerId) })
   const mutate = useFinanceMutation((task:()=>Promise<unknown>)=>task())
   const [open,setOpen] = useState(false)
   const [accountId,setAccountId] = useState('')
@@ -32,8 +34,9 @@ export default function RecurringPage() {
   const records = recurringQuery.data ?? []
   const accounts = accountsQuery.data ?? []
   const categories = categoriesQuery.data ?? []
+  const allCategories = [...categories, ...(otherCategoriesQuery.data ?? [])]
   const accountNames = useMemo(()=>new Map(accounts.map(a=>[a.id,a.name])),[accounts])
-  const categoryNames = useMemo(()=>new Map([...categories].map(c=>[c.id,c.name])),[categories])
+  const categoryNames = useMemo(()=>new Map(allCategories.map(c=>[c.id,c.name])),[otherCategoriesQuery.data,categoriesQuery.data])
   const active = records.filter(r=>r.active)
   const monthlyEquivalent = active.reduce((sum,r)=>sum+Number(r.amount)*(r.frequency==='WEEKLY'?52/12:r.frequency==='YEARLY'?1/12:1),0)
   const submit=(event:FormEvent)=>{
@@ -57,7 +60,7 @@ export default function RecurringPage() {
   return <main className="page">
     <PageHeader title={t('recurringTitle')} description={t('recurringDescription')} actions={<><button className="secondary" type="button" disabled={!active.length||busy} onClick={processDue}><RefreshCw size={16}/>{t('recurringProcessDue')}</button><button className="primary" type="button" onClick={openCreate} disabled={!accounts.length}><Plus size={17}/>{t('recurringNew')}</button></>} />
     {!ownerId&&<div className="notice" role="status">{t('loginToLoadData')}</div>}
-    {(recurringQuery.isError||accountsQuery.isError||categoriesQuery.isError)&&<div className="notice" role="alert">{t('financeLoadError')} <button className="text-button" type="button" onClick={()=>{void recurringQuery.refetch();void accountsQuery.refetch();void categoriesQuery.refetch()}}>{t('retry')}</button></div>}
+    {(recurringQuery.isError||accountsQuery.isError||categoriesQuery.isError||otherCategoriesQuery.isError)&&<div className="notice" role="alert">{t('financeLoadError')} <button className="text-button" type="button" onClick={()=>{void recurringQuery.refetch();void accountsQuery.refetch();void categoriesQuery.refetch();void otherCategoriesQuery.refetch()}}>{t('retry')}</button></div>}
     <div className="stat-grid"><article className="stat-card"><CalendarClock size={17}/><span>{t('recurringActiveCount')}</span><strong>{recurringQuery.isLoading?'—':active.length}</strong></article><article className="stat-card"><TrendingDown size={17}/><span>{t('recurringMonthlyExpense')}</span><strong>{recurringQuery.isLoading?'—':money(active.filter(r=>r.transactionType==='EXPENSE').reduce((sum,r)=>sum+Number(r.amount)*(r.frequency==='WEEKLY'?52/12:r.frequency==='YEARLY'?1/12:1),0))}</strong></article><article className="stat-card"><TrendingUp size={17}/><span>{t('recurringMonthlyIncome')}</span><strong>{recurringQuery.isLoading?'—':money(active.filter(r=>r.transactionType==='INCOME').reduce((sum,r)=>sum+Number(r.amount)*(r.frequency==='WEEKLY'?52/12:r.frequency==='YEARLY'?1/12:1),0))}</strong></article></div>
     <section className="panel data-panel"><div className="section-title"><div><span className="eyebrow">{t('planning')}</span><h2>{t('recurringListTitle')}</h2></div><span className="badge">{t('recurringMonthlyEquivalent')}: {money(monthlyEquivalent)}</span></div>
       {recurringQuery.isLoading&&<div className="empty-inline">{t('loading')}</div>}
