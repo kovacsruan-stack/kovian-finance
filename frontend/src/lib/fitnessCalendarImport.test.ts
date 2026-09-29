@@ -61,6 +61,23 @@ describe('parseCalendarFile', () => {
     expect(first[0].sourceId).not.toBe(different[0].sourceId)
   })
 
+  it('keeps long UIDs distinct within the source ID limit', () => {
+    const makeEvent = (uid: string) => [
+      'BEGIN:VEVENT',
+      'UID:' + uid,
+      'DTSTART;VALUE=DATE:20260928',
+      'SUMMARY:Treino',
+      'END:VEVENT',
+    ].join('\\n')
+    const prefix = 'x'.repeat(130)
+    const first = parseCalendarFile(makeEvent(prefix + 'a'))
+    const second = parseCalendarFile(makeEvent(prefix + 'b'))
+
+    expect(first[0].sourceId.length).toBeLessThanOrEqual(120)
+    expect(second[0].sourceId.length).toBeLessThanOrEqual(120)
+    expect(first[0].sourceId).not.toBe(second[0].sourceId)
+  })
+
   it('marks cancelled events and ignores invalid dates', () => {
     const result = parseCalendarFile([
       'BEGIN:VEVENT',
