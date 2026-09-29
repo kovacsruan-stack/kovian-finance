@@ -21,7 +21,7 @@ const endOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() 
 const daysInMonth = (date: Date) => endOfMonth(date).getDate()
 const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
-type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' | 'FITNESS' }
+type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' | 'FITNESS'; status?: string }
 
 function exportEventsToIcs(events: CalendarEvent[]) {
   const escapeIcs = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
@@ -213,14 +213,17 @@ export default function CalendarPage() {
       if (item.archived) return []
       const data = item.data
       const date = String(data.date ?? data.startDate ?? '').slice(0, 10)
-      if (!date || date < from || date >= to || /cancelad|canceled/i.test(String(data.status ?? ''))) return []
+      if (!date || date < from || date >= to) return []
+      const status = String(data.status ?? 'Agendada')
+      const cancelled = /cancelad|canceled/i.test(status)
       return [{
         id: 'lesson:' + item.id,
         date,
-        title: (eventLanguageIsPortuguese ? 'Aula · ' : 'Lesson · ') + String(data.studentName ?? data.student ?? 'Aluno') + (data.time ? ' · ' + String(data.time) : ''),
+        title: (cancelled ? (eventLanguageIsPortuguese ? 'Aula cancelada · ' : 'Cancelled lesson · ') : (eventLanguageIsPortuguese ? 'Aula · ' : 'Lesson · ')) + String(data.studentName ?? data.student ?? 'Aluno') + (data.time ? ' · ' + String(data.time) : ''),
         amount: 0,
         currency: 'BRL',
         kind: 'LESSON' as const,
+        status,
       }]
     })
     const managementExpenseEvents = (expenses.data ?? []).flatMap(item => {
@@ -311,7 +314,7 @@ export default function CalendarPage() {
         <button type="button" className="secondary" aria-label={isPortuguese ? 'Mês anterior' : 'Previous month'} onClick={() => moveMonth(-1)}><ChevronLeft size={16} /></button>
         <button type="button" className="secondary" onClick={goToToday}>{isPortuguese ? 'Hoje' : 'Today'}</button>
         <button type="button" className="secondary" aria-label={isPortuguese ? 'Próximo mês' : 'Next month'} onClick={() => moveMonth(1)}><ChevronRight size={16} /></button>
-        <button type="button" className="secondary" onClick={() => exportEventsToIcs(monthEvents)} disabled={!monthEvents.length}><Download size={15} /> {isPortuguese ? 'Exportar .ics' : 'Export .ics'}</button>
+        <button type="button" className="secondary" onClick={() => exportEventsToIcs(monthEvents.filter(event => event.status !== 'Cancelada' && event.status !== 'Canceled'))} disabled={!monthEvents.some(event => event.status !== 'Cancelada' && event.status !== 'Canceled')}><Download size={15} /> {isPortuguese ? 'Exportar .ics' : 'Export .ics'}</button>
       </>} />
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
     <section className="panel data-panel">
