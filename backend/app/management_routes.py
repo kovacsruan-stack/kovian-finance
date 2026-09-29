@@ -33,18 +33,18 @@ def model_for(resource: str):
 class RecordInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     data: dict = Field(default_factory=dict)
-    sourceId: str | None = Field(default=None, max_length=160)
+    sourceId: str | None = Field(default=None, max_length=120)
 
 
 class ImportRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    sourceId: str = Field(min_length=1, max_length=160)
+    sourceId: str = Field(min_length=1, max_length=120)
     data: dict = Field(default_factory=dict)
 
 
 class ImportBatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    records: list[ImportRecord] = Field(max_length=2000)
+    records: list[ImportRecord] = Field(max_length=500)
 
 
 def serialize(record):
@@ -146,6 +146,9 @@ async def import_batch(
     db: AsyncSession = Depends(get_session),
 ):
     model = model_for(resource)
+    source_ids = [item.sourceId for item in body.records]
+    if len(source_ids) != len(set(source_ids)):
+        raise HTTPException(status_code=422, detail="Duplicate source IDs in batch")
     inserted = updated = unchanged = 0
     now = datetime.now(timezone.utc)
     for item in body.records:
