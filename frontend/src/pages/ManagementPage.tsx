@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import ManagementImportPanel from './ManagementImportPanel'
+import ManagementReconciliationPanel from './ManagementReconciliationPanel'
 import PageHeader from '../components/ui/PageHeader'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
@@ -237,6 +238,7 @@ export default function ManagementPage() {
     </section>}
 
     <ManagementImportPanel resource={resource} onImported={() => { void queryClient.invalidateQueries({ queryKey: ['finance', 'management'] }) }} />
+    <ManagementReconciliationPanel />
 
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${records.length} registros`}</span></div>
