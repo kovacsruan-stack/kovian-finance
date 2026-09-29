@@ -100,9 +100,82 @@ export function getOwnerId(): string | null {
   return typeof candidate === 'string' ? candidate : null
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+let sessionBootstrap: Promise<void> | null = null
+
+async function createOrResumeAnonymousSession(): Promise<void> {
   const accessToken = token()
-  if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
+  const payload = accessToken ? decodePayload(accessToken) : null
+  const expiresAt = typeof payload?.exp === 'number' ? payload.exp * 1000 : 0
+  const subject = typeof payload?.sub === 'string' ? payload.sub : null
+  let anonymousOwnerId: string | null = null
+  let deviceId: string | null = null
+
+  try {
+    anonymousOwnerId = localStorage.getItem('kovian_anonymous_owner_id')
+    deviceId = localStorage.getItem('kovian_anonymous_device_id')
+  } catch {
+    throw new Error('O navegador bloqueou o armazenamento local necessário para manter seus dados neste dispositivo.')
+  }
+
+  if (accessToken && subject && expiresAt > Date.now() + 60_000) return
+  if (accessToken && subject && anonymousOwnerId !== subject) {
+    throw new Error('A sessão anterior expirou. Para preservar os dados dessa conta, recupere o acesso antes de continuar.')
+  }
+
+  if (!deviceId) {
+    if (typeof crypto === 'undefined' || typeof crypto.randomUUID !== 'function') {
+      throw new Error('Este navegador não oferece suporte à criação segura de uma sessão automática.')
+    }
+    deviceId = crypto.randomUUID()
+    try {
+      localStorage.setItem('kovian_anonymous_device_id', deviceId)
+    } catch {
+      throw new Error('Não foi possível guardar a sessão automática neste dispositivo.')
+    }
+  }
+
+  let response: Response
+  try {
+    response = await fetch(baseUrl + '/auth/anonymous', {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+      body: JSON.stringify({ device_id: deviceId }),
+      signal: AbortSignal.timeout(15000),
+    })
+  } catch (error) {
+    const cause = error as { message?: string }
+    throw new Error(cause?.message || 'Não foi possível conectar ao serviço financeiro.')
+  }
+
+  const result = await response.json().catch(() => null) as {
+    access_token?: unknown
+    user?: FinanceAuthUser
+    detail?: unknown
+  } | null
+  if (!response.ok || !result || typeof result.access_token !== 'string' || !result.user?.id) {
+    const detail = typeof result?.detail === 'string' ? result.detail : ''
+    throw new Error(detail || 'Não foi possível iniciar o acesso automático.')
+  }
+
+  try {
+    localStorage.setItem('access_token', result.access_token)
+    localStorage.setItem('kovian_anonymous_owner_id', result.user.id)
+  } catch {
+    throw new Error('Não foi possível guardar a sessão automática neste dispositivo.')
+  }
+}
+
+export function ensureFinanceSession(): Promise<void> {
+  if (!sessionBootstrap) {
+    sessionBootstrap = createOrResumeAnonymousSession().finally(() => { sessionBootstrap = null })
+  }
+  return sessionBootstrap
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  await ensureFinanceSession()
+  const accessToken = token()
+  if (!accessToken) throw new Error('SESSION_UNAVAILABLE')
   const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${++fallbackRequestId}`
   let response: Response
   try {
@@ -147,8 +220,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 async function get<T>(path: string, schema?: { parse: (value: unknown) => T }): Promise<T> { const value = await request<unknown>(path); return schema ? schema.parse(value) : value as T }
 
 async function postMultipart<T>(path: string, body: FormData): Promise<T> {
+  await ensureFinanceSession()
   const accessToken = token()
-  if (!accessToken) throw new Error('AUTHENTICATION_REQUIRED')
+  if (!accessToken) throw new Error('SESSION_UNAVAILABLE')
   const requestId = typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${++fallbackRequestId}`
   let response: Response
   try {
