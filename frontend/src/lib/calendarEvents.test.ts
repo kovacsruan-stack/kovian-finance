@@ -33,8 +33,12 @@ describe('getRecurringOccurrencesInRange', () => {
     expect(getRecurringOccurrencesInRange({ ...base, frequency: 'DAILY' }, '2026-09-01', '2026-10-01')).toEqual([])
     expect(getRecurringOccurrencesInRange({ ...base, nextOccurrence: '2026-02-30', frequency: 'MONTHLY' }, '2026-09-01', '2026-10-01')).toEqual([])
   })
-  it('clamps month-end dates instead of overflowing into the following month', () => {
-    const result = getRecurringOccurrencesInRange({ ...base, nextOccurrence: '2026-01-31', frequency: 'MONTHLY' }, '2026-01-01', '2026-05-01')
-    expect(result.map(x => x.occurrenceDate)).toEqual(['2026-01-31', '2026-02-28', '2026-03-28', '2026-04-28'])
+  it('preserves the original day for month-end schedules', () => {
+    const result = getRecurringOccurrencesInRange({ ...base, nextOccurrence: '2026-01-31', frequency: 'MONTHLY' }, '2026-01-01', '2026-06-01')
+    expect(result.map(x => x.occurrenceDate)).toEqual(['2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30', '2026-05-31'])
+  })
+  it('rejects malformed dates and caps generated results', () => {
+    expect(getRecurringOccurrencesInRange({ ...base, nextOccurrence: '2026-02-30', frequency: 'MONTHLY' }, '2026-09-01', '2026-10-01')).toEqual([])
+    expect(getRecurringOccurrencesInRange({ ...base, frequency: 'WEEKLY' }, '2026-09-01', '2036-01-01')).toHaveLength(500)
   })
 })
