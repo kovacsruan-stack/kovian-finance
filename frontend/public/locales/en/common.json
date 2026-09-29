@@ -115,5 +115,13 @@
   "recurringCreated": "Recurring item created.",
   "recurringUpdated": "Recurring item updated.",
   "calendarTitle": "Financial calendar",
-  "calendarDescription": "View transactions, recurring items, lessons, payments and events by date."
+  "calendarDescription": "View transactions, recurring items, lessons, payments and events by date.",
+  "previousMonth": "Previous month",
+  "today": "Today",
+  "nextMonth": "Next month",
+  "exportIcs": "Export .ics",
+  "selectedDayEvents": "Selected day events",
+  "noEventsOnDate": "No events on this date.",
+  "allMonthEvents": "All month events",
+  "noEventsThisMonth": "No events this month."
 }
