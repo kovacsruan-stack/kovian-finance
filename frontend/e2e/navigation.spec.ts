@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const routes = ['/contas', '/transacoes', '/transferencias', '/cartoes', '/orcamentos', '/metas', '/relatorios', '/recorrentes', '/categorias', '/configuracoes', '/previsao', '/patrimonio', '/inteligencia', '/dividas', '/notificacoes', '/import-export']
+const routes = ['/', '/contas', '/transacoes', '/calendario', '/gestao', '/transferencias', '/cartoes', '/orcamentos', '/metas', '/relatorios', '/recorrentes', '/categorias', '/configuracoes', '/previsao', '/patrimonio', '/inteligencia', '/dividas', '/notificacoes', '/import-export']
 
 test('Finance core routes render without a 404 page', async ({ page }) => {
   for (const route of routes) {
@@ -53,4 +53,22 @@ test('Finance expanded routes expose their page heading', async ({ page }) => {
     await page.goto(route)
     await expect(page.locator('main h1')).toContainText(heading)
   }
+})
+
+test('primary navigation stays focused on five daily destinations', async ({ page }) => {
+  await page.goto('/')
+  const nav = page.getByRole('navigation', { name: 'Navegação principal' })
+  for (const label of ['Visão geral', 'Transações', 'Contas', 'Calendário', 'Gestão']) {
+    await expect(nav.getByRole('link', { name: new RegExp(label, 'i') })).toBeVisible()
+  }
+  await expect(nav.getByRole('link')).toHaveCount(5)
+})
+
+test('lessons are scheduled from the calendar, not duplicated in management tabs', async ({ page }) => {
+  await page.goto('/gestao')
+  const tabs = page.getByRole('tablist', { name: 'Seções de Gestão' })
+  await expect(tabs.getByRole('tab', { name: 'Aulas' })).toHaveCount(0)
+  await page.goto('/calendario')
+  await expect(page.getByRole('heading', { name: 'Aulas' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Agendar aula' })).toBeVisible()
 })
