@@ -375,6 +375,16 @@ export function importCsv(accountId: string, file: File) {
 export function getImportHistory() { return get('/imports', financeImportListSchema) }
 export function getImportErrors(id: string) { return get(`/imports/${encodeURIComponent(id)}/errors`, financeImportErrorListSchema) }
 
+export type IntegrationStatus = {
+  adapters: Record<string, { enabled: boolean; configured: boolean }>
+  outbox: { pending: number; processing: number; failed: number }
+}
+const integrationStatusSchema = z.object({
+  adapters: z.record(z.string(), z.object({ enabled: z.boolean(), configured: z.boolean() })),
+  outbox: z.object({ pending: z.number().int().nonnegative(), processing: z.number().int().nonnegative(), failed: z.number().int().nonnegative() }),
+})
+export function getIntegrationStatus() { return get('/integrations/status', integrationStatusSchema) }
+
 export function getAssets(ownerId: string) { return get(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
 export function getLiabilities(ownerId: string) { return get(`/liabilities?ownerId=${encodeURIComponent(ownerId)}`, financeLiabilityListSchema) }
 export type FinanceInsight = { type: string; title: string; explanation: string; severity: string; generatedAt: string }
