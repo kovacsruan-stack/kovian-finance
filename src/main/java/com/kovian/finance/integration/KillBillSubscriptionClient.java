@@ -31,6 +31,9 @@ public class KillBillSubscriptionClient {
     public boolean enabled() {
         return enabled;
     }
+    public boolean configured() {
+        return enabled;
+    }
 
     public void submitSubscription(Map<String, Object> subscription) {
         if (!enabled) return;
