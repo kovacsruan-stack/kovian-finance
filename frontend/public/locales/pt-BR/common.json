@@ -41,5 +41,6 @@
   "incomeExpenseChart": "Comparativo de receitas e despesas nos últimos três meses",
   "recentTransactions": "Movimentações recentes",
   "activity": "Atividade",
-  "overview": "Visão geral"
+  "overview": "Visão geral",
+  "goalsContributionNote": "Este registro atualiza o progresso da meta. Ele não movimenta dinheiro entre contas."
 }
