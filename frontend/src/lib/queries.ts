@@ -2,10 +2,15 @@ import { useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getAccounts, getAnalytics, getGoals, getTransactions, type FinanceTransaction } from './api'
 
+export function getLocalDayKey(date = new Date()) {
+  return String(date.getFullYear()) + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0')
+}
+
 export function getDashboardWindow(dayKey: string) {
-  const end = new Date(`${dayKey}T23:59:59.999Z`)
+  const [year, month, day] = dayKey.split('-').map(Number)
+  const end = new Date(year, month - 1, day, 23, 59, 59, 999)
   const start = new Date(end)
-  start.setUTCDate(start.getUTCDate() - 90)
+  start.setDate(start.getDate() - 90)
   return { fromIso: start.toISOString(), toIso: end.toISOString() }
 }
 
@@ -17,7 +22,7 @@ export const financeQueryKeys = {
 }
 
 export function useFinanceDashboard(ownerId: string | null) {
-  const dayKey = new Date().toISOString().slice(0, 10)
+  const dayKey = getLocalDayKey()
   const { fromIso, toIso } = useMemo(() => getDashboardWindow(dayKey), [dayKey])
   const accounts = useQuery({ queryKey: ownerId ? financeQueryKeys.accounts(ownerId) : ['finance','accounts','anonymous'], queryFn: () => getAccounts(ownerId!), enabled: Boolean(ownerId), staleTime: 30_000 })
   const goals = useQuery({ queryKey: ownerId ? financeQueryKeys.goals(ownerId) : ['finance','goals','anonymous'], queryFn: () => getGoals(ownerId!), enabled: Boolean(ownerId), staleTime: 30_000 })
