@@ -14,7 +14,7 @@ const primaryItems: Item[] = [
 const navigationGroups = [
   {
     id: 'money',
-    title: 'Seu dinheiro',
+    title: 'Contas e cartões',
     items: [
       { to: '/contas', key: 'accounts', icon: Wallet },
       { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
@@ -24,7 +24,7 @@ const navigationGroups = [
   },
   {
     id: 'planning',
-    title: 'Planejamento',
+    title: 'Organização',
     items: [
       { to: '/metas', key: 'goals', icon: Target },
       { to: '/dividas', key: 'debts', icon: CreditCard },
@@ -42,7 +42,7 @@ const navigationGroups = [
   },
   {
     id: 'tools',
-    title: 'Ferramentas',
+    title: 'Mais ferramentas',
     items: [
       { to: '/calendario', key: 'financialCalendar', icon: CalendarClock },
       { to: '/notificacoes', key: 'notifications', icon: Bell },
