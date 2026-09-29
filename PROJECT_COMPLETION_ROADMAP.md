@@ -113,3 +113,15 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Added entity lifecycle tests and API route registration coverage.
 - Real AppDeploy data migration, reconciliation, full Gestão feature parity, Fitness calendar parity, FitHub visual alignment, and local build/test/browser QA remain outstanding.
 - **Integration implementation estimate: 55%** (the integrated-product scope only; not the historical Finance financial-domain estimate).
+
+
+## 2026-09-29 — navegação, calendário e importação/exportação
+
+- Navegação principal reduzida a cinco destinos de uso frequente; destinos restantes mantidos em “Mais”.
+- Agendamento e edição de aulas centralizados no Calendário; a Gestão mantém cadastros, pagamentos, despesas e lista de espera.
+- Incluído feedback acessível de sucesso após mutações financeiras e feedback de estado na importação/exportação.
+- Exportação CSV alinhada ao contrato de importação: date, description, amount, type, source_transaction_id e category_id.
+- Exportação exclui transações canceladas e transferências, evitando reimportá-las como movimentações comuns.
+- Importador passa a reconhecer IDs de origem de transações já existentes e a aceitar categoria vazia.
+- A publicação Vercel não foi acionada. Nenhum workflow de GitHub Actions foi usado.
+- Build, lint, testes unitários, testes E2E e validação no navegador continuam pendentes; não declarar essas verificações aprovadas sem execução observável.
