@@ -25,11 +25,24 @@ public class CreditCardController {
     record CardRequest(UUID ownerId,@NotBlank @Size(max=120) String name,@Size(max=60) String brand,@Pattern(regexp="\\d{4}") String lastFour,@NotNull @DecimalMin("0.00") BigDecimal creditLimit,@Min(1) @Max(31) int closingDay,@Min(1) @Max(31) int dueDay) {}
     record PurchaseRequest(UUID ownerId,@NotNull UUID cardId,@NotBlank @Size(max=240) String description,@NotNull @DecimalMin("0.01") BigDecimal totalAmount,@Min(1) @Max(60) int installments,LocalDate purchasedAt) {}
 
-    @PostMapping @Transactional public CreditCard create(@Valid @RequestBody CardRequest r) {
+    @PostMapping @Transactional public CardResponse create(@Valid @RequestBody CardRequest r) {
         UUID ownerId = owner(); requireOwner(r.ownerId(), ownerId);
-        return cards.save(new CreditCard(ownerId,r.name(),r.brand(),r.lastFour(),r.creditLimit(),r.closingDay(),r.dueDay()));
+        return toCardResponse(cards.save(new CreditCard(ownerId,r.name(),r.brand(),r.lastFour(),r.creditLimit(),r.closingDay(),r.dueDay())));
     }
-    @GetMapping public List<CreditCard> list(@RequestParam(required=false) UUID ownerId) { UUID current=owner(); requireOwner(ownerId,current); return cards.findByOwnerIdOrderByName(current); }
+    @GetMapping public List<CardResponse> list(@RequestParam(required=false) UUID ownerId) {
+        UUID current=owner(); requireOwner(ownerId,current);
+        return cards.findByOwnerIdOrderByName(current).stream().map(this::toCardResponse).toList();
+    }
+    private CardResponse toCardResponse(CreditCard card) {
+        BigDecimal used = invoices.sumOutstandingByOwnerAndCard(card.getOwnerId(), card.getId());
+        BigDecimal available = card.getCreditLimit().subtract(used).max(BigDecimal.ZERO);
+        return new CardResponse(card.getId(), card.getOwnerId(), card.getName(), card.getBrand(),
+                card.getLastFour(), card.getCreditLimit(), used, available, card.getClosingDay(),
+                card.getDueDay(), card.getStatus());
+    }
+    public record CardResponse(UUID id, UUID ownerId, String name, String brand, String lastFour,
+            BigDecimal creditLimit, BigDecimal usedLimit, BigDecimal availableLimit,
+            int closingDay, int dueDay, CreditCardStatus status) {}
     @PostMapping("/purchases") @Transactional public CreditCardPurchase purchase(@Valid @RequestBody PurchaseRequest r) {
         UUID ownerId=owner(); requireOwner(r.ownerId(),ownerId);
         var card=cards.findByIdAndOwnerId(r.cardId(),ownerId).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Card not found"));
