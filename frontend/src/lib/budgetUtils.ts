@@ -14,8 +14,13 @@ export function periodStartFor(period: FinanceBudget['period'], reference = new 
 }
 
 export function periodBounds(budget: FinanceBudget): { from: Date; to: Date } {
-  const reference = new Date(budget.periodStart)
-  if (!Number.isFinite(reference.getTime())) {
+  const dateMatch = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(budget.periodStart)
+  if (!dateMatch) return { from: new Date(Number.NaN), to: new Date(Number.NaN) }
+  const year = Number(dateMatch[1])
+  const month = Number(dateMatch[2])
+  const day = Number(dateMatch[3])
+  const reference = new Date(year, month - 1, day)
+  if (reference.getFullYear() !== year || reference.getMonth() !== month - 1 || reference.getDate() !== day) {
     return { from: new Date(Number.NaN), to: new Date(Number.NaN) }
   }
 
