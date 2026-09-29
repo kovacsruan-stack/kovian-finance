@@ -25,7 +25,7 @@ class BudgetControllerTest {
         TransactionCategoryRepository categories = mock(TransactionCategoryRepository.class);
         when(categories.findByIdAndOwnerId(categoryId, owner)).thenReturn(Optional.of(category));
 
-        BudgetController controller = new BudgetController(mock(BudgetRepository.class), categories);
+        BudgetController controller = new BudgetController(mock(BudgetRepository.class), categories, mock(com.kovian.finance.transaction.repository.FinancialTransactionRepository.class));
 
         try (MockedStatic<CurrentUser> currentUser = mockStatic(CurrentUser.class)) {
             currentUser.when(CurrentUser::ownerId).thenReturn(owner);

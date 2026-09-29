@@ -9,7 +9,7 @@ export interface RecurringCalendarOccurrence {
 }
 
 const parseDate = (value: string): Date | null => {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return null
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
   const [year, month, day] = value.split('-').map(Number)
   const date = new Date(Date.UTC(year, month - 1, day))
   return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day ? date : null
@@ -19,16 +19,15 @@ const formatDate = (date: Date) => [
   date.getUTCFullYear(), String(date.getUTCMonth() + 1).padStart(2, '0'), String(date.getUTCDate()).padStart(2, '0'),
 ].join('-')
 
-function advanceDate(date: Date, frequency: RecurringFrequency): Date {
-  const year = date.getUTCFullYear()
-  const month = date.getUTCMonth()
-  const day = date.getUTCDate()
-  if (frequency === 'WEEKLY') return new Date(Date.UTC(year, month, day + 7))
-  const targetMonth = frequency === 'YEARLY' ? month : month + 1
-  const targetYear = year + (frequency === 'YEARLY' ? 1 : Math.floor(targetMonth / 12))
-  const normalizedMonth = targetMonth % 12
-  const lastDay = new Date(Date.UTC(targetYear, normalizedMonth + 1, 0)).getUTCDate()
-  return new Date(Date.UTC(targetYear, normalizedMonth, Math.min(day, lastDay)))
+/** Calculate each occurrence from the original anchor, preserving month-end cadence. */
+function occurrenceAt(start: Date, frequency: RecurringFrequency, index: number): Date {
+  if (frequency === 'WEEKLY') return new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + index * 7))
+  const anchorDay = start.getUTCDate()
+  const monthIndex = start.getUTCMonth() + index * (frequency === 'YEARLY' ? 12 : 1)
+  const year = start.getUTCFullYear() + Math.floor(monthIndex / 12)
+  const month = monthIndex % 12
+  const lastDay = new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+  return new Date(Date.UTC(year, month, Math.min(anchorDay, lastDay)))
 }
 
 /** Expand scheduled occurrences in a [from, toExclusive) date range. */
@@ -46,21 +45,18 @@ export function getRecurringOccurrencesInRange<T extends RecurringCalendarOccurr
   if (start >= rangeEnd || (end && start > end)) return []
 
   const frequency = item.frequency as RecurringFrequency
-  let occurrence = start
-  // Guard malformed/extreme ranges from creating unbounded calendar entries.
-  for (let skipped = 0; occurrence < rangeStart && skipped < 5000; skipped++) {
-    const next = advanceDate(occurrence, frequency)
-    if (next <= occurrence) return []
-    occurrence = next
-  }
+  let index = 0
+  // Find the first occurrence at or after the visible range without unbounded iteration.
+  while (occurrenceAt(start, frequency, index) < rangeStart && index < 5000) index++
+  let occurrence = occurrenceAt(start, frequency, index)
+  if (occurrence < rangeStart) return []
+
   const results: Array<T & { occurrenceDate: string; occurrenceId: string }> = []
-  for (let count = 0; occurrence < rangeEnd && count < 500; count++) {
+  for (let count = 0; occurrence < rangeEnd && count < 500; count++, index++) {
     if (end && occurrence > end) break
     const occurrenceDate = formatDate(occurrence)
     results.push({ ...item, occurrenceDate, occurrenceId: `recurring:${item.id}:${occurrenceDate}` })
-    const next = advanceDate(occurrence, frequency)
-    if (next <= occurrence) break
-    occurrence = next
+    occurrence = occurrenceAt(start, frequency, index + 1)
   }
   return results
 }

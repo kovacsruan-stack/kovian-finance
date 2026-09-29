@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import ManagementImportPanel from './ManagementImportPanel'
+import ManagementReconciliationPanel from './ManagementReconciliationPanel'
 import PageHeader from '../components/ui/PageHeader'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
@@ -7,6 +8,7 @@ import {
   archiveManagementRecord,
   createManagementRecord,
   getManagementRecords,
+  getManagementRecordsPage,
   restoreManagementRecord,
   updateManagementRecord,
   type ManagementRecord,
@@ -70,10 +72,11 @@ export default function ManagementPage() {
   const [search, setSearch] = useState('')
   const [form, setForm] = useState<Record<string, string>>({})
   const [showArchived, setShowArchived] = useState(false)
+  const [page, setPage] = useState(0)
   const [notice, setNotice] = useState('')
   const query = useQuery({
-    queryKey: ['finance', 'management', resource, showArchived],
-    queryFn: () => getManagementRecords(resource, showArchived),
+    queryKey: ['finance', 'management', resource, showArchived, page],
+    queryFn: () => getManagementRecordsPage(resource, showArchived, page, 50),
     staleTime: 20_000,
   })
   const studentsQuery = useQuery({
@@ -137,7 +140,7 @@ export default function ManagementPage() {
     },
     onError: () => setNotice('Não foi possível restaurar o registro.'),
   })
-  const records = query.data ?? []
+  const records = query.data?.records ?? []
   const visibleRecords = useMemo(() => {
     const term = search.trim().toLocaleLowerCase('pt-BR')
     if (!term) return records
@@ -160,13 +163,13 @@ export default function ManagementPage() {
             const TabIcon = tab.icon
             return <button key={tab.id} type="button" role="tab" aria-selected={resource === tab.id}
               className={resource === tab.id ? 'primary' : 'secondary'}
-              onClick={() => { setResource(tab.id); setFormOpen(false); setForm({}); setNotice('') }}>
+              onClick={() => { setResource(tab.id); setPage(0); setFormOpen(false); setForm({}); setNotice('') }}>
               <TabIcon size={16} /> {tab.label}
             </button>
           })}
         </div>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={showArchived} onChange={event => setShowArchived(event.target.checked)} />
+          <input type="checkbox" checked={showArchived} onChange={event => { setShowArchived(event.target.checked); setPage(0) }} />
           Mostrar arquivados
         </label>
       </div>
@@ -237,9 +240,10 @@ export default function ManagementPage() {
     </section>}
 
     <ManagementImportPanel resource={resource} onImported={() => { void queryClient.invalidateQueries({ queryKey: ['finance', 'management'] }) }} />
+    <ManagementReconciliationPanel />
 
     <section className="panel data-panel">
-      <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${records.length} registros`}</span></div>
+      <div className="section-title"><div><span className="eyebrow"><Icon size={14} /></span><h2>{tabs.find(tab => tab.id === resource)?.label}</h2></div><span>{query.isLoading ? 'Carregando…' : `${visibleRecords.length} de ${query.data?.totalElements ?? records.length} registros · página ${page + 1}`}</span></div>
       <label className="search-field flex items-center gap-2"><Search size={16} /><span className="sr-only">Buscar registros</span><input value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar por nome ou informação…" /></label>
       {query.isLoading ? <div className="empty-inline">Carregando registros…</div> : visibleRecords.length === 0 ? <div className="empty-inline">{search ? 'Nenhum resultado para esta busca.' : 'Nenhum registro nesta seção.'}</div> : visibleRecords.map(record => {
         const data = record.data
@@ -261,6 +265,7 @@ export default function ManagementPage() {
           }}><Archive size={15} /> Arquivar</button></div>}
         </article>
       })}
+      {!query.isLoading && (page > 0 || Boolean(query.data?.hasNext)) && <div className="form-actions mt-4"><button type="button" className="secondary" disabled={page === 0} onClick={() => setPage(current => Math.max(0, current - 1))}>Anterior</button><button type="button" className="secondary" disabled={!query.data?.hasNext} onClick={() => setPage(current => current + 1)}>Próxima</button></div>}
     </section>
   </main>
 }

@@ -26,14 +26,13 @@ public class ProductionHealthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (!HEALTH_PATH.equals(path) && !ACTUATOR_HEALTH_PATH.equals(path)) {
+        if (!HEALTH_PATH.equals(path) && !path.startsWith(ACTUATOR_HEALTH_PATH)) {
             chain.doFilter(request, response);
             return;
         }
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        response.getWriter().write("{\\\"status\\\":\\\"UP\\\"}");
+        response.setHeader("Cache-Control", "no-store");
+        response.setHeader("X-Content-Type-Options", "nosniff");
+        chain.doFilter(request, response);
     }
 }

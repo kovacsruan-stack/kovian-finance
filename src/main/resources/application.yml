@@ -59,6 +59,11 @@ kovian:
       api-key: ${KOVIAN_KILLBILL_API_KEY:}
   notifications:
     rules-interval-ms: ${KOVIAN_NOTIFICATION_RULES_INTERVAL_MS:60000}
+  security:
+    rate-limit:
+      enabled: ${KOVIAN_RATE_LIMIT_ENABLED:true}
+      requests-per-minute: ${KOVIAN_RATE_LIMIT_REQUESTS_PER_MINUTE:240}
+      anonymous-requests-per-minute: ${KOVIAN_RATE_LIMIT_ANONYMOUS_REQUESTS_PER_MINUTE:10}
   kovi:
     internal-api-key: ${KOVI_INTERNAL_API_KEY:}
   outbox:

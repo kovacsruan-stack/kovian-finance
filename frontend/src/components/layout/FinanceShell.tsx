@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users, Plus } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -16,16 +16,16 @@ const moreItems: Item[] = [
   { to: '/gestao', key: 'management', icon: Users },
   { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
   { to: '/cartoes', key: 'cards', icon: CreditCard },
-  { to: '/orcamentos', key: 'budgets', icon: Target },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/categorias', key: 'categories', icon: FolderTree },
   { to: '/import-export', key: 'importExport', icon: FileText },
 ]
 
 const advancedItems: Item[] = [
+  { to: '/orcamentos', key: 'budgets', icon: Target },
+  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/metas', key: 'goals', icon: Target },
-  { to: '/relatorios', key: 'reports', icon: BarChart3 },
   { to: '/previsao', key: 'forecast', icon: CalendarClock },
+  { to: '/relatorios', key: 'reports', icon: BarChart3 },
   { to: '/patrimonio', key: 'netWorth', icon: Wallet },
   { to: '/inteligencia', key: 'insights', icon: Sparkles },
   { to: '/dividas', key: 'debts', icon: CreditCard },
@@ -59,6 +59,8 @@ function Shell({ children }: { children: ReactNode }) {
   const paletteReturnFocus = useRef<HTMLElement | null>(null)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
+
+  useEffect(() => { setOpen(false) }, [location.pathname])
 
   useEffect(() => {
     if (moreItems.some(item => item.to === location.pathname)) setOrganizationOpen(true)
@@ -166,7 +168,7 @@ function Shell({ children }: { children: ReactNode }) {
   }, [palette, filtered.length])
 
   return (
-    <div className="app-shell"><a href="#finance-main" className="skip-link">Pular para o conteúdo</a>
+    <div className="app-shell"><a href="#finance-main" className="skip-link">{t('skipToContent')}</a>
       {open && <button type="button" className="scrim" aria-label={t('closeMenu')} onClick={() => setOpen(false)} />}
 
       <aside id="finance-navigation" ref={drawerRef} className={open ? 'drawer drawer-open' : 'drawer'} aria-hidden={isMobile && !open} inert={isMobile && !open}>
@@ -177,7 +179,7 @@ function Shell({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav aria-label="Navegação principal" className="nav-groups">
+        <nav aria-label={t('mainNavigation')} className="nav-groups">
           <div className="nav-group">
             <span className="nav-group-title">{t('group_principal')}</span>
             {items.map(item => (
@@ -230,6 +232,7 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="top-actions">
+            <NavLink className="primary shell-create-transaction" to="/transacoes" onClick={() => setOpen(false)} aria-label={t('newTransaction')} title={t('newTransaction')}><Plus size={16} aria-hidden="true" /><span>{t('newTransaction')}</span></NavLink>
             <button type="button" className="search-icon-button" aria-label={t('search')} title={`${t('search')} · Ctrl K`} onClick={openPalette}>
               <Search size={17} aria-hidden="true" />
             </button>

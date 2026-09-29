@@ -272,6 +272,10 @@ export function getReconciliationHistory() {
   return get('/reconciliation', reconciliationRunListSchema)
 }
 
+export function reconcileAccount(accountId: string) {
+  return post<ReconciliationRun>(`/reconciliation/accounts/${encodeURIComponent(accountId)}`, {})
+}
+
 export function getCards(ownerId: string) {
   return get(`/cards?ownerId=${encodeURIComponent(ownerId)}`, financeCardListSchema)
 }
@@ -310,16 +314,39 @@ export function createCard(input: { ownerId: string; name: string; brand?: strin
 export function createCardPurchase(input: { ownerId: string; cardId: string; description: string; totalAmount: number; installments: number; purchasedAt?: string }) { return post<FinancePurchase>('/cards/purchases', input, financePurchaseSchema) }
 export function getInvoicePurchases(id: string) { return get(`/cards/invoices/${encodeURIComponent(id)}/purchases`, financePurchaseListSchema) }
 export function closeInvoice(id: string, ownerId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/close?ownerId=${encodeURIComponent(ownerId)}`, {}) }
-export function payInvoice(id: string, ownerId: string, accountId: string) { return post<void>(`/cards/invoices/${encodeURIComponent(id)}/pay?ownerId=${encodeURIComponent(ownerId)}&accountId=${encodeURIComponent(accountId)}`, {}) }
+export function payInvoice(id: string, ownerId: string, accountId: string, amount?: number, idempotencyKey?: string) {
+  const params = new URLSearchParams({ ownerId, accountId })
+  if (amount !== undefined) params.set('amount', String(amount))
+  if (idempotencyKey) params.set('idempotencyKey', idempotencyKey)
+  return post<void>(`/cards/invoices/${encodeURIComponent(id)}/pay?${params.toString()}`, {})
+}
 
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
   return post<FinanceGoal>('/goals', input, financeGoalSchema)
 }
+export function updateGoal(id: string, input: { name: string; targetAmount: number; targetDate?: string | null }) {
+  return request<unknown>(`/goals/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(input) }).then(value => financeGoalSchema.parse(value))
+}
+export function contributeToGoal(id: string, amount: number) {
+  return post<FinanceGoal>(`/goals/${encodeURIComponent(id)}/contributions`, { amount }, financeGoalSchema)
+}
+export function archiveGoal(id: string) {
+  return post<FinanceGoal>(`/goals/${encodeURIComponent(id)}/archive`, {}, financeGoalSchema)
+}
 
 export function getRecurring() { return get('/recurring', financeRecurringListSchema) }
+export function processRecurringDue(date: string) {
+  return request<number>(`/recurring/process-due?date=${encodeURIComponent(date)}`, { method: 'POST', body: JSON.stringify({}) })
+}
 export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input, financeRecurringSchema) }
+export function updateRecurring(id: string, input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) {
+  return request<unknown>(`/recurring/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(input) }).then(value => financeRecurringSchema.parse(value))
+}
 export function pauseRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/pause`, {}) }
 export function resumeRecurring(id: string) { return post<void>(`/recurring/${encodeURIComponent(id)}/resume`, {}) }
+export function archiveRecurring(id: string) {
+  return request<void>(`/recurring/${encodeURIComponent(id)}`, { method: 'DELETE', body: JSON.stringify({}) })
+}
 export function getAnalytics(from: string, to: string, ownerId: string) { return get(`/analytics/dashboard?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, financeAnalyticsSchema) }
 export function getCategoryAnalytics(from: string, to: string, ownerId: string) { return get<Record<string, number>>(`/analytics/categories?ownerId=${encodeURIComponent(ownerId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`, z.record(z.string(), z.number().finite())) }
 
@@ -348,6 +375,16 @@ export function importCsv(accountId: string, file: File) {
 export function getImportHistory() { return get('/imports', financeImportListSchema) }
 export function getImportErrors(id: string) { return get(`/imports/${encodeURIComponent(id)}/errors`, financeImportErrorListSchema) }
 
+export type IntegrationStatus = {
+  adapters: Record<string, { enabled: boolean; configured: boolean }>
+  outbox: { pending: number; processing: number; failed: number }
+}
+const integrationStatusSchema = z.object({
+  adapters: z.record(z.string(), z.object({ enabled: z.boolean(), configured: z.boolean() })),
+  outbox: z.object({ pending: z.number().int().nonnegative(), processing: z.number().int().nonnegative(), failed: z.number().int().nonnegative() }),
+})
+export function getIntegrationStatus() { return get('/integrations/status', integrationStatusSchema) }
+
 export function getAssets(ownerId: string) { return get(`/assets?ownerId=${encodeURIComponent(ownerId)}`, financeAssetListSchema) }
 export function getLiabilities(ownerId: string) { return get(`/liabilities?ownerId=${encodeURIComponent(ownerId)}`, financeLiabilityListSchema) }
 export type FinanceInsight = { type: string; title: string; explanation: string; severity: string; generatedAt: string }
@@ -358,6 +395,7 @@ export function getDebts(ownerId: string) { return get(`/debts?ownerId=${encodeU
 
 export function getNotifications(unreadOnly = false) { return get(`/notifications?unreadOnly=${unreadOnly}`, financeNotificationListSchema) }
 export function markNotificationRead(id: string) { return post<void>(`/notifications/${encodeURIComponent(id)}/read`, {}) }
+export function markAllNotificationsRead() { return post<{ markedRead: number }>('/notifications/read-all', {}) }
 
 export function getFinancialSnapshots() { return get('/snapshots', financeSnapshotListSchema) }
 
@@ -377,8 +415,20 @@ export type ManagementRecord = {
   createdAt: string
   updatedAt: string
 }
+export type ManagementPage = {
+  page: number
+  size: number
+  totalElements: number
+  hasNext: boolean
+  records: ManagementRecord[]
+}
 export function getManagementRecords(resource: ManagementResource, includeArchived = false) {
   return get<ManagementRecord[]>(`/management/${resource}${includeArchived ? '?includeArchived=true' : ''}`)
+}
+export function getManagementRecordsPage(resource: ManagementResource, includeArchived = false, page = 0, size = 50) {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  if (includeArchived) params.set('includeArchived', 'true')
+  return get<ManagementPage>(`/management/${resource}/page?${params.toString()}`)
 }
 export function createManagementRecord(resource: ManagementResource, data: Record<string, unknown>, sourceId?: string) {
   return post<ManagementRecord>(`/management/${resource}`, { data, ...(sourceId ? { sourceId } : {}) })
@@ -403,4 +453,17 @@ export function importManagementRecords(
 
 export function restoreManagementRecord(resource: ManagementResource, id: string) {
   return request<{ restored: boolean; id: string }>(`/management/${resource}/${encodeURIComponent(id)}/restore`, { method: 'POST', body: JSON.stringify({}) })
+}
+
+export type ManagementReconciliation = {
+  resources: Record<string, { expectedCount: number; actualCount: number; delta: number | null }>
+  sourceIds: Record<string, { expectedCount: number; actualCount: number; missingCount: number; unexpectedCount: number; missingSample: string[]; unexpectedSample: string[] }>
+  unresolvedStudentLinks: number
+  reconciled: boolean
+}
+export function reconcileManagement(
+  expectedCounts: Partial<Record<ManagementResource, number>>,
+  expectedSourceIds: Partial<Record<ManagementResource, string[]>> = {},
+) {
+  return post<ManagementReconciliation>('/management/reconcile', { expectedCounts, expectedSourceIds })
 }

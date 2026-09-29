@@ -31,6 +31,9 @@ public class LagoUsageBillingClient {
     public boolean enabled() {
         return enabled;
     }
+    public boolean configured() {
+        return enabled;
+    }
 
     public void recordUsage(Map<String, Object> event) {
         if (!enabled) return;

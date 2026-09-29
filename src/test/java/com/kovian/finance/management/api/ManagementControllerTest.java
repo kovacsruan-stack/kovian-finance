@@ -5,6 +5,8 @@ import com.kovian.finance.management.repository.ManagementRecordRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -16,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -125,6 +128,45 @@ class ManagementControllerTest {
         assertEquals("legacy-lead-1", lead.sourceId());
         assertEquals("Pessoa interessada", lead.data().get("name"));
         verify(repository, times(2)).save(any(ManagementRecord.class));
+    }
+
+    @Test
+    void paginatesManagementRecordsWithStableMetadata() {
+        ManagementRecord record = new ManagementRecord(ownerId, "students", "legacy-paged",
+                Map.of("name", "Aluno paginado"));
+        when(repository.findByOwnerIdAndResourceAndArchived(eq(ownerId), eq("students"), eq(false), any(org.springframework.data.domain.Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(record), PageRequest.of(1, 1), 2));
+
+        var response = controller.page("students", 1, 1, false);
+
+        assertEquals(1, response.page());
+        assertEquals(1, response.size());
+        assertEquals(2, response.totalElements());
+        assertFalse(response.hasNext());
+        assertEquals("legacy-paged", response.records().getFirst().sourceId());
+    }
+
+    @Test
+    void reconciliationReportsCountsAndUnresolvedStudentLinks() {
+        ManagementRecord student = new ManagementRecord(ownerId, "students", "legacy-student",
+                Map.of("name", "Alice"));
+        ManagementRecord lesson = new ManagementRecord(ownerId, "lessons", "legacy-lesson",
+                Map.of("studentId", "missing-student", "date", "2026-09-28"));
+        when(repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, "students"))
+                .thenReturn(List.of(student));
+        when(repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, "lessons"))
+                .thenReturn(List.of(lesson));
+        when(repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(eq(ownerId), argThat(resource ->
+                !Set.of("students", "lessons").contains(resource))))
+                .thenReturn(List.of());
+
+        var result = controller.reconcile(new ManagementController.ReconciliationRequest(
+                Map.of("students", 1L, "lessons", 1L)));
+
+        assertEquals(1L, result.resources().get("students").actualCount());
+        assertEquals(0L, result.resources().get("students").delta());
+        assertEquals(1L, result.unresolvedStudentLinks());
+        assertFalse(result.reconciled());
     }
 
     @Test

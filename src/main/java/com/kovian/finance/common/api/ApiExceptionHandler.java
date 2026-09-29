@@ -9,6 +9,9 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.OffsetDateTime;
+import org.slf4j.MDC;
+
+import static com.kovian.finance.security.CorrelationIdFilter.HEADER;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -40,7 +43,10 @@ public class ApiExceptionHandler {
  @ExceptionHandler(Exception.class)
  ResponseEntity<ApiError> unexpected(Exception e){return error(HttpStatus.INTERNAL_SERVER_ERROR,"INTERNAL_ERROR","Unexpected server error");}
  private ResponseEntity<ApiError> error(HttpStatusCode status,String code,String message){
-   return ResponseEntity.status(status).body(new ApiError(code,message,OffsetDateTime.now()));
+   String correlationId = MDC.get(HEADER);
+   ResponseEntity.BodyBuilder response = ResponseEntity.status(status);
+   if (correlationId != null && !correlationId.isBlank()) response.header(HEADER, correlationId);
+   return response.body(new ApiError(code,message,OffsetDateTime.now()));
  }
  public record ApiError(String code,String message,OffsetDateTime timestamp){}
 }

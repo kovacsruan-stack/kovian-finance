@@ -7,6 +7,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -82,6 +85,23 @@ public class ManagementController {
         return Map.of("restored", true, "id", record.getId());
     }
 
+    @GetMapping("/{resource}/page")
+    public ManagementPageResponse page(@PathVariable String resource,
+                                       @RequestParam(defaultValue = "0") int page,
+                                       @RequestParam(defaultValue = "50") int size,
+                                       @RequestParam(defaultValue = "false") boolean includeArchived) {
+        requireResource(resource);
+        int safePage = Math.max(0, page);
+        int safeSize = Math.max(1, Math.min(500, size));
+        var pageable = PageRequest.of(safePage, safeSize, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ManagementRecord> records = includeArchived
+                ? repository.findByOwnerIdAndResource(ownerId(), resource, pageable)
+                : repository.findByOwnerIdAndResourceAndArchived(ownerId(), resource, false, pageable);
+        return new ManagementPageResponse(
+                records.getNumber(), records.getSize(), records.getTotalElements(), records.hasNext(),
+                records.getContent().stream().map(RecordResponse::from).toList());
+    }
+
     @PostMapping("/import-batch/{resource}")
     @Transactional
     public ImportResult importBatch(@PathVariable String resource, @Valid @RequestBody ImportBatch request) {
@@ -115,6 +135,79 @@ public class ManagementController {
         return new ImportResult(resource, inserted, updated, unchanged, unresolvedStudentLinks);
     }
 
+    @PostMapping("/reconcile")
+    @Transactional(readOnly = true)
+    public ReconciliationResult reconcile(@Valid @RequestBody ReconciliationRequest request) {
+        UUID ownerId = CurrentUser.ownerId();
+        Map<String, Long> expected = request.expectedCounts() == null ? Map.of() : request.expectedCounts();
+        Map<String, List<String>> expectedSourceIds = request.expectedSourceIds() == null ? Map.of() : request.expectedSourceIds();
+        validateExpectedSourceIds(expectedSourceIds);
+        if (expected.entrySet().stream().anyMatch(entry ->
+                !RESOURCES.contains(entry.getKey()) || entry.getValue() == null || entry.getValue() < 0)) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Expected counts must contain known resources and non-negative values");
+        }
+        Map<String, ResourceReconciliation> resources = new LinkedHashMap<>();
+        Map<String, SourceReconciliation> sourceReconciliations = new LinkedHashMap<>();
+        for (String resource : RESOURCES) {
+            List<ManagementRecord> records = repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, resource);
+            long expectedCount = expected.getOrDefault(resource, -1L);
+            long actualCount = records.size();
+            resources.put(resource, new ResourceReconciliation(
+                    expectedCount,
+                    actualCount,
+                    expectedCount < 0 ? null : actualCount - expectedCount));
+            if (expectedSourceIds.containsKey(resource)) {
+                Set<String> actualSourceIds = records.stream()
+                        .map(ManagementRecord::getSourceId)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toCollection(LinkedHashSet::new));
+                Set<String> expectedIds = new LinkedHashSet<>(expectedSourceIds.get(resource));
+                List<String> missing = expectedIds.stream().filter(id -> !actualSourceIds.contains(id)).limit(100).toList();
+                List<String> unexpected = actualSourceIds.stream().filter(id -> !expectedIds.contains(id)).limit(100).toList();
+                long missingCount = expectedIds.stream().filter(id -> !actualSourceIds.contains(id)).count();
+                long unexpectedCount = actualSourceIds.stream().filter(id -> !expectedIds.contains(id)).count();
+                sourceReconciliations.put(resource, new SourceReconciliation(
+                        expectedIds.size(), actualSourceIds.size(), missingCount, unexpectedCount, missing, unexpected));
+            }
+        }
+
+        Set<String> studentIds = repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, "students")
+                .stream().map(record -> record.getId().toString()).collect(Collectors.toSet());
+        long unresolvedLinks = java.util.stream.Stream.of("lessons", "payments")
+                .flatMap(resource -> repository.findByOwnerIdAndResourceOrderByCreatedAtDesc(ownerId, resource).stream())
+                .filter(record -> {
+                    Object studentId = record.getData().get("studentId");
+                    return studentId == null || !studentIds.contains(String.valueOf(studentId));
+                }).count();
+
+        boolean countsMatch = resources.values().stream()
+                .allMatch(item -> item.expectedCount() < 0 || item.delta() == 0);
+        boolean sourceIdsMatch = sourceReconciliations.values().stream()
+                .allMatch(item -> item.missingCount() == 0 && item.unexpectedCount() == 0);
+        return new ReconciliationResult(resources, sourceReconciliations, unresolvedLinks,
+                countsMatch && sourceIdsMatch && unresolvedLinks == 0);
+    }
+
+    private void validateExpectedSourceIds(Map<String, List<String>> expectedSourceIds) {
+        if (expectedSourceIds.size() > RESOURCES.size() || expectedSourceIds.keySet().stream().anyMatch(resource -> !RESOURCES.contains(resource))) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Expected source IDs contain an unknown resource");
+        }
+        for (var entry : expectedSourceIds.entrySet()) {
+            List<String> ids = entry.getValue();
+            if (ids == null || ids.size() > 10000 || ids.stream().anyMatch(id -> id == null || id.isBlank() || id.length() > 120)) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Expected source IDs must contain up to 10000 valid IDs per resource");
+            }
+            if (new HashSet<>(ids).size() != ids.size()) {
+                throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Expected source IDs must be unique");
+            }
+        }
+    }
+
+    private UUID ownerId() {
+        return CurrentUser.ownerId();
+    }
+
     private void validateStudentLink(String resource, Map<String, Object> data, UUID ownerId) {
         if (!resource.equals("lessons") && !resource.equals("payments")) return;
         Object studentIdValue = data.get("studentId");
@@ -142,6 +235,14 @@ public class ManagementController {
         if (!sourceStudentId.isEmpty()) {
             student = repository.findByOwnerIdAndResourceAndSourceIdIn(ownerId, "students", List.of(sourceStudentId))
                     .stream().findFirst().orElse(null);
+        }
+        if (student == null && !sourceStudentId.isEmpty()) {
+            try {
+                student = repository.findByIdAndOwnerIdAndResource(UUID.fromString(sourceStudentId), ownerId, "students")
+                        .orElse(null);
+            } catch (IllegalArgumentException ignored) {
+                // The value is a legacy source ID; continue with the safe name fallback below.
+            }
         }
         if (student == null && !studentName.isEmpty()) {
             String normalizedName = normalizeName(studentName);
@@ -186,6 +287,20 @@ public class ManagementController {
                              @NotEmpty Map<String, Object> data) {}
     public record ImportBatch(@NotEmpty @Size(max = 500) List<@Valid ImportItem> records) {}
     public record ImportResult(String resource, int inserted, int updated, int unchanged, int unresolvedStudentLinks) {}
+    public record ManagementPageResponse(int page, int size, long totalElements, boolean hasNext,
+                                         List<RecordResponse> records) {}
+    public record ReconciliationRequest(Map<String, Long> expectedCounts,
+                                        Map<String, List<String>> expectedSourceIds) {
+        public ReconciliationRequest(Map<String, Long> expectedCounts) {
+            this(expectedCounts, Map.of());
+        }
+    }
+    public record ResourceReconciliation(long expectedCount, long actualCount, Long delta) {}
+    public record SourceReconciliation(long expectedCount, long actualCount, long missingCount, long unexpectedCount,
+                                       List<String> missingSample, List<String> unexpectedSample) {}
+    public record ReconciliationResult(Map<String, ResourceReconciliation> resources,
+                                       Map<String, SourceReconciliation> sourceIds,
+                                       long unresolvedStudentLinks, boolean reconciled) {}
     public record RecordResponse(UUID id, String sourceId, Map<String, Object> data, boolean archived,
                                  OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         static RecordResponse from(ManagementRecord record) {

@@ -27,7 +27,7 @@ public class FinancialTransaction {
   this.id=UUID.randomUUID();this.ownerId=ownerId;this.account=account;this.category=category;this.externalId=externalId;this.description=description.trim();this.amount=amount;this.transactionType=type;this.occurredAt=occurredAt;this.status=TransactionStatus.POSTED;this.createdAt=OffsetDateTime.now();this.updatedAt=this.createdAt;
  }
  public UUID getId(){return id;} public UUID getOwnerId(){return ownerId;} public com.kovian.finance.account.domain.FinancialAccount getAccount(){return account;}
- public TransactionCategory getCategory(){return category;} public String getDescription(){return description;} public BigDecimal getAmount(){return amount;}
+ public TransactionCategory getCategory(){return category;} public String getExternalId(){return externalId;} public String getDescription(){return description;} public BigDecimal getAmount(){return amount;}
  public TransactionType getTransactionType(){return transactionType;} public OffsetDateTime getOccurredAt(){return occurredAt;} public TransactionStatus getStatus(){return status;}
  public void cancel(){if(status==TransactionStatus.CANCELLED) return; status=TransactionStatus.CANCELLED;updatedAt=OffsetDateTime.now();}
 }

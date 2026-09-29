@@ -4,7 +4,7 @@ import com.kovian.finance.account.repository.FinancialAccountRepository; import 
  private final FinancialTransactionRepository transactions; private final FinancialAccountRepository accounts; private final TransactionCategoryRepository categories; private final AuditService audit; private final OutboxEventService outbox; private final FinancialNotificationRules notificationRules;
  public TransactionController(FinancialTransactionRepository t,FinancialAccountRepository a,TransactionCategoryRepository c,AuditService audit,OutboxEventService outbox,FinancialNotificationRules rules){transactions=t;accounts=a;categories=c;this.audit=audit;this.outbox=outbox;notificationRules=rules;}
  @PostMapping @Transactional ResponseEntity<TransactionResponse> create(@Valid @RequestBody CreateTransactionRequest r){
-  UUID owner=CurrentUser.ownerId(); if(r.type()==TransactionType.TRANSFER)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Transfers require the dedicated transfer workflow");
+  UUID owner=CurrentUser.ownerId(); if(r.type()==TransactionType.TRANSFER||r.type()==TransactionType.CARD_PAYMENT)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"This transaction type requires its dedicated workflow");
   if(r.externalId()!=null&&transactions.existsByOwnerIdAndExternalId(owner,r.externalId()))throw new ResponseStatusException(HttpStatus.CONFLICT,"Transaction already imported");
   var account=accounts.findByIdAndOwnerId(r.accountId(),owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Account not found"));
   var category=categories.findByIdAndOwnerId(r.categoryId(),owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Category not found"));
@@ -18,6 +18,7 @@ import com.kovian.finance.account.repository.FinancialAccountRepository; import 
  }
  @PostMapping("/{id}/cancel") @Transactional ResponseEntity<Void> cancel(@PathVariable UUID id){
   UUID owner=CurrentUser.ownerId(); var tx=transactions.findByIdAndOwnerId(id,owner).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Transaction not found"));
+  if(tx.getTransactionType()==TransactionType.CARD_PAYMENT)throw new ResponseStatusException(HttpStatus.CONFLICT,"Card invoice payments must be reversed through the invoice payment workflow");
   if(tx.getStatus()==TransactionStatus.CANCELLED)return ResponseEntity.noContent().build();
   if(tx.getTransactionType()==TransactionType.INCOME)tx.getAccount().applyExpense(tx.getAmount());else tx.getAccount().applyIncome(tx.getAmount());
   tx.cancel(); audit.record("TRANSACTION_CANCELLED","FinancialTransaction",tx.getId(),"amount="+tx.getAmount()); outbox.record("FinancialTransaction",tx.getId(),KovianEventType.TRANSACTION_CANCELLED,Map.of("transactionId",tx.getId(),"amount",tx.getAmount())); return ResponseEntity.noContent().build();

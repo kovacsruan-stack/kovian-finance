@@ -1,15 +1,115 @@
 package com.kovian.finance.forecast.api;
-import com.kovian.finance.forecast.domain.*; import com.kovian.finance.transaction.domain.*; import com.kovian.finance.transaction.repository.*; import com.kovian.finance.account.repository.*; import com.kovian.finance.security.CurrentUser; import org.springframework.web.bind.annotation.*; import org.springframework.web.server.ResponseStatusException; import org.springframework.http.HttpStatus; import java.math.*; import java.time.*; import java.util.*;
-@RestController @RequestMapping("/api/v1/forecast") public class ForecastController {
- final FinancialTransactionRepository transactions; final FinancialAccountRepository accounts;
- ForecastController(FinancialTransactionRepository t,FinancialAccountRepository a){transactions=t;accounts=a;}
- @GetMapping("/cash-flow") public List<CashFlowForecast> cashFlow(@RequestParam(required=false) UUID ownerId,@RequestParam LocalDate from,@RequestParam int days){
-  var currentOwnerId=CurrentUser.ownerId(); if(ownerId!=null&&!currentOwnerId.equals(ownerId))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Owner scope violation"); ownerId=currentOwnerId; if(from==null)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Forecast start date is required"); if(days<1||days>365)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Forecast horizon must be between 1 and 365 days");
-  var histFrom=from.minusDays(90); var histTo=from.minusDays(1); var start=histFrom.atStartOfDay().atOffset(ZoneOffset.UTC); var end=from.atStartOfDay().atOffset(ZoneOffset.UTC);
-  BigDecimal income=BigDecimal.ZERO,expense=BigDecimal.ZERO; long count=0;
-  for(var tx:transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(ownerId,start,end)){if(tx.getStatus()==TransactionStatus.CANCELLED)continue;count++;if(tx.getTransactionType()==TransactionType.INCOME)income=income.add(tx.getAmount());else if(tx.getTransactionType()==TransactionType.EXPENSE)expense=expense.add(tx.getAmount());}
-  var divisor=BigDecimal.valueOf(90); var dailyIncome=income.divide(divisor,4,RoundingMode.HALF_UP); var dailyExpense=expense.divide(divisor,4,RoundingMode.HALF_UP);
-  var balance=accounts.findByOwnerIdOrderByName(ownerId).stream().map(a->a.getCurrentBalance()).reduce(BigDecimal.ZERO,BigDecimal::add); var result=new ArrayList<CashFlowForecast>();
-  for(int i=0;i<days;i++){var date=from.plusDays(i);balance=balance.add(dailyIncome).subtract(dailyExpense);result.add(new CashFlowForecast(date,dailyIncome,dailyExpense,dailyIncome.subtract(dailyExpense),balance));} return result;
- }
+
+import com.kovian.finance.account.repository.FinancialAccountRepository;
+import com.kovian.finance.card.domain.InvoiceStatus;
+import com.kovian.finance.card.repository.CreditCardInvoiceRepository;
+import com.kovian.finance.forecast.domain.CashFlowForecast;
+import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
+import com.kovian.finance.security.CurrentUser;
+import com.kovian.finance.transaction.domain.TransactionStatus;
+import com.kovian.finance.transaction.domain.TransactionType;
+import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+
+@RestController
+@RequestMapping("/api/v1/forecast")
+public class ForecastController {
+    private static final int HISTORY_DAYS = 90;
+    private final FinancialTransactionRepository transactions;
+    private final FinancialAccountRepository accounts;
+    private final RecurringTransactionRepository recurring;
+    private final CreditCardInvoiceRepository invoices;
+
+    @Autowired
+    public ForecastController(FinancialTransactionRepository transactions,
+                              FinancialAccountRepository accounts,
+                              RecurringTransactionRepository recurring,
+                              CreditCardInvoiceRepository invoices) {
+        this.transactions = transactions;
+        this.accounts = accounts;
+        this.recurring = recurring;
+        this.invoices = invoices;
+    }
+
+    ForecastController(FinancialTransactionRepository transactions, FinancialAccountRepository accounts) {
+        this(transactions, accounts, null, null);
+    }
+
+    @GetMapping("/cash-flow")
+    public List<CashFlowForecast> cashFlow(@RequestParam(required = false) UUID ownerId,
+                                           @RequestParam LocalDate from,
+                                           @RequestParam int days) {
+        UUID authenticatedOwner = CurrentUser.ownerId();
+        if (ownerId != null && !authenticatedOwner.equals(ownerId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Owner scope violation");
+        }
+        if (from == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Forecast start date is required");
+        if (days < 1 || days > 365) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Forecast horizon must be between 1 and 365 days");
+        }
+
+        LocalDate historyStart = from.minusDays(HISTORY_DAYS);
+        OffsetDateTime start = historyStart.atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime end = from.atStartOfDay().atOffset(ZoneOffset.UTC);
+        BigDecimal historicalIncome = BigDecimal.ZERO;
+        BigDecimal historicalExpense = BigDecimal.ZERO;
+
+        for (var tx : transactions.findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(authenticatedOwner, start, end)) {
+            if (tx.getStatus() == TransactionStatus.CANCELLED) continue;
+            if (tx.getExternalId() != null && tx.getExternalId().startsWith("recurring:")) continue;
+            if (tx.getTransactionType() == TransactionType.INCOME) historicalIncome = historicalIncome.add(tx.getAmount());
+            else if (tx.getTransactionType() == TransactionType.EXPENSE) historicalExpense = historicalExpense.add(tx.getAmount());
+        }
+
+        BigDecimal dailyIncome = historicalIncome.divide(BigDecimal.valueOf(HISTORY_DAYS), 4, RoundingMode.HALF_UP);
+        BigDecimal dailyExpense = historicalExpense.divide(BigDecimal.valueOf(HISTORY_DAYS), 4, RoundingMode.HALF_UP);
+        BigDecimal balance = accounts.findByOwnerIdOrderByName(authenticatedOwner).stream()
+                .map(account -> account.getCurrentBalance()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<LocalDate, BigDecimal> scheduledIncome = new HashMap<>();
+        Map<LocalDate, BigDecimal> scheduledExpense = new HashMap<>();
+        for (var item : recurring == null ? List.<com.kovian.finance.recurring.domain.RecurringTransaction>of() : recurring.findByOwnerIdOrderByNextOccurrence(authenticatedOwner)) {
+            if (!item.isActive() || item.getTransactionType() == TransactionType.TRANSFER) continue;
+            LocalDate occurrence = item.getNextOccurrence();
+            int guard = 0;
+            while (!occurrence.isAfter(from.plusDays(days - 1)) && guard++ < 500) {
+                if (!occurrence.isBefore(from) && (item.getEndDate() == null || !occurrence.isAfter(item.getEndDate()))) {
+                    Map<LocalDate, BigDecimal> target = item.getTransactionType() == TransactionType.INCOME ? scheduledIncome : scheduledExpense;
+                    target.merge(occurrence, item.getAmount(), BigDecimal::add);
+                }
+                occurrence = switch (item.getFrequency()) {
+                    case WEEKLY -> occurrence.plusWeeks(1);
+                    case MONTHLY -> occurrence.plusMonths(1);
+                    case YEARLY -> occurrence.plusYears(1);
+                };
+            }
+        }
+
+        for (var invoice : invoices == null ? List.<com.kovian.finance.card.domain.CreditCardInvoice>of() : invoices.findDueBetweenForOwner(authenticatedOwner, from, from.plusDays(days - 1))) {
+            if (invoice.getStatus() != InvoiceStatus.PAID && !invoice.getDueDate().isBefore(from)) {
+                scheduledExpense.merge(invoice.getDueDate(), invoice.getTotalAmount().subtract(invoice.getPaidAmount()), BigDecimal::add);
+            }
+        }
+
+        List<CashFlowForecast> result = new ArrayList<>(days);
+        for (int i = 0; i < days; i++) {
+            LocalDate date = from.plusDays(i);
+            BigDecimal income = dailyIncome.add(scheduledIncome.getOrDefault(date, BigDecimal.ZERO));
+            BigDecimal expense = dailyExpense.add(scheduledExpense.getOrDefault(date, BigDecimal.ZERO));
+            BigDecimal net = income.subtract(expense);
+            balance = balance.add(net);
+            result.add(new CashFlowForecast(date, income, expense, net, balance));
+        }
+        return result;
+    }
 }

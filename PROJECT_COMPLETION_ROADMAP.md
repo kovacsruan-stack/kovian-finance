@@ -113,3 +113,105 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Added entity lifecycle tests and API route registration coverage.
 - Real AppDeploy data migration, reconciliation, full Gestão feature parity, Fitness calendar parity, FitHub visual alignment, and local build/test/browser QA remain outstanding.
 - **Integration implementation estimate: 55%** (the integrated-product scope only; not the historical Finance financial-domain estimate).
+
+## 2026-09-29 — Integração Gestão: painel de reconciliação (entrega técnica)
+
+- Exposto o endpoint de reconciliação de dados do Gestão no cliente TypeScript.
+- Adicionado painel na tela Gestão para informar contagens esperadas por recurso e consultar a reconciliação.
+- A interface apresenta contagem esperada, contagem encontrada, diferença e vínculos de aluno pendentes.
+- A operação é somente de leitura; a interface alerta que os totais do Finance incluem registros arquivados e dados preexistentes.
+- Adicionado teste de controller para divergência de vínculo e conferência de contagens.
+- Build, testes automatizados e validação no navegador ainda pendentes.
+
+
+## 2026-09-29 — Correções do ciclo Cartões e Faturas
+
+- A fatura passou a aceitar pagamentos parciais, acumulando o valor pago e calculando o saldo restante; o estado muda para pago somente quando o total é liquidado.
+- O endpoint de pagamento aceita valor e chave de idempotência para pagamentos parciais, rejeita valores acima do saldo e preserva compatibilidade com chamadas antigas de quitação integral.
+- O cadastro/listagem de cartões passa a expor limite utilizado e limite disponível, calculados sobre os saldos em aberto das faturas.
+- Faturas vencidas são apresentadas com estado `OVERDUE` sem alterar destrutivamente o estado persistido.
+- O cancelamento genérico de transações não pode mais cancelar pagamentos de fatura, evitando desalinhar o saldo da conta do estado da fatura.
+- Foram adicionados testes unitários de domínio para pagamentos parciais e saldo remanescente.
+- **Status dos blocos 1–6: ainda não declarar concluídos.** As alterações acima cobrem requisitos específicos dos blocos 3 e 5; a validação de build, testes, UI e fluxos completos ainda precisa ser executada.
+
+
+## 2026-09-29 — Blocos 7 e 8: Dashboard e Metas
+
+### Bloco 7 — Dashboard financeiro
+- Expandida a visão inicial com fluxo líquido de 90 dias, comparativo visual de receitas/despesas por mês, progresso agregado das metas e movimentações recentes.
+- Mantido o carregamento por consultas existentes e dados limitados a uma janela de 90 dias para movimentações.
+- Mantidos estados de carregamento, erro, vazio e navegação para módulos completos.
+- Dashboard e novo gráfico receberam rótulos em PT-BR e EN e layout responsivo.
+
+### Bloco 8 — Metas e objetivos
+- Criada tela dedicada de metas, substituindo o placeholder genérico da rota `/metas`.
+- Incluídos criação, edição, registro de contribuições de progresso, arquivamento, listagem de metas ativas e consulta de metas concluídas/arquivadas.
+- Backend passou a expor operações owner-scoped para atualizar, contribuir e arquivar; consultas agora incluem metas inativas para preservar histórico na interface.
+- Regras de domínio rejeitam contribuições inválidas, contribuições acima do saldo restante e redução da meta abaixo do valor já acumulado.
+- Adicionados testes unitários de domínio para progresso, conclusão, validações, edição e arquivamento.
+- A contribuição é explicitamente um registro de progresso: não movimenta saldo de contas nem cria transação financeira.
+
+**Status:** implementação dos fluxos principais dos blocos 7 e 8 registrada no código. Build, testes automatizados e QA de navegador ainda não foram executados; portanto, não marcar como tecnicamente validados até essa etapa.
+
+
+## 2026-09-29 — Blocos 9 e 10: Orçamentos e recorrências
+
+### Bloco 9 — Orçamentos
+- Criada tela dedicada em `/orcamentos`, ligada ao endpoint real de orçamentos e às categorias de despesa.
+- Implementados criação de orçamento por categoria, periodicidade semanal/mensal/anual e data inicial do período.
+- Implementados filtros por intervalo de datas e periodicidade, totais de limite/gasto/saldo, progresso de consumo e indicação de estouro do limite.
+- Incluídos estados de carregamento, erro, vazio, atualização e validação de formulário.
+- Navegação já existente conectada à nova tela; traduções PT-BR/EN adicionadas.
+- Limitação explícita: a API atual não oferece edição nem exclusão de orçamentos; a interface informa isso e não simula operações inexistentes.
+
+### Bloco 10 — Lançamentos recorrentes
+- Criada tela dedicada em `/recorrentes`, ligada aos endpoints reais de recorrências.
+- Implementados cadastro de receitas/despesas recorrentes, conta, categoria compatível com o tipo, valor, periodicidade semanal/mensal/anual, próxima ocorrência e data final opcional.
+- Implementados pausar e retomar recorrências, visão de próximas ocorrências e equivalentes mensais estimados para receitas/despesas ativas.
+- Adicionada ação explícita e confirmada para processar ocorrências vencidas até a data atual; o resultado informa quantas transações foram criadas.
+- Processamento continua sob ação do usuário; cadastrar uma recorrência não lança transações automaticamente.
+- Navegação já existente conectada à nova tela; traduções PT-BR/EN adicionadas.
+
+**Status dos blocos 9 e 10:** fluxos principais de interface conectados às APIs existentes e registrados no código. Build TypeScript/Vite, testes automatizados e QA no navegador ainda não foram executados. Não declarar validação técnica concluída até essa etapa.
+
+
+## 2026-09-29 — Blocos 10 e 11: Recorrências, Calendário e Notificações
+
+### Bloco 10 — Lançamentos recorrentes
+- Completo o ciclo de recorrências no backend: criação, consulta, edição, pausa, retomada, desativação e processamento idempotente de ocorrências vencidas.
+- Regras de domínio impedem edição de recorrência pausada, retomada após a data final, tipos de transferência e datas finais inválidas.
+- A tela dedicada permite criar e editar recorrências, visualizar próximas ocorrências, pausar/retomar e processar vencimentos até a data atual com confirmação.
+- Resumos mensais permanecem separados por moeda para evitar somar valores de moedas diferentes.
+- Adicionados testes de domínio para avanço de datas, edição, pausa e encerramento por data final.
+
+### Bloco 11 — Calendário e notificações
+- Calendário Finance integra transações, recorrências projetadas, contas/moeda, aulas, pagamentos, despesas e eventos do Fitness/agenda importada.
+- Mantidos navegação mensal, seleção de dia, pesquisa, filtro por tipo de evento e exportação ICS.
+- Adicionado resumo mensal de fluxo por moeda, sem misturar moedas em um único total.
+- Importação ICS permanece com prévia, limite de arquivo, deduplicação por UID, confirmação explícita, importação em lotes e reconciliação de resultado.
+- Calendário recebeu estados de carregamento/erro/vazio e navegação localizada em PT-BR/EN.
+- Notificações agora possuem filtros por lidas/não lidas e severidade, atualização manual, abertura do módulo relacionado, marcação individual e marcação em massa como lidas.
+- Backend de notificações recebeu operação owner-scoped de marcar até 100 notificações não lidas como lidas e testes de isolamento do proprietário.
+- Regras existentes continuam gerando alertas de orçamento, recorrências vencidas, dívidas, risco de fluxo e picos de gastos com deduplicação.
+
+**Status dos blocos 10 e 11:** implementação funcional ampla registrada no backend e frontend. A validação final de build/testes/QA no navegador permanece pendente.
+
+
+## 2026-09-29 — Blocos 12 e 13: integração, reconciliação, segurança e operação
+
+### Bloco 12 — Importação, reconciliação e integrações externas
+- Importação do Gestão agora usa o endpoint paginado para a listagem do workspace, evitando dependência de uma resposta única para grandes volumes.
+- A reconciliação do Gestão passou a comparar, além das contagens, conjuntos de `sourceId` fornecidos pelo backup, com amostras de IDs faltantes e extras.
+- A importação de backup completo dispara reconciliação automática após os lotes, verificando contagens, IDs de origem e vínculos de alunos.
+- O remapeamento de aluno aceita tanto o identificador de origem quanto um UUID de registro Finance quando aplicável, preservando o ID legado no histórico.
+- O painel operacional passou a expor o estado dos adaptadores Lago/Kill Bill e as filas do outbox por proprietário, sem revelar segredos.
+
+### Bloco 13 — Segurança, qualidade e operação
+- Filtros de correlação, isolamento de proprietário e rate limit passaram a ser registrados na cadeia de segurança.
+- Rate limit agora cobre sessões anônimas de autenticação por endereço de origem com limite separado, além do limite por proprietário autenticado; falha do Redis permanece fail-closed.
+- Cabeçalhos de segurança foram endurecidos com frame denial, Referrer-Policy e HSTS quando suportado pelo canal seguro.
+- Respostas de erro preservam o `X-Correlation-Id` para rastreabilidade ponta a ponta.
+- O endpoint de health deixou de inventar `UP` e voltou a delegar ao health real do Actuator, adicionando apenas headers operacionais seguros.
+- Foram adicionados testes unitários para o health filter e para a fronteira do rate limit anônimo.
+
+**Status:** implementação dos blocos 12 e 13 registrada no código. Migração real de dados do AppDeploy, build/testes completos e homologação de produção continuam dependendo de execução no ambiente autorizado. O deploy frontend na Vercel será verificado após a integração na `main`.
