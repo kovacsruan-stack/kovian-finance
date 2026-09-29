@@ -14,6 +14,7 @@ const resources: Array<{ id: ManagementResource; label: string }> = [
 
 export default function ManagementReconciliationPanel() {
   const [counts, setCounts] = useState<Partial<Record<ManagementResource, string>>>({})
+  const [sourceIdsJson, setSourceIdsJson] = useState('')
   const [result, setResult] = useState<ManagementReconciliation | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -30,15 +31,29 @@ export default function ManagementReconciliationPanel() {
       }
       expectedCounts[resource as ManagementResource] = value
     }
-    if (!Object.keys(expectedCounts).length) {
-      setError('Informe a quantidade esperada de pelo menos um recurso.')
+    if (!Object.keys(expectedCounts).length && !sourceIdsJson.trim()) {
+      setError('Informe uma quantidade esperada ou um conjunto de IDs de origem.')
       return
+    }
+    let expectedSourceIds: Partial<Record<ManagementResource, string[]>> = {}
+    if (sourceIdsJson.trim()) {
+      try {
+        const parsed = JSON.parse(sourceIdsJson) as unknown
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error()
+        expectedSourceIds = Object.fromEntries(Object.entries(parsed as Record<string, unknown>).map(([resource, ids]) => {
+          if (!Array.isArray(ids) || ids.some(id => typeof id !== 'string' || !id.trim())) throw new Error()
+          return [resource, ids.map(id => id.trim())]
+        })) as Partial<Record<ManagementResource, string[]>>
+      } catch {
+        setError('IDs de origem inválidos. Use JSON no formato {"students":["id-1","id-2"]}.')
+        return
+      }
     }
     setBusy(true)
     setError('')
     setResult(null)
     try {
-      setResult(await reconcileManagement(expectedCounts))
+      setResult(await reconcileManagement(expectedCounts, expectedSourceIds))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Não foi possível reconciliar os dados.')
     } finally {
@@ -58,6 +73,11 @@ export default function ManagementReconciliationPanel() {
           onChange={event => setCounts(previous => ({ ...previous, [item.id]: event.target.value }))} />
       </label>)}
     </div>
+    <label className="field mt-3">
+      IDs de origem (opcional)
+      <textarea rows={4} value={sourceIdsJson} onChange={event => setSourceIdsJson(event.target.value)} placeholder={'{"students":["legacy-1","legacy-2"],"lessons":["lesson-1"]}'} />
+      <span className="text-xs text-muted-foreground">Use esta conferência quando precisar validar os identificadores exatos do backup, não apenas as contagens.</span>
+    </label>
     <div className="form-actions">
       <button type="button" className="primary" disabled={busy} onClick={() => void run()}>
         <RefreshCw size={15} /> {busy ? 'Conferindo…' : 'Conferir contagens e vínculos'}
@@ -85,6 +105,7 @@ export default function ManagementReconciliationPanel() {
         </table>
       </div>
       <p className="mt-2 text-sm">Vínculos de aluno pendentes: <strong>{result.unresolvedStudentLinks}</strong></p>
+      {Object.entries(result.sourceIds).length > 0 && <div className="mt-3 overflow-x-auto"><table className="w-full text-sm"><thead><tr><th className="text-left p-2">IDs de origem</th><th className="text-right p-2">Esperados</th><th className="text-right p-2">Encontrados</th><th className="text-right p-2">Faltantes</th><th className="text-right p-2">Extras</th></tr></thead><tbody>{resources.filter(item => result.sourceIds[item.id]).map(item => { const row = result.sourceIds[item.id]; return <tr key={item.id} className="border-t border-border"><td className="p-2">{item.label}</td><td className="p-2 text-right">{row.expectedCount}</td><td className="p-2 text-right">{row.actualCount}</td><td className="p-2 text-right">{row.missingCount}</td><td className="p-2 text-right">{row.unexpectedCount}</td></tr>})}</tbody></table></div>}
       <p className="mt-1 text-xs text-muted-foreground">A API conta todos os registros do recurso no Finance, inclusive arquivados. Se já existiam dados antes da migração, considere isso ao comparar os totais.</p>
     </>}
   </section>
