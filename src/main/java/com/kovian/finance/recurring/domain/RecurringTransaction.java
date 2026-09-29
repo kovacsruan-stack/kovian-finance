@@ -10,5 +10,19 @@ public class RecurringTransaction {
   this.ownerId=ownerId; this.accountId=accountId; this.categoryId=categoryId; this.description=description.trim(); this.amount=amount; this.transactionType=type; this.frequency=frequency; this.nextOccurrence=nextOccurrence; this.endDate=endDate;
  }
  public UUID getId(){return id;} public UUID getOwnerId(){return ownerId;} public UUID getAccountId(){return accountId;} public UUID getCategoryId(){return categoryId;} public String getDescription(){return description;} public BigDecimal getAmount(){return amount;} public com.kovian.finance.transaction.domain.TransactionType getTransactionType(){return transactionType;} public RecurringFrequency getFrequency(){return frequency;} public LocalDate getNextOccurrence(){return nextOccurrence;} public LocalDate getEndDate(){return endDate;} public boolean isActive(){return active;}
- public void pause(){active=false; updatedAt=OffsetDateTime.now();} public void resume(){active=true; updatedAt=OffsetDateTime.now();} public void advance(){nextOccurrence=switch(frequency){case WEEKLY->nextOccurrence.plusWeeks(1);case MONTHLY->nextOccurrence.plusMonths(1);case YEARLY->nextOccurrence.plusYears(1);}; updatedAt=OffsetDateTime.now(); if(endDate!=null&&nextOccurrence.isAfter(endDate)) active=false;}
+ public void update(UUID accountId, UUID categoryId, String description, BigDecimal amount, com.kovian.finance.transaction.domain.TransactionType type, RecurringFrequency frequency, LocalDate nextOccurrence, LocalDate endDate) {
+  if (!active) throw new IllegalStateException("Paused recurring transactions cannot be edited; resume first");
+  if (accountId == null || description == null || description.isBlank() || amount == null || amount.signum() <= 0
+      || type == null || type == com.kovian.finance.transaction.domain.TransactionType.TRANSFER || frequency == null || nextOccurrence == null)
+    throw new IllegalArgumentException("Invalid recurring transaction");
+  if (endDate != null && endDate.isBefore(nextOccurrence))
+    throw new IllegalArgumentException("End date cannot precede next occurrence");
+  this.accountId = accountId; this.categoryId = categoryId; this.description = description.trim(); this.amount = amount;
+  this.transactionType = type; this.frequency = frequency; this.nextOccurrence = nextOccurrence; this.endDate = endDate;
+  this.updatedAt = OffsetDateTime.now();
+ }
+ public void pause(){active=false; updatedAt=OffsetDateTime.now();}
+ public void resume(){if(endDate != null && nextOccurrence.isAfter(endDate)) throw new IllegalStateException("Recurring transaction has reached its end date"); active=true; updatedAt=OffsetDateTime.now();}
+ public void archive(){active=false; updatedAt=OffsetDateTime.now();}
+ public void advance(){nextOccurrence=switch(frequency){case WEEKLY->nextOccurrence.plusWeeks(1);case MONTHLY->nextOccurrence.plusMonths(1);case YEARLY->nextOccurrence.plusYears(1);}; updatedAt=OffsetDateTime.now(); if(endDate!=null&&nextOccurrence.isAfter(endDate)) active=false;}
 }
