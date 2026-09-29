@@ -408,3 +408,12 @@ export function importManagementRecords(
 export function restoreManagementRecord(resource: ManagementResource, id: string) {
   return request<{ restored: boolean; id: string }>(`/management/${resource}/${encodeURIComponent(id)}/restore`, { method: 'POST', body: JSON.stringify({}) })
 }
+
+export type ManagementReconciliation = {
+  resources: Record<string, { expectedCount: number; actualCount: number; delta: number | null }>
+  unresolvedStudentLinks: number
+  reconciled: boolean
+}
+export function reconcileManagement(expectedCounts: Partial<Record<ManagementResource, number>>) {
+  return post<ManagementReconciliation>('/management/reconcile', { expectedCounts })
+}
