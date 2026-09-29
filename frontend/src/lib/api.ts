@@ -319,6 +319,15 @@ export function payInvoice(id: string, ownerId: string, accountId: string, amoun
 export function createGoal(input: { ownerId: string; name: string; targetAmount: number; targetDate?: string | null }) {
   return post<FinanceGoal>('/goals', input, financeGoalSchema)
 }
+export function updateGoal(id: string, input: { name: string; targetAmount: number; targetDate?: string | null }) {
+  return request<unknown>(`/goals/${encodeURIComponent(id)}`, { method: 'PUT', body: JSON.stringify(input) }).then(value => financeGoalSchema.parse(value))
+}
+export function contributeToGoal(id: string, amount: number) {
+  return post<FinanceGoal>(`/goals/${encodeURIComponent(id)}/contributions`, { amount }, financeGoalSchema)
+}
+export function archiveGoal(id: string) {
+  return post<FinanceGoal>(`/goals/${encodeURIComponent(id)}/archive`, {}, financeGoalSchema)
+}
 
 export function getRecurring() { return get('/recurring', financeRecurringListSchema) }
 export function createRecurring(input: { accountId: string; categoryId?: string | null; description: string; amount: number; transactionType: 'INCOME' | 'EXPENSE'; frequency: string; nextOccurrence: string; endDate?: string | null }) { return post<FinanceRecurring>('/recurring', input, financeRecurringSchema) }
