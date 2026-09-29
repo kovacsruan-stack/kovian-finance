@@ -172,7 +172,7 @@ export function ensureFinanceSession(): Promise<void> {
   return sessionBootstrap
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, timeoutMs = 15000): Promise<T> {
   await ensureFinanceSession()
   const accessToken = token()
   if (!accessToken) throw new Error('SESSION_UNAVAILABLE')
@@ -181,7 +181,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(baseUrl + path, {
     ...init,
-    signal: init?.signal ?? AbortSignal.timeout(15000),
+    signal: init?.signal ?? AbortSignal.timeout(timeoutMs),
     headers: {
       Accept: 'application/json',
       'Cache-Control': 'no-store',
@@ -193,8 +193,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
   } catch (error) {
     const cause = error as { name?: string; message?: string }
-    const timedOut = cause?.name === 'TimeoutError'
-    throw new FinanceApiError(0, requestId, timedOut ? 'TIMEOUT' : 'NETWORK_ERROR', timedOut ? 'Finance API request timed out.' : cause?.message || 'Finance API request failed.')
+    const timedOut = cause?.name === 'TimeoutError' || cause?.name === 'AbortError'
+    throw new FinanceApiError(0, requestId, timedOut ? 'TIMEOUT' : 'NETWORK_ERROR', timedOut ? `A operação excedeu o tempo limite de ${Math.round(timeoutMs / 1000)} segundos. Nenhum registro será apagado; confira o resultado antes de repetir.` : 'Não foi possível conectar ao serviço financeiro. Verifique a conexão e tente novamente.')
   }
   if (!response.ok) {
     let code = 'FINANCE_API_ERROR'
@@ -445,9 +445,10 @@ export function importManagementRecords(
   resource: ManagementResource,
   records: Array<{ sourceId: string; data: Record<string, unknown> }>,
 ) {
-  return post<{ resource: ManagementResource; inserted: number; updated: number; unchanged: number; unresolvedStudentLinks: number }>(
+  return request<{ resource: ManagementResource; inserted: number; updated: number; unchanged: number; unresolvedStudentLinks: number }>(
     `/management/import-batch/${resource}`,
-    { records },
+    { method: 'POST', body: JSON.stringify({ records }) },
+    120000,
   )
 }
 
@@ -465,5 +466,8 @@ export function reconcileManagement(
   expectedCounts: Partial<Record<ManagementResource, number>>,
   expectedSourceIds: Partial<Record<ManagementResource, string[]>> = {},
 ) {
-  return post<ManagementReconciliation>('/management/reconcile', { expectedCounts, expectedSourceIds })
+  return request<ManagementReconciliation>('/management/reconcile', {
+    method: 'POST',
+    body: JSON.stringify({ expectedCounts, expectedSourceIds }),
+  }, 120000)
 }
