@@ -47,6 +47,28 @@ function normalizeRows(value: unknown): { rows: ImportRow[]; skipped: number } {
   return { rows: [...unique.values()], skipped }
 }
 
+function lessonQuality(rows: ImportRow[]) {
+  const groups = new Map<string, number>()
+  for (const row of rows) {
+    const data = row.data
+    const key = [data.studentId, data.date, data.time, data.modality, data.status].map(value => String(value ?? '').trim()).join('|')
+    groups.set(key, (groups.get(key) ?? 0) + 1)
+  }
+  const duplicateGroups = [...groups.values()].filter(count => count > 1)
+  return {
+    groups: duplicateGroups.length,
+    records: duplicateGroups.reduce((sum, count) => sum + count, 0),
+    excess: duplicateGroups.reduce((sum, count) => sum + count - 1, 0),
+  }
+}
+
+function unmatchedStudentModalities(backup: BackupRows) {
+  const modalityNames = new Set((backup.modalities ?? []).map(row => String(row.data.name ?? '').trim()).filter(Boolean))
+  return [...new Set((backup.students ?? [])
+    .map(row => String(row.data.modality ?? '').trim())
+    .filter(name => name && !modalityNames.has(name)))]
+}
+
 function parseBackup(value: unknown): BackupRows | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null
   const object = value as Record<string, unknown>
@@ -144,6 +166,8 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
     ? importOrder.filter(key => (backupRows[key]?.length ?? 0) > 0).map(key => `${key}: ${backupRows[key]?.length}`).join(' · ')
     : `${resource}: ${rows.length}`
   const readyCount = backupRows ? backupCount : rows.length
+  const duplicateLessonStats = lessonQuality(backupRows?.lessons ?? [])
+  const unmatchedModalities = backupRows ? unmatchedStudentModalities(backupRows) : []
 
   return <section className="panel data-panel">
     <div className="section-title"><div><span className="eyebrow"><FileUp size={14} /></span><h2>Importar dados do Gestão antigo</h2></div></div>
@@ -159,6 +183,12 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       <div className="flex items-center gap-2 font-semibold"><ShieldCheck size={17} /> Prévia de segurança</div>
       <p className="mt-2 text-sm">Destino: <strong>{backupRows ? 'backup completo do Gestão' : resource}</strong>. {resourceSummary}. IDs de origem serão usados para evitar duplicações em reimportações. {skipped > 0 ? `${skipped} registro(s) serão ignorados.` : ''}</p>
       <p className="mt-1 text-xs text-muted-foreground">No backup completo, alunos e modalidades são importados antes das aulas, para facilitar a reconciliação dos vínculos. Registros ausentes no backup não serão apagados do Finance.</p>
+      {backupRows && duplicateLessonStats.excess > 0 && <div className="notice mt-3" role="alert">
+        <strong>Atenção: possíveis aulas duplicadas.</strong> Foram encontrados {duplicateLessonStats.groups} grupos com mesmo aluno, data, horário, modalidade e status, totalizando {duplicateLessonStats.records} registros ({duplicateLessonStats.excess} além de um por grupo). A importação preservará todos os IDs originais; não vamos excluir registros automaticamente. Revise esses casos no Gestão/Finance após importar.
+      </div>}
+      {unmatchedModalities.length > 0 && <div className="notice mt-3" role="alert">
+        <strong>Modalidade sem correspondência:</strong> {unmatchedModalities.join(', ')}. Os alunos serão preservados, mas essa modalidade não aparece na lista de modalidades exportada. Confira o cadastro após a importação.
+      </div>}
       <div className="mt-3 flex flex-wrap gap-2">
         <button type="button" className="primary" disabled={busy} onClick={() => void runImport()}>{busy ? 'Importando…' : `Confirmar importação de ${readyCount} registro(s)`}</button>
         <button type="button" className="secondary" disabled={busy} onClick={() => { setRows([]); setBackupRows(null); setFilename(''); setError(''); setSkipped(0) }}>Cancelar</button>
