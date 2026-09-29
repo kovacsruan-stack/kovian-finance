@@ -359,3 +359,13 @@ html,body,#root{background:var(--bg);color:var(--text)}
   .nav-groups{flex:1;min-height:0}
   .ecosystem-links{flex:none}
 }
+
+
+/* Transaction management filters */
+.transaction-filters{display:grid;grid-template-columns:minmax(180px,2fr) minmax(150px,1fr) minmax(130px,1fr) auto;gap:12px;align-items:end;padding:12px 0 16px}
+.transaction-filters .field{min-width:0}
+.transaction-filters .field span{display:block;margin-bottom:6px}
+.transaction-filters input,.transaction-filters select{width:100%;min-width:0}
+.transaction-filters .text-button{min-height:40px;white-space:nowrap}
+@media(max-width:760px){.transaction-filters{grid-template-columns:1fr 1fr}.transaction-filters .field:first-child{grid-column:1/-1}.transaction-filters .text-button{justify-self:start}}
+@media(max-width:420px){.transaction-filters{grid-template-columns:1fr}.transaction-filters .field:first-child{grid-column:auto}}
