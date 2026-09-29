@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users, Plus } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -230,6 +230,7 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="top-actions">
+            <NavLink className="primary shell-create-transaction" to="/transacoes" onClick={() => setOpen(false)}><Plus size={16} /><span>{t('newTransaction')}</span></NavLink>
             <button type="button" className="search-icon-button" aria-label={t('search')} title={`${t('search')} · Ctrl K`} onClick={openPalette}>
               <Search size={17} aria-hidden="true" />
             </button>
