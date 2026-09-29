@@ -10,8 +10,9 @@ A camada de Gestão preserva os registros em `management_records`, separados por
 - `payments`: pagamentos.
 - `expenses`: despesas registradas no Gestão.
 - `waitlist`: lista de espera.
+- `calendar_events`: eventos importados do calendário Fitness, mantidos separados das aulas vinculadas a alunos.
 
-A migração de banco V23 amplia a restrição de recursos sem apagar registros existentes.
+As migrations V23 e V24 ampliam a restrição de recursos sem apagar registros existentes.
 
 ## Importação idempotente
 
@@ -47,4 +48,4 @@ O repositório contém o backend principal Java/Spring e um backend Python/FastA
 
 Na tela **Gestão**, selecione o recurso e use **Importar dados do Gestão antigo** para carregar um JSON exportado. A interface mostra uma prévia e só grava após confirmação; envia lotes de até 500 registros e usa o ID da origem como `sourceId`. Faça a importação recurso por recurso, começando por alunos e modalidades. Arquivos com mais de 10 MB devem ser divididos antes do envio.
 
-Na tela **Calendário**, a área **Trazer agenda do Kovian Fitness** aceita um arquivo `.ics` exportado pelo Fitness. Cada evento com data é importado como um registro de aula, com UID como `sourceId`, permitindo reimportação idempotente. Isso migra eventos, mas não recria regras de recorrência, turmas, presença, nem conexões com Google Calendar/Outlook. Essas funções exigem integração própria com os serviços e modelos correspondentes.
+Na tela **Calendário**, a área **Trazer agenda do Kovian Fitness** aceita um arquivo `.ics` exportado pelo Fitness. Cada evento com data é importado como `calendar_events`, com UID como `sourceId`, permitindo reimportação idempotente. Os eventos aparecem no calendário do Finance sem exigir vínculo artificial com aluno. Isso migra eventos, mas não recria regras de recorrência, turmas, presença, nem conexões com Google Calendar/Outlook. Essas funções exigem integração própria com os serviços e modelos correspondentes.
