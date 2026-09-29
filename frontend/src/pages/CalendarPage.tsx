@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, importManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
-import { parseCalendarFile, type ImportedCalendarLesson } from '../lib/fitnessCalendarImport'
+import { expandCalendarEventDates, parseCalendarFile, type ImportedCalendarLesson } from '../lib/fitnessCalendarImport'
 
 const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
@@ -173,9 +173,16 @@ export default function CalendarPage() {
     const fitnessCalendarEvents = (fitnessEvents.data ?? []).flatMap(item => {
       if (item.archived) return []
       const data = item.data
-      const date = String(data.date ?? data.startDate ?? '').slice(0, 10)
-      if (!date || date < from || date >= to || /cancelad|canceled/i.test(String(data.status ?? ''))) return []
-      return [{ id: 'fitness:' + item.id, date, title: String(data.title ?? data.summary ?? 'Evento Fitness'), amount: 0, currency: 'BRL', kind: 'FITNESS' as const }]
+      const eventData = { ...data, date: String(data.date ?? data.startDate ?? '').slice(0, 10) }
+      if (!eventData.date || /cancelad|canceled/i.test(String(data.status ?? ''))) return []
+      return expandCalendarEventDates(eventData, from, to).map(date => ({
+        id: 'fitness:' + item.id + ':' + date,
+        date,
+        title: String(data.title ?? data.summary ?? 'Evento Fitness'),
+        amount: 0,
+        currency: 'BRL',
+        kind: 'FITNESS' as const,
+      }))
     })
     const paymentEvents = (payments.data ?? []).flatMap(item => {
       const data = item.data
