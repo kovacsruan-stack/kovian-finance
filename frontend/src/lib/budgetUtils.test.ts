@@ -33,4 +33,20 @@ describe('budgetUtils', () => {
     expect(categoryTree(categories).map(category => category.id)).toEqual(['root', 'child', 'other'])
   })
 
+  it('ignores malformed transaction dates and non-finite amounts', () => {
+    const budget = { id: 'b', categoryId: 'food', period: 'MONTHLY' as const, periodStart: '2026-09-01T00:00:00Z', limitAmount: 500 }
+    const transactions = [
+      { id: '1', accountId: 'a', categoryId: 'food', description: 'Invalid date', amount: 100, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: 'not-a-date' },
+      { id: '2', accountId: 'a', categoryId: 'food', description: 'Invalid amount', amount: Number.NaN, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-10T12:00:00Z' },
+      { id: '3', accountId: 'a', categoryId: 'food', description: 'Valid', amount: 25, type: 'EXPENSE' as const, status: 'POSTED', occurredAt: '2026-09-10T12:00:00Z' },
+    ]
+    expect(budgetSpent(budget, transactions)).toBe(25)
+  })
+
+  it('returns safe values for non-finite budget inputs', () => {
+    expect(budgetPercent(Number.NaN, 100)).toBe(0)
+    expect(budgetPercent(100, Number.POSITIVE_INFINITY)).toBe(0)
+    expect(budgetRemaining(Number.NaN, 100)).toBe(0)
+  })
+
 })
