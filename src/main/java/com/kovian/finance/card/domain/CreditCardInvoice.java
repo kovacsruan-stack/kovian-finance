@@ -36,7 +36,7 @@ public class CreditCardInvoice {
     public LocalDate getReferenceMonth() { return referenceMonth; }
     public LocalDate getClosingDate() { return closingDate; }
     public LocalDate getDueDate() { return dueDate; }
-    public InvoiceStatus getStatus() { return status; }
+    public InvoiceStatus getStatus() { return status != InvoiceStatus.PAID && dueDate.isBefore(LocalDate.now()) ? InvoiceStatus.OVERDUE : status; }
     public BigDecimal getTotalAmount() { return totalAmount; }
     public BigDecimal getPaidAmount() { return paidAmount; }
     public BigDecimal getRemainingAmount() { return totalAmount.subtract(paidAmount).max(BigDecimal.ZERO); }
@@ -52,7 +52,7 @@ public class CreditCardInvoice {
         status = InvoiceStatus.CLOSED;
     }
 
-    public void applyPayment(BigDecimal amount) {
+    public void markPaid() {\n        if (status == InvoiceStatus.PAID) return;\n        applyPayment(getRemainingAmount());\n    }\n\n    public void applyPayment(BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) throw new IllegalArgumentException("Payment must be positive");
         if (status == InvoiceStatus.PAID || totalAmount.signum() <= 0) throw new IllegalStateException("Invoice cannot accept payments");
         if (amount.compareTo(getRemainingAmount()) > 0) throw new IllegalArgumentException("Payment exceeds the remaining invoice balance");
