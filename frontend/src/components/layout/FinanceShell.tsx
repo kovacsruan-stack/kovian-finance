@@ -14,22 +14,38 @@ const items: Item[] = [
   { to: '/gestao', key: 'management', icon: Users },
 ]
 
-const moreItems: Item[] = [
-  { to: '/cartoes', key: 'cards', icon: CreditCard },
-  { to: '/orcamentos', key: 'budgets', icon: Target },
-  { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
-  { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
-  { to: '/categorias', key: 'categories', icon: FolderTree },
-  { to: '/import-export', key: 'importExport', icon: FileText },
-  { to: '/metas', key: 'goals', icon: Target },
-  { to: '/relatorios', key: 'reports', icon: BarChart3 },
-  { to: '/previsao', key: 'forecast', icon: CalendarClock },
-  { to: '/patrimonio', key: 'netWorth', icon: Wallet },
-  { to: '/inteligencia', key: 'insights', icon: Sparkles },
-  { to: '/dividas', key: 'debts', icon: CreditCard },
-  { to: '/notificacoes', key: 'notifications', icon: Bell },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings },
+const moreGroups: Array<{ key: string; items: Item[] }> = [
+  {
+    key: 'group_planejamento',
+    items: [
+      { to: '/orcamentos', key: 'budgets', icon: Target },
+      { to: '/metas', key: 'goals', icon: Target },
+      { to: '/previsao', key: 'forecast', icon: CalendarClock },
+      { to: '/dividas', key: 'debts', icon: CreditCard },
+    ],
+  },
+  {
+    key: 'group_organizacao',
+    items: [
+      { to: '/cartoes', key: 'cards', icon: CreditCard },
+      { to: '/transferencias', key: 'transfers', icon: ArrowRightLeft },
+      { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
+      { to: '/categorias', key: 'categories', icon: FolderTree },
+      { to: '/import-export', key: 'importExport', icon: FileText },
+      { to: '/patrimonio', key: 'netWorth', icon: Wallet },
+      { to: '/relatorios', key: 'reports', icon: BarChart3 },
+      { to: '/inteligencia', key: 'insights', icon: Sparkles },
+    ],
+  },
+  {
+    key: 'group_sistema',
+    items: [
+      { to: '/notificacoes', key: 'notifications', icon: Bell },
+      { to: '/configuracoes', key: 'financeSettings', icon: Settings },
+    ],
+  },
 ]
+const moreItems = moreGroups.flatMap(group => group.items)
 
 const localAppUrl = (port: number, configured: string) => {
   if (configured.trim()) return configured
@@ -188,10 +204,15 @@ function Shell({ children }: { children: ReactNode }) {
               <span>{t('more')}</span><span className="nav-section-count">{moreItems.length}</span><ChevronDown size={15} className={moreOpen ? 'nav-section-chevron open' : 'nav-section-chevron'} />
             </button>
             {moreOpen && <div className="nav-section-items">
-              {moreItems.map(item => (
-                <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-                  <item.icon size={17} /><span>{t(item.key)}</span>
-                </NavLink>
+              {moreGroups.map(group => (
+                <div className="nav-subgroup" key={group.key}>
+                  <span className="nav-subgroup-title">{t(group.key)}</span>
+                  {group.items.map(item => (
+                    <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                      <item.icon size={17} /><span>{t(item.key)}</span>
+                    </NavLink>
+                  ))}
+                </div>
               ))}
             </div>}
           </div>
