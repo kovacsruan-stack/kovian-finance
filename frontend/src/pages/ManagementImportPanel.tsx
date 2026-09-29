@@ -96,6 +96,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
   const [filename, setFilename] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState('')
   const [result, setResult] = useState('')
   const [skipped, setSkipped] = useState(0)
   const [duplicateLessonsSkipped, setDuplicateLessonsSkipped] = useState(0)
@@ -166,10 +167,13 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
     setBusy(true)
     setError('')
     setResult('')
+    let currentStep = 'Preparando a importação'
     try {
       const totals = { inserted: 0, updated: 0, unchanged: 0, unresolvedStudentLinks: 0 }
       const resources = backupRows ? importOrder : [resource]
       for (const currentResource of resources) {
+        currentStep = `Importando ${currentResource}`
+        setProgress(currentStep)
         const currentRows = backupRows ? (backupRows[currentResource] ?? []) : rows
         for (let offset = 0; offset < currentRows.length; offset += 500) {
           const response = await importManagementRecords(currentResource, currentRows.slice(offset, offset + 500))
@@ -184,6 +188,8 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
         : rows.length
       let reconciliationMessage = ''
       if (backupRows) {
+        currentStep = 'Conferindo a reconciliação'
+        setProgress(currentStep)
         const expectedCounts = Object.fromEntries(
           importOrder.filter(key => (backupRows[key]?.length ?? 0) > 0).map(key => [key, backupRows[key]?.length ?? 0]),
         ) as Partial<Record<ManagementResource, number>>
@@ -208,10 +214,12 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
         setAuthError('Sua sessão expirou ou não está autenticada. Entre novamente para continuar a importação.')
         setError('')
       } else {
-        setError(cause instanceof Error ? cause.message : 'Falha na importação. Confira a conexão e tente novamente.')
+        const detail = cause instanceof Error ? cause.message : 'Falha na importação. Confira a conexão e tente novamente.'
+        setError(`${currentStep}: ${detail} Os registros já processados são preservados; é seguro conferir a reconciliação antes de tentar novamente.`)
       }
     } finally {
       setBusy(false)
+      setProgress('')
     }
   }
 
@@ -245,6 +253,7 @@ export default function ManagementImportPanel({ resource, onImported }: { resour
       {readyCount > 0 && <span className="text-sm">{readyCount} registro(s) prontos para importar</span>}
     </div>
     {error && <div className="notice mt-3" role="alert">{error}</div>}
+    {progress && <div className="notice mt-3" role="status" aria-live="polite">{progress}… Não feche esta tela até terminar.</div>}
     {result && <div className="notice mt-3" role="status">{result}</div>}
     {readyCount > 0 && <div className="mt-4 rounded-xl border border-border p-4">
       <div className="flex items-center gap-2 font-semibold"><ShieldCheck size={17} /> Prévia de segurança</div>
