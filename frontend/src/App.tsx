@@ -1,6 +1,6 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { FileText } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ensureFinanceSession } from './lib/api'
 import Shell from './components/layout/FinanceShell'
@@ -21,7 +21,7 @@ function App() {
   const [sessionState, setSessionState] = useState<'loading' | 'ready' | 'error'>('loading')
   const [sessionError, setSessionError] = useState('')
 
-  const initializeSession = () => {
+  const initializeSession = useCallback(() => {
     setSessionState('loading')
     setSessionError('')
     void ensureFinanceSession()
@@ -30,9 +30,9 @@ function App() {
         setSessionError(error instanceof Error ? error.message : 'Não foi possível iniciar o acesso automático.')
         setSessionState('error')
       })
-  }
+  }, [])
 
-  useEffect(() => { initializeSession() }, [])
+  useEffect(() => { initializeSession() }, [initializeSession])
 
   if (sessionState === 'loading') {
     return <main className="page"><section className="panel empty-state"><strong>Preparando seu Finance...</strong><p>Seu acesso é criado automaticamente, sem e-mail ou senha.</p></section></main>
