@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { Landmark, TrendingDown, TrendingUp, Wallet } from 'lucide-react'
-import { getAssets, getDebts, getFinancialSnapshots, getLiabilities, getOwnerId } from '../lib/api'
+import { getAssets, getDebts, getFinancialSnapshots, getLiabilities } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency as money } from '../lib/format'
 import PageHeader from '../components/ui/PageHeader'
@@ -8,7 +9,7 @@ import PageHeader from '../components/ui/PageHeader'
 
 export default function NetWorthPage(){
   const {t}=useTranslation()
-  const ownerId=getOwnerId()
+  const ownerId=useFinanceOwnerId()
   const assets=useQuery({queryKey:['finance','assets',ownerId],queryFn:()=>getAssets(ownerId!),enabled:Boolean(ownerId),staleTime:60_000,retry:2})
   const liabilities=useQuery({queryKey:['finance','liabilities',ownerId],queryFn:()=>getLiabilities(ownerId!),enabled:Boolean(ownerId),staleTime:60_000})
   const debts=useQuery({queryKey:['finance','debts',ownerId],queryFn:()=>getDebts(ownerId!),enabled:Boolean(ownerId),staleTime:60_000})
