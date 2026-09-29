@@ -39,3 +39,7 @@ Não apagar nem desativar o sistema de origem até a reconciliação dos totais 
 - Despesas do Gestão são preservadas como registros de Gestão e aparecem no calendário. Isso **não** as converte automaticamente em lançamentos contábeis do livro financeiro, evitando duplicidade ou classificação incorreta. A conversão deve ser uma etapa explícita, com conta, categoria, data, status e chave de idempotência definidos.
 - A lista de espera é preservada como dados de Gestão; sua importação não cria automaticamente um aluno ativo.
 - Esta documentação descreve o contrato implementado. Não significa que dados reais já tenham sido exportados, importados ou reconciliados.
+
+## Backend de referência
+
+O repositório contém o backend principal Java/Spring e um backend Python/FastAPI separado. O fluxo documentado para o Finance em produção refere-se ao contrato Java/Spring e às migrations Flyway em `src/main/resources/db/migration`. As migrations Alembic e as rotas Python mantêm uma implementação paralela; não se deve presumir que sejam executadas pelo deploy Java. Antes de importar dados, confirme qual serviço está conectado ao ambiente de destino.
