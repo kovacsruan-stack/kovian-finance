@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
+import { useFinanceOwnerId } from '../lib/useFinanceOwnerId'
 import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, Download } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
-import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, importManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
+import { getAccounts, getRecurring, getTransactions, getManagementRecords, importManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
 import { formatCurrency as money } from '../lib/format'
@@ -64,7 +65,7 @@ function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
 
 export default function CalendarPage() {
   const { t } = useTranslation()
-  const ownerId = getOwnerId()
+  const ownerId = useFinanceOwnerId()
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selectedDate, setSelectedDate] = useState(() => iso(new Date()))
   const [kindFilter, setKindFilter] = useState<'ALL' | CalendarEvent['kind']>('ALL')
