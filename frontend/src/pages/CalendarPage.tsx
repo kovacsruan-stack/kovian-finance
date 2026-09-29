@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, CircleDollarSign, Download } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRecords, type FinanceAccount, type FinanceRecurring, type FinanceTransaction } from '../lib/api'
 import { useTranslation } from 'react-i18next'
@@ -19,6 +19,36 @@ const daysInMonth = (date: Date) => endOfMonth(date).getDate()
 const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
 type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' }
+
+function exportEventsToIcs(events: CalendarEvent[]) {
+  const escapeIcs = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//KOVIAN//Finance Calendar//PT',
+    'CALSCALE:GREGORIAN',
+    ...events.map(event => [
+      'BEGIN:VEVENT',
+      'UID:' + escapeIcs(event.id) + '@kovian-finance',
+      'DTSTAMP:' + stamp,
+      'DTSTART;VALUE=DATE:' + event.date.replace(/-/g, ''),
+      'SUMMARY:' + escapeIcs(event.title),
+      'DESCRIPTION:' + escapeIcs(eventKindLabel(event.kind, true) + ' · ' + money(event.amount, event.currency)),
+      'END:VEVENT',
+    ].join('\r\n')),
+    'END:VCALENDAR',
+  ]
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'kovian-finance-calendario-' + iso(new Date()) + '.ics'
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  URL.revokeObjectURL(url)
+}
 
 function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
   if (kind === 'RECURRING') return isPortuguese ? 'Recorrente' : 'Recurring'
@@ -192,6 +222,7 @@ export default function CalendarPage() {
         <button type="button" className="secondary" aria-label={isPortuguese ? 'Mês anterior' : 'Previous month'} onClick={() => moveMonth(-1)}><ChevronLeft size={16} /></button>
         <button type="button" className="secondary" onClick={goToToday}>{isPortuguese ? 'Hoje' : 'Today'}</button>
         <button type="button" className="secondary" aria-label={isPortuguese ? 'Próximo mês' : 'Next month'} onClick={() => moveMonth(1)}><ChevronRight size={16} /></button>
+        <button type="button" className="secondary" onClick={() => exportEventsToIcs(monthEvents)} disabled={!monthEvents.length}><Download size={15} /> {isPortuguese ? 'Exportar .ics' : 'Export .ics'}</button>
       </div>
     </section>
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
