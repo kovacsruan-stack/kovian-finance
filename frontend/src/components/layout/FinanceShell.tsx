@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Settings2, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
+import { BarChart3, Bell, CalendarClock, ChevronDown, ChevronRight, CreditCard, Dumbbell, FolderTree, Menu, Search, Sparkles, FileText, Target, Wallet, X, Receipt, ArrowRightLeft, Users } from 'lucide-react'
 import LanguageSwitcher from '../LanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 
@@ -20,7 +20,6 @@ const moreItems: Item[] = [
   { to: '/recorrentes', key: 'recurring', icon: CalendarClock },
   { to: '/categorias', key: 'categories', icon: FolderTree },
   { to: '/import-export', key: 'importExport', icon: FileText },
-  { to: '/configuracoes', key: 'financeSettings', icon: Settings2 },
 ]
 
 const advancedItems: Item[] = [
