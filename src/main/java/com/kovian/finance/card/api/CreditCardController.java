@@ -41,7 +41,62 @@ public class CreditCardController {
     @GetMapping("/invoices") public List<CreditCardInvoice> invoices(@RequestParam(required=false) UUID ownerId){UUID current=owner();requireOwner(ownerId,current);return invoices.findByOwnerIdOrderByDueDate(current);}
     @GetMapping("/invoices/{id}/purchases") public List<CreditCardPurchase> purchases(@PathVariable UUID id){UUID current=owner();invoices.findByIdAndOwnerId(id,current).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Invoice not found"));return purchases.findByInvoiceIdOrderById(id);}
     @PostMapping("/invoices/{id}/close") @Transactional public void close(@PathVariable UUID id,@RequestParam(required=false) UUID ownerId){UUID current=owner();requireOwner(ownerId,current);invoices.findByIdAndOwnerId(id,current).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Invoice not found")).close();}
-    @PostMapping("/invoices/{id}/pay") @Transactional public void pay(@PathVariable UUID id,@RequestParam(required=false) UUID ownerId,@RequestParam UUID accountId){UUID current=owner();requireOwner(ownerId,current);var inv=invoices.findByIdAndOwnerId(id,current).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Invoice not found"));if(inv.getStatus()==InvoiceStatus.PAID)return;var account=accounts.findByIdAndOwnerId(accountId,current).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"Account does not belong to owner"));var key="card-invoice:"+inv.getId();if(!transactions.existsByOwnerIdAndExternalId(current,key)){transactions.save(new FinancialTransaction(current,account,null,key,"Credit card invoice payment",inv.getTotalAmount(),TransactionType.CARD_PAYMENT,inv.getDueDate().atStartOfDay().atOffset(ZoneOffset.UTC)));account.applyExpense(inv.getTotalAmount());}inv.markPaid();}
+    @PostMapping("/invoices/{id}/pay")
+    @Transactional
+    public void pay(@PathVariable UUID id,
+                    @RequestParam(required = false) UUID ownerId,
+                    @RequestParam UUID accountId,
+                    @RequestParam(required = false) BigDecimal amount,
+                    @RequestParam(required = false) @Size(max = 120) String idempotencyKey) {
+        UUID current = owner();
+        requireOwner(ownerId, current);
+        var invoice = invoices.findByIdAndOwnerId(id, current)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        var account = accounts.findByIdAndOwnerId(accountId, current)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account does not belong to owner"));
+
+        BigDecimal paymentAmount = amount == null ? invoice.getRemainingAmount() : amount;
+        if (paymentAmount == null || paymentAmount.signum() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment amount must be positive");
+        }
+        if (paymentAmount.compareTo(invoice.getRemainingAmount()) > 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment exceeds the remaining invoice balance");
+        }
+        if (amount != null && (idempotencyKey == null || idempotencyKey.isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Partial payments require an idempotencyKey");
+        }
+
+        String paymentKey = idempotencyKey == null || idempotencyKey.isBlank() ? "full" : idempotencyKey.trim();
+        String externalId = "card-invoice-payment:" + invoice.getId() + ":" + paymentKey;
+        var prior = transactions.findByOwnerIdAndExternalId(current, externalId);
+        if (prior.isPresent()) {
+            var transaction = prior.get();
+            if (!transaction.getAccount().getId().equals(accountId)
+                    || transaction.getAmount().compareTo(paymentAmount) != 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Idempotency key was already used for a different payment");
+            }
+            return;
+        }
+
+        // Backward compatibility: the previous full-payment endpoint used this identifier.
+        String legacyExternalId = "card-invoice:" + invoice.getId();
+        if (amount == null && transactions.existsByOwnerIdAndExternalId(current, legacyExternalId)) {
+            if (invoice.getStatus() != InvoiceStatus.PAID && invoice.getRemainingAmount().signum() > 0) {
+                invoice.applyPayment(invoice.getRemainingAmount());
+            }
+            return;
+        }
+
+        try {
+            invoice.applyPayment(paymentAmount);
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage());
+        }
+        transactions.save(new FinancialTransaction(current, account, null, externalId,
+                "Credit card invoice payment", paymentAmount, TransactionType.CARD_PAYMENT,
+                LocalDate.now().atStartOfDay().atOffset(ZoneOffset.UTC)));
+        account.applyExpense(paymentAmount);
+    }
     private UUID owner(){return CurrentUser.ownerId();}
     private static void requireOwner(UUID requested,UUID current){if(requested!=null&&!current.equals(requested))throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Owner scope violation");}
 }
