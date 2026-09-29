@@ -48,3 +48,53 @@ export function parseCalendarFile(text: string): ImportedCalendarLesson[] {
     }]
   })
 }
+
+export function expandCalendarEventDates(
+  data: Record<string, unknown>,
+  from: string,
+  toExclusive: string,
+): string[] {
+  const startValue = String(data.date ?? '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startValue) || from >= toExclusive) return []
+  const start = new Date(startValue + 'T00:00:00Z')
+  if (Number.isNaN(start.getTime()) || start.toISOString().slice(0, 10) !== startValue) return []
+  const rule = String(data.recurrenceRule ?? '').trim()
+  if (!rule) return startValue >= from && startValue < toExclusive ? [startValue] : []
+  const parts = Object.fromEntries(rule.split(';').map(part => {
+    const separator = part.indexOf('=')
+    return separator > 0 ? [part.slice(0, separator).toUpperCase(), part.slice(separator + 1).toUpperCase()] : ['', '']
+  }).filter(([key]) => key))
+  const frequency = parts.FREQ
+  if (!['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY'].includes(frequency) || Object.keys(parts).some(key => key.startsWith('BY'))) {
+    return startValue >= from && startValue < toExclusive ? [startValue] : []
+  }
+  const interval = Math.max(1, Math.min(366, Number(parts.INTERVAL) || 1))
+  const countLimit = Math.max(1, Math.min(10000, Number(parts.COUNT) || 10000))
+  const untilRaw = parts.UNTIL ?? ''
+  const untilMatch = untilRaw.match(/^(\d{4})(\d{2})(\d{2})/)
+  const until = untilMatch ? untilMatch[1] + '-' + untilMatch[2] + '-' + untilMatch[3] : '9999-12-31'
+  const results: string[] = []
+  let occurrence = new Date(start)
+  for (let index = 0; index < countLimit && index < 10000; index++) {
+    const date = occurrence.toISOString().slice(0, 10)
+    if (date > until || date >= toExclusive) break
+    if (date >= from) results.push(date)
+    const year = occurrence.getUTCFullYear()
+    const month = occurrence.getUTCMonth()
+    const day = occurrence.getUTCDate()
+    if (frequency === 'DAILY') occurrence = new Date(Date.UTC(year, month, day + interval))
+    else if (frequency === 'WEEKLY') occurrence = new Date(Date.UTC(year, month, day + 7 * interval))
+    else if (frequency === 'YEARLY') {
+      const targetYear = year + interval
+      const lastDay = new Date(Date.UTC(targetYear, month + 1, 0)).getUTCDate()
+      occurrence = new Date(Date.UTC(targetYear, month, Math.min(day, lastDay)))
+    } else {
+      const targetMonth = month + interval
+      const targetYear = year + Math.floor(targetMonth / 12)
+      const normalizedMonth = targetMonth % 12
+      const lastDay = new Date(Date.UTC(targetYear, normalizedMonth + 1, 0)).getUTCDate()
+      occurrence = new Date(Date.UTC(targetYear, normalizedMonth, Math.min(day, lastDay)))
+    }
+  }
+  return results
+}
