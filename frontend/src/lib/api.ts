@@ -200,10 +200,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let code = 'FINANCE_API_ERROR'
     let message: string | undefined
     try {
-      const payload = await response.json() as { code?: unknown; error?: unknown; message?: unknown }
+      const payload = await response.json() as { code?: unknown; error?: unknown; message?: unknown; detail?: unknown; title?: unknown }
       const candidate = payload.code ?? payload.error
       if (typeof candidate === 'string' && candidate.trim()) code = candidate.trim().slice(0, 80).replace(/[^a-zA-Z0-9_-]/g, '_')
-      if (typeof payload.message === 'string' && payload.message.trim()) message = payload.message.trim().slice(0, 500)
+      const detail = [payload.message, payload.detail, payload.title].find(value => typeof value === 'string' && value.trim())
+      if (typeof detail === 'string') message = detail.trim().slice(0, 500)
     } catch {
       // Preserve the status-only error when the backend response is not JSON.
     }
