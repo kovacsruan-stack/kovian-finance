@@ -5,6 +5,7 @@ import { getAccounts, getOwnerId, getRecurring, getTransactions, getManagementRe
 import { useTranslation } from 'react-i18next'
 import { getRecurringOccurrencesInRange } from '../lib/calendarEvents'
 import { expandCalendarEventDates, parseCalendarFile, type ImportedCalendarLesson } from '../lib/fitnessCalendarImport'
+import PageHeader from '../components/ui/PageHeader'
 
 const localeSafeLocale = () => document.documentElement.lang || 'pt-BR'
 const money = (value: number, currency = 'BRL') => value.toLocaleString(document.documentElement.lang || 'pt-BR', { style: 'currency', currency })
@@ -239,19 +240,12 @@ export default function CalendarPage() {
   }
 
   return <main className="page">
-    <section className="page-header">
-      <div>
-        <span className="eyebrow">KOVIAN FINANCE</span>
-        <h1>{isPortuguese ? 'Calendário financeiro' : 'Financial calendar'}</h1>
-        <p>{isPortuguese ? 'Visualize movimentações e recorrências por data.' : 'Visualize transactions and recurring items by date.'}</p>
-      </div>
-      <div className="header-actions">
+    <PageHeader title={isPortuguese ? 'Calendário financeiro' : 'Financial calendar'} description={isPortuguese ? 'Visualize movimentações e recorrências por data.' : 'Visualize transactions and recurring items by date.'} actions={<>
         <button type="button" className="secondary" aria-label={isPortuguese ? 'Mês anterior' : 'Previous month'} onClick={() => moveMonth(-1)}><ChevronLeft size={16} /></button>
         <button type="button" className="secondary" onClick={goToToday}>{isPortuguese ? 'Hoje' : 'Today'}</button>
         <button type="button" className="secondary" aria-label={isPortuguese ? 'Próximo mês' : 'Next month'} onClick={() => moveMonth(1)}><ChevronRight size={16} /></button>
         <button type="button" className="secondary" onClick={() => exportEventsToIcs(monthEvents)} disabled={!monthEvents.length}><Download size={15} /> {isPortuguese ? 'Exportar .ics' : 'Export .ics'}</button>
-      </div>
-    </section>
+      </>} />
     {!ownerId && <div className="notice" role="status" aria-live="polite"><CircleDollarSign size={17} /><span>{t('loginToLoadData')}</span></div>}
     <section className="panel data-panel">
       <div className="section-title"><div><span className="eyebrow"><CalendarDays size={12} /></span><h2>{isPortuguese ? 'Trazer agenda do Kovian Fitness' : 'Import Kovian Fitness calendar'}</h2></div></div>

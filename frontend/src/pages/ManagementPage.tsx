@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import ManagementImportPanel from './ManagementImportPanel'
+import PageHeader from '../components/ui/PageHeader'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Archive, Check, ClipboardList, CreditCard, GraduationCap, Pencil, Plus, Search, Users, UserPlus, Receipt } from 'lucide-react'
 import {
@@ -148,16 +149,9 @@ export default function ManagementPage() {
   const Icon = tabs.find(tab => tab.id === resource)?.icon ?? Users
 
   return <main className="page">
-    <section className="page-header">
-      <div>
-        <span className="eyebrow">KOVIAN FINANCE · GESTÃO</span>
-        <h1>Gestão de alunos</h1>
-        <p>Cadastros, modalidades, aulas e pagamentos no mesmo ambiente do Finance.</p>
-      </div>
-      <button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
+    <PageHeader title="Gestão de alunos" description="Cadastros, modalidades, aulas e pagamentos." actions={<button type="button" className="primary" onClick={() => { setEditing(null); setForm({ ...(resource === 'lessons' ? { date: today(), status: 'Agendada' } : resource === 'payments' ? { dueDate: today(), status: 'Pendente' } : resource === 'expenses' ? { date: today() } : resource === 'waitlist' ? { createdAt: today(), status: 'Aguardando' } : {}) }); setFormOpen(v => !v); setNotice('') }}>
         <Plus size={16} /> Novo registro
-      </button>
-    </section>
+      </button>} />
 
     <section className="panel">
       <div className="flex flex-wrap items-center justify-between gap-3">

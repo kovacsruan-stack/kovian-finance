@@ -324,3 +324,9 @@ html,body,#root{background:var(--bg);color:var(--text)}
 .page-header h1{margin-top:0}
 @media(max-width:900px){.nav-section-toggle{min-height:42px}.nav-section-items .nav-item{min-height:42px}}
 @media(prefers-reduced-motion:reduce){.nav-section-chevron{transition:none}}
+
+/* Shared page header keeps title, description and actions aligned across screens. */
+.page-header-copy{min-width:0;flex:1}
+.page-header-copy h1{margin-top:0}
+.page-header-copy p{max-width:68ch}
+@media(max-width:640px){.page-header{align-items:flex-start;gap:12px}.page-header .header-actions{width:100%;flex-wrap:wrap}.page-header .header-actions>*{max-width:100%}}
