@@ -303,3 +303,11 @@ html,body,#root{background:var(--bg);color:var(--text)}
 .budget-progress{background:#e5ece7}
 .budget-progress span{background:linear-gradient(90deg,#059669,#34d399)}
 @media(prefers-color-scheme:dark){:root{color-scheme:light}}
+
+/* Navegação simplificada: marca textual única e sem barra inferior duplicada. */
+.brand-text-only{padding-bottom:24px;min-height:54px}
+.brand-wordmark,.topbar-wordmark{font-size:15px;font-weight:800;letter-spacing:.045em;color:var(--text);white-space:nowrap}
+.brand-wordmark span,.topbar-wordmark span{color:var(--kovian-accent)}
+.topbar-wordmark{font-size:14px}
+@media(max-width:900px){.page{padding-bottom:24px}.drawer{width:min(320px,88vw);padding:18px 14px}.nav-groups{gap:18px}.nav-group{gap:2px}.nav-group-title{padding-top:6px}.nav-item{min-height:42px;font-size:13px}.ecosystem-links{margin-top:auto;padding-top:12px;border-top:1px solid var(--line)}}
+@media(max-width:560px){.topbar{height:62px}.topbar-wordmark{font-size:13px}.page{padding-bottom:24px}}
