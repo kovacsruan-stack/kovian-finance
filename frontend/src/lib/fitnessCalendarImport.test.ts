@@ -52,7 +52,7 @@ describe('parseCalendarFile', () => {
       'DTSTART;VALUE=DATE:' + date,
       'SUMMARY:' + title,
       'END:VEVENT',
-    ].join('\\n')
+    ].join('\n')
     const first = parseCalendarFile(makeEvent('20260928', 'Treino'))
     const same = parseCalendarFile(makeEvent('20260928', 'Treino'))
     const different = parseCalendarFile(makeEvent('20260929', 'Treino'))
