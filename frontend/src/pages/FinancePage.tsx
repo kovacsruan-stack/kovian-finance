@@ -19,16 +19,69 @@ const localDateKey = (date = new Date()) => `${date.getFullYear()}-${String(date
 export function Header({ title, desc, action }: { title: string; desc: string; action?: ReactNode }) { return <PageHeader title={title} description={desc} actions={action} /> }
 export function Dashboard() {
   const { t } = useTranslation()
-  const ownerId = useFinanceOwnerId(); const dashboard = useFinanceDashboard(ownerId); const accounts = dashboard.accounts.data ?? []; const goals = dashboard.goals.data ?? []; const transactions = dashboard.transactions.data ?? []; const analytics = dashboard.analytics.data; const loading = dashboard.isLoading; const error = ownerId ? (dashboard.isError ? t('financeLoadError') : null) : t('loginToLoadData')
-  const brlIds = new Set(accounts.filter(a => a.currency === 'BRL').map(a => a.id)); const brlTx = transactions.filter(t => brlIds.has(t.accountId)); const balance = accounts.filter(a => a.currency === 'BRL').reduce((s, a) => s + Number(a.currentBalance || 0), 0); const allAccountsBrl = accounts.length > 0 && accounts.every(account => account.currency === 'BRL'); const income = allAccountsBrl && analytics ? Number(analytics.income) : brlTx.filter(t => t.type === 'INCOME' && t.status !== 'CANCELLED').reduce((s, t) => s + Number(t.amount || 0), 0); const expense = allAccountsBrl && analytics ? Number(analytics.expense) : brlTx.filter(t => t.type === 'EXPENSE' && t.status !== 'CANCELLED').reduce((s, t) => s + Number(t.amount || 0), 0)
-  return <main className="page"><Header title={t('financeHeroTitle')} desc={t('financeHeroDesc')} action={<NavLink className="primary" to="/transacoes"><Plus size={17} /> {t('newTransaction')}</NavLink>} />
+  const ownerId = useFinanceOwnerId()
+  const dashboard = useFinanceDashboard(ownerId)
+  const accounts = dashboard.accounts.data ?? []
+  const goals = dashboard.goals.data ?? []
+  const transactions = dashboard.transactions.data ?? []
+  const analytics = dashboard.analytics.data
+  const loading = dashboard.isLoading
+  const error = ownerId ? (dashboard.isError ? t('financeLoadError') : null) : t('loginToLoadData')
+  const brlIds = new Set(accounts.filter(account => account.currency === 'BRL').map(account => account.id))
+  const brlTx = transactions.filter(transaction => brlIds.has(transaction.accountId) && transaction.status !== 'CANCELLED')
+  const balance = accounts.filter(account => account.currency === 'BRL').reduce((sum, account) => sum + Number(account.currentBalance || 0), 0)
+  const allAccountsBrl = accounts.length > 0 && accounts.every(account => account.currency === 'BRL')
+  const income = allAccountsBrl && analytics ? Number(analytics.income) : brlTx.filter(tx => tx.type === 'INCOME').reduce((sum, tx) => sum + Number(tx.amount || 0), 0)
+  const expense = allAccountsBrl && analytics ? Number(analytics.expense) : brlTx.filter(tx => tx.type === 'EXPENSE').reduce((sum, tx) => sum + Number(tx.amount || 0), 0)
+  const activeGoals = goals.filter(goal => goal.active)
+  const targetTotal = activeGoals.reduce((sum, goal) => sum + Number(goal.targetAmount || 0), 0)
+  const savedTotal = activeGoals.reduce((sum, goal) => sum + Number(goal.currentAmount || 0), 0)
+  const goalProgress = targetTotal > 0 ? Math.min(100, Math.round(savedTotal / targetTotal * 100)) : 0
+  const recentTransactions = [...brlTx].sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime()).slice(0, 6)
+  const monthBuckets = Array.from({ length: 3 }, (_, index) => {
+    const date = new Date()
+    date.setDate(1)
+    date.setMonth(date.getMonth() - (2 - index))
+    const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    const monthTransactions = brlTx.filter(tx => tx.occurredAt.slice(0, 7) === key)
+    return { key, label: date.toLocaleDateString(getLocale(), { month: 'short' }), income: monthTransactions.filter(tx => tx.type === 'INCOME').reduce((sum, tx) => sum + Number(tx.amount), 0), expense: monthTransactions.filter(tx => tx.type === 'EXPENSE').reduce((sum, tx) => sum + Number(tx.amount), 0) }
+  })
+  const chartMax = Math.max(1, ...monthBuckets.flatMap(bucket => [bucket.income, bucket.expense]))
+  return <main className="page">
+    <Header title={t('financeHeroTitle')} desc={t('financeHeroDesc')} action={<NavLink className="primary" to="/transacoes"><Plus size={17} /> {t('newTransaction')}</NavLink>} />
     {error && <div className="notice" role="status" aria-live="polite"><ShieldCheck size={18} /><span>{error}</span></div>}
-    <section className="hero-card" aria-labelledby="finance-balance-title"><div><span id="finance-balance-title">{t('consolidatedBalance')}</span><strong>{loading ? t('loading') : money(balance)}</strong><small>{t('activeAccounts', { count: accounts.length })}</small></div><div className="hero-orb"><Wallet size={25} /></div></section>
-    <div className="stat-grid" aria-label={t('quickAccess')}><Stat label={t('income90Days')} value={loading ? '—' : money(income)} icon={ArrowDownLeft} /><Stat label={t('expense90Days')} value={loading ? '—' : money(expense)} icon={ArrowUpRight} /><Stat label={t('activeGoals')} value={loading ? '—' : String(goals.filter(g => g.active).length)} icon={Target} /></div>
+    <section className="hero-card" aria-labelledby="finance-balance-title"><div><span id="finance-balance-title">{t('consolidatedBalance')} · BRL</span><strong>{loading ? t('loading') : money(balance, 'BRL')}</strong><small>{t('activeAccounts', { count: accounts.length })}</small></div><div className="hero-orb"><Wallet size={25} /></div></section>
+    <div className="stat-grid" aria-label={t('quickAccess')}>
+      <Stat label={t('income90Days')} value={loading ? '—' : money(income, 'BRL')} icon={ArrowDownLeft} />
+      <Stat label={t('expense90Days')} value={loading ? '—' : money(expense, 'BRL')} icon={ArrowUpRight} />
+      <Stat label={t('cashFlow90Days')} value={loading ? '—' : money(income - expense, 'BRL')} icon={BarChart3} />
+      <Stat label={t('activeGoals')} value={loading ? '—' : String(activeGoals.length)} icon={Target} />
+    </div>
+    <section className="panel data-panel">
+      <div className="section-title"><div><span className="eyebrow">{t('overview')}</span><h2>{t('cashFlow90Days')}</h2></div><span className="badge">{t('lastThreeMonths')}</span></div>
+      {loading ? <div className="empty-inline">{t('loading')}</div> : <div className="dashboard-month-chart" role="img" aria-label={t('incomeExpenseChart')}>
+        {monthBuckets.map(bucket => <div className="dashboard-month" key={bucket.key}>
+          <div className="dashboard-bars"><span className="dashboard-bar income" title={`${t('income')}: ${money(bucket.income, 'BRL')}`} style={{ height: `${Math.max(bucket.income > 0 ? 4 : 0, bucket.income / chartMax * 100)}%` }} /><span className="dashboard-bar expense" title={`${t('expense')}: ${money(bucket.expense, 'BRL')}`} style={{ height: `${Math.max(bucket.expense > 0 ? 4 : 0, bucket.expense / chartMax * 100)}%` }} /></div>
+          <strong>{bucket.label}</strong><small>{money(bucket.income - bucket.expense, 'BRL')}</small>
+        </div>)}
+      </div>}
+      <div className="dashboard-chart-legend"><span><i className="income" />{t('income')}</span><span><i className="expense" />{t('expense')}</span></div>
+    </section>
+    <section className="panel data-panel">
+      <div className="section-title"><div><span className="eyebrow">{t('objectives')}</span><h2>{t('goalsProgress')}</h2></div><NavLink to="/metas">{t('viewAll')} <ChevronRight size={15} /></NavLink></div>
+      {activeGoals.slice(0, 3).map(goal => { const target = Number(goal.targetAmount); const saved = Number(goal.currentAmount); const percent = target > 0 ? Math.min(100, Math.round(saved / target * 100)) : 0; return <div className="budget-row" key={goal.id}><div className="budget-row-head"><span><strong>{goal.name}</strong><small>{money(saved, 'BRL')} / {money(target, 'BRL')}</small></span><span>{percent}%</span></div><div className="budget-progress"><span style={{ width: `${percent}%` }} /></div></div> })}
+      {!loading && !activeGoals.length && <div className="empty-inline">{t('noActiveGoals')} <NavLink to="/metas">{t('goalsNew')}</NavLink></div>}
+      <div className="dashboard-goal-total"><span>{t('goalsOverallProgress')}</span><strong>{loading ? '—' : `${goalProgress}%`}</strong></div>
+    </section>
+    <section className="panel data-panel">
+      <div className="section-title"><div><span className="eyebrow">{t('activity')}</span><h2>{t('recentTransactions')}</h2></div><NavLink to="/transacoes">{t('viewAll')} <ChevronRight size={15} /></NavLink></div>
+      {recentTransactions.map(tx => <div className="account-row" key={tx.id}><i /><span><strong>{tx.description}</strong><small>{new Date(tx.occurredAt).toLocaleDateString(getLocale())} · {accounts.find(account => account.id === tx.accountId)?.name ?? t('account')}</small></span><b className={tx.type === 'INCOME' ? 'positive' : 'negative'}>{tx.type === 'INCOME' ? '+' : '−'} {money(Number(tx.amount), 'BRL')}</b></div>)}
+      {!loading && !recentTransactions.length && <div className="empty-inline">{t('noMovements')}</div>}
+    </section>
     <section className="panel"><div className="section-title"><div><span className="eyebrow">{t('accounts')}</span><h2>{t('connectedAccounts')}</h2></div><NavLink to="/contas">{t('viewAll')} <ChevronRight size={15} /></NavLink></div><div className="account-list">{accounts.slice(0, 5).map(account => <div className="account-row" key={account.id}><i /><span><strong>{account.name}</strong><small>{account.accountType} · {account.currency}</small></span><b>{money(Number(account.currentBalance || 0), account.currency)}</b></div>)}{!loading && !accounts.length && <div className="empty-inline">{t('noAccounts')}</div>}</div></section>
-
   </main>
-}function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Target }) { return <article className="stat-card"><Icon size={17} /><span>{label}</span><strong>{value}</strong></article> }
+}
+function Stat({ label, value, icon: Icon }: { label: string; value: string; icon: typeof Target }) { return <article className="stat-card"><Icon size={17} /><span>{label}</span><strong>{value}</strong></article> }
 export const pageConfig: Record<string, { titleKey: string; descKey: string; icon: typeof Wallet; itemKeys: string[]; actionTo: string; itemRoutes: string[] }> = {
   '/contas': { titleKey: 'pages.accounts.title', descKey: 'pages.accounts.desc', icon: Wallet, itemKeys: ['pages.accounts.items.bank','pages.accounts.items.wallets','pages.accounts.items.balances'], actionTo: '/contas', itemRoutes: ['/contas','/contas','/contas'] },
   '/transacoes': { titleKey: 'pages.transactions.title', descKey: 'pages.transactions.desc', icon: Receipt, itemKeys: ['pages.transactions.items.incomeExpense','pages.transactions.items.filters','pages.transactions.items.categories'], actionTo: '/transacoes', itemRoutes: ['/transacoes','/transacoes','/transacoes'] },
