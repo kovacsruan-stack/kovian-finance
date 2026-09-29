@@ -133,3 +133,22 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - O cancelamento genérico de transações não pode mais cancelar pagamentos de fatura, evitando desalinhar o saldo da conta do estado da fatura.
 - Foram adicionados testes unitários de domínio para pagamentos parciais e saldo remanescente.
 - **Status dos blocos 1–6: ainda não declarar concluídos.** As alterações acima cobrem requisitos específicos dos blocos 3 e 5; a validação de build, testes, UI e fluxos completos ainda precisa ser executada.
+
+
+## 2026-09-29 — Blocos 7 e 8: Dashboard e Metas
+
+### Bloco 7 — Dashboard financeiro
+- Expandida a visão inicial com fluxo líquido de 90 dias, comparativo visual de receitas/despesas por mês, progresso agregado das metas e movimentações recentes.
+- Mantido o carregamento por consultas existentes e dados limitados a uma janela de 90 dias para movimentações.
+- Mantidos estados de carregamento, erro, vazio e navegação para módulos completos.
+- Dashboard e novo gráfico receberam rótulos em PT-BR e EN e layout responsivo.
+
+### Bloco 8 — Metas e objetivos
+- Criada tela dedicada de metas, substituindo o placeholder genérico da rota `/metas`.
+- Incluídos criação, edição, registro de contribuições de progresso, arquivamento, listagem de metas ativas e consulta de metas concluídas/arquivadas.
+- Backend passou a expor operações owner-scoped para atualizar, contribuir e arquivar; consultas agora incluem metas inativas para preservar histórico na interface.
+- Regras de domínio rejeitam contribuições inválidas, contribuições acima do saldo restante e redução da meta abaixo do valor já acumulado.
+- Adicionados testes unitários de domínio para progresso, conclusão, validações, edição e arquivamento.
+- A contribuição é explicitamente um registro de progresso: não movimenta saldo de contas nem cria transação financeira.
+
+**Status:** implementação dos fluxos principais dos blocos 7 e 8 registrada no código. Build, testes automatizados e QA de navegador ainda não foram executados; portanto, não marcar como tecnicamente validados até essa etapa.
