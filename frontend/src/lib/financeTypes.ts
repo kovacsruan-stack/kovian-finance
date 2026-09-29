@@ -1,7 +1,7 @@
 export type FinanceAccount = { id: string; name: string; accountType: string; currency: string; currentBalance: number; status: string }
 export type FinanceTransaction = { id: string; accountId: string; categoryId: string | null; description: string; amount: number; type: 'INCOME' | 'EXPENSE' | 'TRANSFER'; status: string; occurredAt: string }
 export type FinanceGoal = { id: string; name: string; targetAmount: number; currentAmount: number; targetDate: string | null; active: boolean }
-export type FinanceCard = { id: string; name: string; brand: string | null; lastFour: string | null; creditLimit: number; closingDay: number; dueDay: number; status: string }
+export type FinanceCard = { id: string; ownerId: string; name: string; brand: string | null; lastFour: string | null; creditLimit: number; usedLimit: number; availableLimit: number; closingDay: number; dueDay: number; status: string }
 export type FinanceInvoice = { id: string; cardId: string; referenceMonth: string; closingDate: string; dueDate: string; status: string; totalAmount: number; paidAmount: number; remainingAmount: number }
 export type FinancePurchase = { id: string; cardId: string; invoiceId: string; description: string; totalAmount: number; installmentAmount: number; installmentNumber: number; totalInstallments: number; purchasedAt: string }
 export type FinanceCategory = { id: string; name: string; kind: 'INCOME' | 'EXPENSE'; parentId: string | null }
