@@ -34,6 +34,29 @@ A mesma combinação de proprietário, recurso e `sourceId` é usada para reconh
 
 Não apagar nem desativar o sistema de origem até a reconciliação dos totais e a conferência manual dos registros críticos.
 
+## Reconciliação no destino
+
+Endpoint autenticado e somente de leitura:
+
+`POST /api/v1/management/reconcile`
+
+Envie `expectedCounts` como um mapa de recurso para quantidade esperada no destino, por exemplo:
+
+```json
+{
+  "expectedCounts": {
+    "students": 120,
+    "modalities": 8,
+    "lessons": 950,
+    "payments": 310
+  }
+}
+```
+
+A resposta informa, por recurso, a quantidade atualmente armazenada, a diferença em relação à quantidade esperada e se as contagens conferem. Também verifica aulas e pagamentos cujo `studentId` não aponta para um aluno existente do mesmo proprietário. O campo `reconciled` só será verdadeiro quando todas as contagens fornecidas coincidirem e não houver vínculos de aluno pendentes.
+
+Use as contagens do mesmo snapshot/exportação da origem. Como o endpoint conta todos os registros presentes no destino, recursos que já contenham dados próprios devem ser reconciliados por uma estratégia que separe esses registros antes de interpretar a diferença. A conferência de contagem não substitui a validação de IDs de origem, amostras de histórico ou backups.
+
 ## Limites e distinções
 
 - A API de importação aceita lotes de até 500 itens; clientes devem paginar a exportação e enviar lotes menores ou iguais a esse limite.
