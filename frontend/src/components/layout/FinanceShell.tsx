@@ -58,12 +58,9 @@ function Shell({ children }: { children: ReactNode }) {
   const [palette, setPalette] = useState(false)
   const [query, setQuery] = useState('')
   const paletteReturnFocus = useRef<HTMLElement | null>(null)
-  const [moreOpen, setMoreOpen] = useState(false)
-  const [advancedOpen, setAdvancedOpen] = useState(false)
   const paletteRef = useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation()
   const location = useLocation()
-  const moreActive = [...moreItems, ...advancedItems].some(item => isRouteActive(location.pathname, item.to))
 
   const commands = [...items, ...moreItems, ...advancedItems].map(item => ({ ...item, label: t(item.key) }))
   const filtered = commands.filter(item => item.label.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 8)
@@ -90,11 +87,6 @@ function Shell({ children }: { children: ReactNode }) {
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
-
-  useEffect(() => {
-    if ([...moreItems, ...advancedItems].some(item => isRouteActive(location.pathname, item.to))) setMoreOpen(true)
-    if (advancedItems.some(item => isRouteActive(location.pathname, item.to))) setAdvancedOpen(true)
-  }, [location.pathname])
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 900px)')
@@ -175,8 +167,8 @@ function Shell({ children }: { children: ReactNode }) {
       {open && <button type="button" className="scrim" aria-label={t('closeMenu')} onClick={() => setOpen(false)} />}
 
       <aside id="finance-navigation" ref={drawerRef} className={open ? 'drawer drawer-open' : 'drawer'} aria-hidden={isMobile && !open} inert={isMobile && !open}>
-        <div className="brand">
-          <BrandMark productName="FINANCE" className="h-9 w-9 shrink-0" />
+        <div className="brand brand-text-only">
+          <strong className="brand-wordmark">KOVIAN <span>FINANCE</span></strong>
           <button type="button" className="icon-button mobile-only" aria-label={t('closeMenu')} onClick={() => setOpen(false)}>
             <X size={18} />
           </button>
@@ -195,12 +187,21 @@ function Shell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="nav-group">
-          <button className={moreActive ? "nav-item active" : "nav-item"} type="button" onClick={() => setMoreOpen(v => !v)} aria-expanded={moreOpen}>
-            <MoreHorizontal size={17} />
-            <span>{t('more')}</span>
-            <ChevronRight size={15} className={moreOpen ? 'rotate-90' : ''} />
-          </button>
-          {moreOpen && <div className="nav-subitems">{moreItems.map(item => <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}<button className={advancedItems.some(item => isRouteActive(location.pathname, item.to)) ? "nav-item active" : "nav-item"} type="button" onClick={() => setAdvancedOpen(v => !v)} aria-expanded={advancedOpen}><MoreHorizontal size={17} /><span>{t('advancedFeatures')}</span><ChevronRight size={15} className={advancedOpen ? 'rotate-90' : ''} /></button>{advancedOpen && <div className="nav-subitems">{advancedItems.map(item => <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}><item.icon size={17} /><span>{t(item.key)}</span></NavLink>)}</div>}</div>}
+          <span className="nav-group-title">{t('management')}</span>
+          {moreItems.map(item => (
+            <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+              <item.icon size={17} /><span>{t(item.key)}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="nav-group">
+          <span className="nav-group-title">{t('planning')}</span>
+          {advancedItems.map(item => (
+            <NavLink key={item.to} to={item.to} onClick={() => setOpen(false)} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+              <item.icon size={17} /><span>{t(item.key)}</span>
+            </NavLink>
+          ))}
         </div>
 
         <div className="nav-group ecosystem-links">
@@ -213,13 +214,8 @@ function Shell({ children }: { children: ReactNode }) {
       <div className="content" id="finance-main" tabIndex={-1}>
         <header className="topbar">
           <div className="top-left">
-            <div className="md:hidden flex min-w-0 items-center gap-2.5">
-              <BrandMark productName="FINANCE" showWordmark={false} className="h-8 w-8 shrink-0" />
-              <div className="min-w-0"><strong className="block truncate text-xs font-extrabold tracking-[0.08em] text-[var(--text)]">KOVIAN <span className="kovian-brand-accent">FINANCE</span></strong><small className="block text-[9px] text-[var(--muted)]">{t('ecosystem')}</small></div>
-            </div>
-            <div className="hidden md:flex min-w-0 flex-col">
-              <small>{t('ecosystem')}</small>
-              <strong>{t('financeName')}</strong>
+            <div className="flex min-w-0 items-center">
+              <strong className="topbar-wordmark">KOVIAN <span>FINANCE</span></strong>
             </div>
           </div>
 
@@ -247,10 +243,6 @@ function Shell({ children }: { children: ReactNode }) {
 
         {children}
 
-        <nav className="bottom-nav">
-          {items.map(item => <NavLink key={item.to} to={item.to} end={item.to === '/'}><item.icon size={18} /><span>{t(item.key)}</span></NavLink>)}
-          <button type="button" onClick={() => setOpen(true)}><MoreHorizontal size={18} /><span>{t('more')}</span></button>
-        </nav>
       </div>
     </div>
   )
