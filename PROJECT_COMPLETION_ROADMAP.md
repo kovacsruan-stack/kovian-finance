@@ -114,7 +114,7 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - Real AppDeploy data migration, reconciliation, full Gestão feature parity, Fitness calendar parity, FitHub visual alignment, and local build/test/browser QA remain outstanding.
 - **Integration implementation estimate: 55%** (the integrated-product scope only; not the historical Finance financial-domain estimate).
 
-## 2026-09-29 — Bloco 6/12: reconciliação integrada à interface
+## 2026-09-29 — Integração Gestão: painel de reconciliação (entrega técnica)
 
 - Exposto o endpoint de reconciliação de dados do Gestão no cliente TypeScript.
 - Adicionado painel na tela Gestão para informar contagens esperadas por recurso e consultar a reconciliação.
@@ -122,3 +122,14 @@ A estimativa histórica de 98% acima descreve o escopo financeiro anterior e **n
 - A operação é somente de leitura; a interface alerta que os totais do Finance incluem registros arquivados e dados preexistentes.
 - Adicionado teste de controller para divergência de vínculo e conferência de contagens.
 - Build, testes automatizados e validação no navegador ainda pendentes.
+
+
+## 2026-09-29 — Correções do ciclo Cartões e Faturas
+
+- A fatura passou a aceitar pagamentos parciais, acumulando o valor pago e calculando o saldo restante; o estado muda para pago somente quando o total é liquidado.
+- O endpoint de pagamento aceita valor e chave de idempotência para pagamentos parciais, rejeita valores acima do saldo e preserva compatibilidade com chamadas antigas de quitação integral.
+- O cadastro/listagem de cartões passa a expor limite utilizado e limite disponível, calculados sobre os saldos em aberto das faturas.
+- Faturas vencidas são apresentadas com estado `OVERDUE` sem alterar destrutivamente o estado persistido.
+- O cancelamento genérico de transações não pode mais cancelar pagamentos de fatura, evitando desalinhar o saldo da conta do estado da fatura.
+- Foram adicionados testes unitários de domínio para pagamentos parciais e saldo remanescente.
+- **Status dos blocos 1–6: ainda não declarar concluídos.** As alterações acima cobrem requisitos específicos dos blocos 3 e 5; a validação de build, testes, UI e fluxos completos ainda precisa ser executada.
