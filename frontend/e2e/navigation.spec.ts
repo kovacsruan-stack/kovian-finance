@@ -64,11 +64,24 @@ test('primary navigation stays focused on five daily destinations', async ({ pag
   await expect(nav.getByRole('link')).toHaveCount(5)
 })
 
-test('secondary navigation contains settings without expanding the main menu', async ({ page }) => {
+test('secondary navigation groups every destination by task', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Navegação principal' })
   await nav.getByRole('button', { name: /Mais|More/i }).click()
-  await expect(nav.getByRole('link', { name: /Configurações|Settings/i })).toBeVisible()
+
+  for (const label of [/Planejamento|Planning/i, /Organização|Organization/i, /Sistema|System/i]) {
+    await expect(nav.getByText(label)).toBeVisible()
+  }
+
+  for (const label of [
+    /Cartões|Cards/i, /Orçamentos|Budgets/i, /Transferências|Transfers/i,
+    /Recorrentes|Recurring/i, /Categorias|Categories/i, /Importar \/ Exportar|Import \/ Export/i,
+    /Metas financeiras|Financial goals/i, /Relatórios|Reports/i, /Previsão|Forecast/i,
+    /Patrimônio|Net worth/i, /Inteligência|Insights/i, /Dívidas|Debts/i,
+    /Notificações|Notifications/i, /Configurações|Settings/i,
+  ]) {
+    await expect(nav.getByRole('link', { name: label })).toBeVisible()
+  }
 })
 
 test('lessons are scheduled from the calendar, not duplicated in management tabs', async ({ page }) => {
