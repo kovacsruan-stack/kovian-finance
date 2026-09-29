@@ -13,7 +13,9 @@ import {
   type ManagementResource,
 } from '../lib/api'
 
-const tabs: Array<{ id: ManagementResource; label: string; icon: typeof Users }> = [
+type ManagementTabResource = Exclude<ManagementResource, 'lessons' | 'calendar_events'>
+
+const tabs: Array<{ id: ManagementTabResource; label: string; icon: typeof Users }> = [
   { id: 'students', label: 'Alunos', icon: Users },
   { id: 'modalities', label: 'Modalidades', icon: GraduationCap },
   { id: 'payments', label: 'Pagamentos', icon: CreditCard },
@@ -26,7 +28,7 @@ const today = () => {
   return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-')
 }
 
-function fieldsFor(resource: ManagementResource) {
+function fieldsFor(resource: ManagementTabResource) {
   if (resource === 'students') return [
     ['name', 'Nome', 'text'], ['phone', 'Telefone', 'tel'], ['email', 'E-mail', 'email'],
     ['modality', 'Modalidade', 'text'], ['monthlyFee', 'Mensalidade (R$)', 'number'],
@@ -59,7 +61,7 @@ function recordTitle(record: ManagementRecord, resource: ManagementResource) {
 
 export default function ManagementPage() {
   const queryClient = useQueryClient()
-  const [resource, setResource] = useState<ManagementResource>('students')
+  const [resource, setResource] = useState<ManagementTabResource>('students')
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<ManagementRecord | null>(null)
   const [search, setSearch] = useState('')
