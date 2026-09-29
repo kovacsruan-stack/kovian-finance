@@ -78,7 +78,7 @@ function parseCalendarFile(text: string): ImportedCalendarLesson[] {
     const summary = unescapeText(property('SUMMARY') || 'Evento importado do Fitness')
     const uid = unescapeText(property('UID') || 'fitness-calendar-' + index)
     if (!date) return []
-    return [{ sourceId: uid.slice(0, 120), data: { date, title: summary, notes: unescapeText(property('DESCRIPTION')), status: 'Agendada', source: 'Kovian Fitness calendar import' } }]
+    return [{ sourceId: uid.slice(0, 120), data: { date, title: summary, studentName: summary, notes: unescapeText(property('DESCRIPTION')), status: 'Agendada', source: 'Kovian Fitness calendar import' } }]
   })
 }
 
