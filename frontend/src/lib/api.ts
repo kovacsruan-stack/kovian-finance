@@ -7,7 +7,7 @@ import { financeImportSchema, financeImportListSchema, financeImportErrorListSch
 
 let fallbackRequestId = 0
 
-const baseUrl = (import.meta.env.VITE_API_BASE_URL?.trim() || '/api/v1').replace(/\/$/, '')
+const baseUrl = (import.meta.env.VITE_API_BASE_URL?.trim() || 'https://kovian-finance-api-production.up.railway.app/api/v1').replace(/\/$/, '')
 
 export class FinanceApiError extends Error {
   readonly status: number
