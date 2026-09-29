@@ -52,7 +52,12 @@ public class CreditCardInvoice {
         status = InvoiceStatus.CLOSED;
     }
 
-    public void markPaid() {\n        if (status == InvoiceStatus.PAID) return;\n        applyPayment(getRemainingAmount());\n    }\n\n    public void applyPayment(BigDecimal amount) {
+    public void markPaid() {
+        if (status == InvoiceStatus.PAID) return;
+        applyPayment(getRemainingAmount());
+    }
+
+    public void applyPayment(BigDecimal amount) {
         if (amount == null || amount.signum() <= 0) throw new IllegalArgumentException("Payment must be positive");
         if (status == InvoiceStatus.PAID || totalAmount.signum() <= 0) throw new IllegalStateException("Invoice cannot accept payments");
         if (amount.compareTo(getRemainingAmount()) > 0) throw new IllegalArgumentException("Payment exceeds the remaining invoice balance");
