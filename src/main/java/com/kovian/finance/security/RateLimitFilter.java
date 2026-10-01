@@ -28,6 +28,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         this.limit = Math.max(1, limit);
         this.anonymousLimit = Math.max(1, anonymousLimit);
         this.window = window.isZero() || window.isNegative() ? Duration.ofMinutes(1) : window;
+        if (this.window.toMillis() <= 0) throw new IllegalArgumentException("Rate-limit window is too large or invalid.");
         this.enabled = enabled;
     }
 
