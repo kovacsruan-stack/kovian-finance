@@ -5,7 +5,6 @@ import jakarta.servlet.http.*;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -15,15 +14,14 @@ import java.util.UUID;
 
 public class RateLimitFilter extends OncePerRequestFilter {
     private static final String ANONYMOUS_AUTH_PATH = "/api/v1/auth/anonymous";
+    private static final long MAX_RETRY_AFTER_SECONDS = 3600L;
     private final StringRedisTemplate redis;
     private final int limit;
     private final int anonymousLimit;
     private final Duration window;
     private final boolean enabled;
 
-    public RateLimitFilter(StringRedisTemplate redis, int limit, Duration window) {
-        this(redis, limit, 10, window, true);
-    }
+    public RateLimitFilter(StringRedisTemplate redis, int limit, Duration window) { this(redis, limit, 10, window, true); }
 
     public RateLimitFilter(StringRedisTemplate redis, int limit, int anonymousLimit, Duration window, boolean enabled) {
         this.redis = redis;
@@ -34,13 +32,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain)
-            throws ServletException, IOException {
-        if (!enabled) {
-            chain.doFilter(req, res);
-            return;
-        }
-
+    protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
+        if (!enabled) { chain.doFilter(req, res); return; }
         final boolean authenticated = CurrentUser.isAuthenticated();
         final String scope;
         final int currentLimit;
@@ -51,10 +44,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
         } else if (ANONYMOUS_AUTH_PATH.equals(req.getRequestURI()) && "POST".equalsIgnoreCase(req.getMethod())) {
             scope = "anonymous:" + digest(req.getRemoteAddr());
             currentLimit = anonymousLimit;
-        } else {
-            chain.doFilter(req, res);
-            return;
-        }
+        } else { chain.doFilter(req, res); return; }
 
         String key = "kovian:rate:" + scope + ":" + System.currentTimeMillis() / window.toMillis();
         try {
@@ -66,7 +56,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             res.setHeader("X-RateLimit-Remaining", String.valueOf(remaining));
             if (safeCount > currentLimit) {
                 res.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
-                res.setHeader("Retry-After", String.valueOf(Math.max(1, window.toSeconds())));
+                res.setHeader("Retry-After", retryAfterSeconds(window));
                 res.setContentType("application/json");
                 res.getWriter().write("{\"code\":\"RATE_LIMITED\",\"message\":\"Too many requests\"}");
                 return;
@@ -78,8 +68,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
             res.getWriter().write("{\"code\":\"RATE_LIMIT_BACKEND_UNAVAILABLE\",\"message\":\"Rate-limit service temporarily unavailable\"}");
             return;
         }
-
         chain.doFilter(req, res);
+    }
+
+    private static String retryAfterSeconds(Duration duration) {
+        return String.valueOf(Math.max(1L, Math.min(MAX_RETRY_AFTER_SECONDS, duration.toSeconds())));
     }
 
     private static String digest(String value) {
