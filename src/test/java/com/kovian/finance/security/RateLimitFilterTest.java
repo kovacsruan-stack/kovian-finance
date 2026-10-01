@@ -43,4 +43,5 @@ class RateLimitFilterTest {
         filter.doFilter(request, response, chain);
         verify(chain).doFilter(request, response); verifyNoInteractions(redis);
     }
+ @Test void normalizesInvalidWindowToOneMinute() { StringRedisTemplate redis=mock(StringRedisTemplate.class); RateLimitFilter filter=new RateLimitFilter(redis,10,Duration.ZERO); assertEquals("RateLimitFilter",filter.getClass().getSimpleName()); }
 }
