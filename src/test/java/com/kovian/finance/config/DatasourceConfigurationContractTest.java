@@ -45,7 +45,7 @@ class DatasourceConfigurationContractTest {
         try (var files = Files.list(directory)) {
             var versions = files
                     .map(pathEntry -> pathEntry.getFileName().toString())
-                    .filter(name -> name.matches("V\\\\d+__.*\\\\.sql"))
+                    .filter(name -> name.matches("V\\d+__.*\\.sql"))
                     .map(name -> name.split("__", 2)[0])
                     .toList();
             assertTrue(
