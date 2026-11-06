@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
@@ -36,8 +39,19 @@ class DatasourceConfigurationContractTest {
 
     @Test
     void flywayMigrationVersionsAreUnique() throws Exception {
-        try (var stream = getClass().getClassLoader().getResourceAsStream("db/migration")) {
-            assertTrue(stream != null, "Flyway migration resource directory must exist");
+        var resource = getClass().getClassLoader().getResource("db/migration");
+        assertTrue(resource != null, "Flyway migration resource directory must exist");
+        Path directory = Path.of(resource.toURI());
+        try (var files = Files.list(directory)) {
+            var versions = files
+                    .map(pathEntry -> pathEntry.getFileName().toString())
+                    .filter(name -> name.matches("V\\\\d+__.*\\\\.sql"))
+                    .map(name -> name.split("__", 2)[0])
+                    .toList();
+            assertTrue(
+                    versions.size() == versions.stream().distinct().count(),
+                    "Duplicate Flyway migration version detected: " + versions
+            );
         }
     }
     private String readClasspathResource(String name) throws IOException {
