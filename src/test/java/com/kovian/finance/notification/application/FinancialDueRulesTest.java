@@ -9,6 +9,9 @@ import com.kovian.finance.goal.repository.FinancialGoalRepository;
 import com.kovian.finance.recurring.repository.RecurringTransactionRepository;
 import com.kovian.finance.recurring.domain.RecurringTransaction;
 import com.kovian.finance.transaction.repository.FinancialTransactionRepository;
+import com.kovian.finance.notification.repository.NotificationRepository;
+import com.kovian.finance.notification.domain.Notification;
+import com.kovian.finance.outbox.application.OutboxEventService;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -88,7 +91,12 @@ class FinancialDueRulesTest {
         when(recurring.findByOwnerIdAndActiveTrueAndNextOccurrenceLessThanEqual(eq(owner), eq(LocalDate.of(2026, 9, 19))))
                 .thenReturn(java.util.List.of(overdue));
 
-        NotificationService notifications = mock(NotificationService.class);
+        NotificationRepository notificationRepository = mock(NotificationRepository.class);
+        when(notificationRepository.existsByOwnerIdAndDeduplicationKey(any(UUID.class), anyString()))
+                .thenReturn(false);
+        NotificationService notifications = new NotificationService(
+                notificationRepository,
+                mock(OutboxEventService.class));
         FinancialTransactionRepository transactions = mock(FinancialTransactionRepository.class);
         when(transactions.sumPostedIncomeByOwnerAndOccurredAtBetween(any(), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
         when(transactions.sumPostedExpenseByOwnerAndOccurredAtBetween(any(), any(), any())).thenReturn(java.math.BigDecimal.ZERO);
@@ -103,15 +111,15 @@ class FinancialDueRulesTest {
 
         rules.evaluate(LocalDate.of(2026, 9, 20), owner);
 
-        verify(notifications).createForOwner(
-                eq(owner),
-                eq("RECURRING_OVERDUE"),
-                eq("WARNING"),
-                anyString(),
-                anyString(),
-                eq("RecurringTransaction"),
-                eq(overdueId),
-                startsWith("recurring-overdue:"));
+        var notificationCaptor = org.mockito.ArgumentCaptor.forClass(Notification.class);
+        verify(notificationRepository).save(notificationCaptor.capture());
+        Notification created = notificationCaptor.getValue();
+        org.junit.jupiter.api.Assertions.assertEquals(owner, created.getOwnerId());
+        org.junit.jupiter.api.Assertions.assertEquals("RECURRING_OVERDUE", created.getType());
+        org.junit.jupiter.api.Assertions.assertEquals("WARNING", created.getSeverity());
+        org.junit.jupiter.api.Assertions.assertEquals("RecurringTransaction", created.getEntityType());
+        org.junit.jupiter.api.Assertions.assertEquals(overdueId, created.getEntityId());
+        org.junit.jupiter.api.Assertions.assertTrue(created.getDeduplicationKey().startsWith("recurring-overdue:"));
     }
 
     @Test
