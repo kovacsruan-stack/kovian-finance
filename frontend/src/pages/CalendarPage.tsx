@@ -21,7 +21,7 @@ const endOfMonth = (date: Date) => new Date(date.getFullYear(), date.getMonth() 
 const daysInMonth = (date: Date) => endOfMonth(date).getDate()
 const mondayOffset = (date: Date) => (date.getDay() + 6) % 7
 
-type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'RECURRING' | 'LESSON' | 'PAYMENT' | 'FITNESS' }
+type CalendarEvent = { id: string; date: string; title: string; amount: number; currency: string; kind: 'INCOME' | 'EXPENSE' | 'TRANSFER' | 'CARD_PAYMENT' | 'RECURRING' | 'LESSON' | 'PAYMENT' | 'FITNESS' }
 
 function exportEventsToIcs(events: CalendarEvent[], isPortuguese: boolean) {
   const escapeIcs = (value: string) => value.replace(/\\/g, '\\\\').replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;')
@@ -57,6 +57,7 @@ function eventKindLabel(kind: CalendarEvent['kind'], isPortuguese: boolean) {
   if (kind === 'RECURRING') return isPortuguese ? 'Recorrente' : 'Recurring'
   if (kind === 'INCOME') return isPortuguese ? 'Entrada' : 'Income'
   if (kind === 'TRANSFER') return isPortuguese ? 'Transferência' : 'Transfer'
+  if (kind === 'CARD_PAYMENT') return isPortuguese ? 'Pagamento de fatura' : 'Card payment'
   if (kind === 'LESSON') return isPortuguese ? 'Aula' : 'Lesson'
   if (kind === 'PAYMENT') return isPortuguese ? 'Pagamento' : 'Payment'
   if (kind === 'FITNESS') return isPortuguese ? 'Evento Fitness' : 'Fitness event'
