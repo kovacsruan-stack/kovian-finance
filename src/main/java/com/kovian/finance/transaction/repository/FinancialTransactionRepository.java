@@ -41,4 +41,20 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
 
     @Query("select coalesce(sum(t.amount),0) from FinancialTransaction t where t.ownerId=:owner and t.status='POSTED' and t.transactionType='EXPENSE' and t.occurredAt between :from and :to")
     BigDecimal sumPostedExpenseByOwnerAndOccurredAtBetween(@Param("owner") UUID owner, @Param("from") OffsetDateTime from, @Param("to") OffsetDateTime to);
+
+    @Query("""
+        select coalesce(sum(t.amount), 0) from FinancialTransaction t
+         where t.ownerId = :owner
+           and t.transactionType = :type
+           and t.status <> :excludedStatus
+           and t.occurredAt >= :from
+           and t.occurredAt < :to
+        """)
+    BigDecimal sumNonCancelledByOwnerAndTypeInWindow(
+        @Param("owner") UUID owner,
+        @Param("type") TransactionType type,
+        @Param("excludedStatus") TransactionStatus excludedStatus,
+        @Param("from") OffsetDateTime from,
+        @Param("to") OffsetDateTime to
+    );
 }
