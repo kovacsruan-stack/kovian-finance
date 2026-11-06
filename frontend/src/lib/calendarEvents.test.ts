@@ -39,6 +39,6 @@ describe('getRecurringOccurrencesInRange', () => {
   })
   it('rejects malformed dates and caps generated results', () => {
     expect(getRecurringOccurrencesInRange({ ...base, nextOccurrence: '2026-02-30', frequency: 'MONTHLY' }, '2026-09-01', '2026-10-01')).toEqual([])
-    expect(getRecurringOccurrencesInRange({ ...base, frequency: 'WEEKLY' }, '2026-09-01', '2036-01-01')).toHaveLength(500)
+    expect(getRecurringOccurrencesInRange({ ...base, frequency: 'WEEKLY' }, '2026-09-01', '2046-01-01')).toHaveLength(500)
   })
 })
