@@ -80,7 +80,8 @@ class FinancialDueRulesTest {
     void shouldCreateWarningForOverdueRecurringTransaction() {
         UUID owner = UUID.randomUUID();
         RecurringTransaction overdue = mock(RecurringTransaction.class);
-        when(overdue.getId()).thenReturn(UUID.randomUUID());
+        UUID overdueId = UUID.randomUUID();
+        when(overdue.getId()).thenReturn(overdueId);
         when(overdue.getNextOccurrence()).thenReturn(LocalDate.of(2026, 9, 15));
 
         RecurringTransactionRepository recurring = mock(RecurringTransactionRepository.class);
@@ -109,7 +110,7 @@ class FinancialDueRulesTest {
                 anyString(),
                 anyString(),
                 eq("RecurringTransaction"),
-                eq(overdue.getId()),
+                eq(overdueId),
                 startsWith("recurring-overdue:"));
     }
 
