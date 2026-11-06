@@ -29,7 +29,7 @@ class CreditCardInvoiceTest {
 
         invoice.applyPayment(new BigDecimal("65.00"));
         assertEquals(new BigDecimal("100.00"), invoice.getPaidAmount());
-        assertEquals(BigDecimal.ZERO, invoice.getRemainingAmount());
+        assertEquals(0, invoice.getRemainingAmount().compareTo(BigDecimal.ZERO));
         assertEquals(InvoiceStatus.PAID, invoice.getStatus());
     }
 
