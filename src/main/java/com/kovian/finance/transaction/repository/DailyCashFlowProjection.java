@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public interface DailyCashFlowProjection {
-    LocalDate getDate();
+    LocalDate getOccurredDate();
     BigDecimal getNet();
 }
