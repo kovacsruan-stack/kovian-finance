@@ -1,6 +1,6 @@
 export function safeCsvCell(value: unknown): string {
   const text = String(value ?? '').replace(/"/g, '""')
-  if (typeof value !== 'number' && /^[=+\-@]/.test(text)) return `"'${text}"`
+  if (typeof value !== 'number' && /^[\u0000-\u0020]*[=+\-@]/.test(text)) return \`"'function () { [native code] }"\`
   return `"${text}"`
 }
 
