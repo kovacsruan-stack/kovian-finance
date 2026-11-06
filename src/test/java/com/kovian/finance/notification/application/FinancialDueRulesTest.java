@@ -94,6 +94,8 @@ class FinancialDueRulesTest {
         NotificationRepository notificationRepository = mock(NotificationRepository.class);
         when(notificationRepository.existsByOwnerIdAndDeduplicationKey(any(UUID.class), anyString()))
                 .thenReturn(false);
+        when(notificationRepository.save(any(com.kovian.finance.notification.domain.Notification.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
         NotificationService notifications = new NotificationService(
                 notificationRepository,
                 mock(OutboxEventService.class));
