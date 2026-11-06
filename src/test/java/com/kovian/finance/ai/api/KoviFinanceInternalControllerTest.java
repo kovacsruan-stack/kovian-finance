@@ -66,7 +66,7 @@ class KoviFinanceInternalControllerTest {
         OffsetDateTime start = from.atStartOfDay().atOffset(ZoneOffset.UTC);
         OffsetDateTime end = to.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
         var projection = new com.kovian.finance.transaction.repository.DailyCashFlowProjection() {
-            @Override public LocalDate getDate() { return LocalDate.of(2026, 1, 2); }
+            @Override public LocalDate getOccurredDate() { return LocalDate.of(2026, 1, 2); }
             @Override public BigDecimal getNet() { return new BigDecimal("125.50"); }
         };
         when(transactions.findDailyCashFlowByOwnerInWindow(
