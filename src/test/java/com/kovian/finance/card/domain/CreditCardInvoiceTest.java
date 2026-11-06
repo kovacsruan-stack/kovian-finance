@@ -53,7 +53,8 @@ class CreditCardInvoiceTest {
     }
 
     private CreditCardInvoice invoice() {
+        LocalDate today = LocalDate.now();
         return new CreditCardInvoice(UUID.randomUUID(), UUID.randomUUID(),
-                LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 10), LocalDate.of(2026, 10, 5));
+                today.minusMonths(1).withDayOfMonth(1), today.plusDays(1), today.plusDays(30));
     }
 }
