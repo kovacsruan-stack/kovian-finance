@@ -57,6 +57,44 @@ class KoviFinanceInternalControllerTest {
         verifyNoInteractions(transactions);
     }
 
+
+    @Test
+    void cashFlowUsesDailyDatabaseAggregationInsteadOfLoadingTransactions() {
+        UUID ownerId = UUID.randomUUID();
+        LocalDate from = LocalDate.of(2026, 1, 1);
+        LocalDate to = LocalDate.of(2026, 1, 31);
+        OffsetDateTime start = from.atStartOfDay().atOffset(ZoneOffset.UTC);
+        OffsetDateTime end = to.plusDays(1).atStartOfDay().atOffset(ZoneOffset.UTC);
+        var projection = new com.kovian.finance.transaction.repository.DailyCashFlowProjection() {
+            @Override public LocalDate getDate() { return LocalDate.of(2026, 1, 2); }
+            @Override public BigDecimal getNet() { return new BigDecimal("125.50"); }
+        };
+        when(transactions.findDailyCashFlowByOwnerInWindow(
+            ownerId, start, end, TransactionStatus.CANCELLED.name()
+        )).thenReturn(List.of(projection));
+
+        var result = controller.cashFlow(API_KEY, ownerId, from, to);
+
+        @SuppressWarnings("unchecked")
+        List<java.util.Map<String, Object>> points = (List<java.util.Map<String, Object>>) result.get("points");
+        assertEquals(1, points.size());
+        assertEquals("2026-01-02", points.get(0).get("date"));
+        assertEquals(new BigDecimal("125.50"), points.get(0).get("net"));
+        verify(transactions).findDailyCashFlowByOwnerInWindow(
+            ownerId, start, end, TransactionStatus.CANCELLED.name()
+        );
+        verifyNoInteractions(context, accounts);
+    }
+
+    @Test
+    void cashFlowRejectsInvalidWindowBeforeDatabaseAccess() {
+        LocalDate from = LocalDate.of(2026, 1, 1);
+        LocalDate to = LocalDate.of(2027, 2, 2);
+        assertThrows(ResponseStatusException.class,
+            () -> controller.cashFlow(API_KEY, UUID.randomUUID(), from, to));
+        verifyNoInteractions(transactions);
+    }
+
     @Test
     void revenueUsesDatabaseAggregatesInsteadOfLoadingEveryTransaction() {
         UUID ownerId = UUID.randomUUID();
