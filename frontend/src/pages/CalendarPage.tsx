@@ -295,7 +295,7 @@ export default function CalendarPage() {
               setCalendarImportRows([])
               setCalendarImportName('')
               await Promise.all([fitnessEvents.refetch(), lessons.refetch(), transactions.refetch(), recurring.refetch()])
-            } catch (error) { setCalendarImportError(error instanceof Error ? error.message : t('importFailed')) }
+            } catch (error) { setCalendarImportError(error instanceof Error ? error.message : t('calendarImportFailed')) }
             finally { setCalendarImportBusy(false) }
           }}>{calendarImportBusy ? t('importing') : t('confirmImportEvents', { total: calendarImportRows.length })}</button>
           <button type="button" className="secondary" disabled={calendarImportBusy} onClick={() => { setCalendarImportRows([]); setCalendarImportName(''); setCalendarImportError('') }}>Cancelar</button>
