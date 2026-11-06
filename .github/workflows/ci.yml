@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 25
     env:
       KOVIAN_JWT_SECRET: ci-only-test-secret-at-least-32-characters-long
-      KOVIAN_KOVI_INTERNAL_API_KEY: ci-only-internal-key-at-least-32-characters
+      KOVI_INTERNAL_API_KEY: ci-only-internal-key-at-least-32-characters
       SPRING_PROFILES_ACTIVE: test
     steps:
       - uses: actions/checkout@v4
