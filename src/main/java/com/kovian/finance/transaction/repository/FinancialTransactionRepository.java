@@ -20,7 +20,7 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
            and t.occurredAt >= :from
            and t.occurredAt < :to
            and t.status <> :excludedStatus
-         order by t.occurredAt desc
+         order by t.occurredAt desc, t.id desc
         """)
     List<FinancialTransaction> findRecentNonCancelledByOwnerInWindow(
         @Param("owner") UUID owner,
