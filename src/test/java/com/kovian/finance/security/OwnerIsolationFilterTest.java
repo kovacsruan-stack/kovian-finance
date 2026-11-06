@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.util.List;
 import java.util.UUID;
@@ -53,6 +54,38 @@ class OwnerIsolationFilterTest {
 
         assertEquals(403, response.getStatus());
         verify(chain, never()).doFilter(request, response);
+    }
+
+    @Test
+    void rejectsJsonBodyOwnerThatDiffersFromAuthenticatedOwner() throws Exception {
+        authenticateAs(AUTHENTICATED_OWNER);
+        OwnerIsolationFilter filter = new OwnerIsolationFilter(new ObjectMapper());
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/transactions");
+        request.setContentType("application/json");
+        request.setContent("{\"ownerId\":\"b1b2c3d4-e5f6-4789-8123-456789abcdef\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        assertEquals(403, response.getStatus());
+        verifyNoInteractions(chain);
+    }
+
+    @Test
+    void rejectsMalformedJsonBodyOwnerInsteadOfIgnoringIt() throws Exception {
+        authenticateAs(AUTHENTICATED_OWNER);
+        OwnerIsolationFilter filter = new OwnerIsolationFilter(new ObjectMapper());
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/v1/transactions");
+        request.setContentType("application/json");
+        request.setContent("{\"ownerId\":\"not-a-uuid\"}".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        FilterChain chain = mock(FilterChain.class);
+
+        filter.doFilter(request, response, chain);
+
+        assertEquals(403, response.getStatus());
+        verifyNoInteractions(chain);
     }
 
     @Test
