@@ -2,6 +2,7 @@ package com.kovian.finance.transaction.repository;
 
 import com.kovian.finance.transaction.domain.*;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
 import java.time.OffsetDateTime;
 import java.math.BigDecimal;
@@ -12,6 +13,22 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
     Optional<FinancialTransaction> findByOwnerIdAndExternalId(UUID ownerId, String externalId);
     Optional<FinancialTransaction> findByIdAndOwnerId(UUID id, UUID ownerId);
     List<FinancialTransaction> findByOwnerIdAndOccurredAtBetweenOrderByOccurredAtDesc(UUID ownerId, OffsetDateTime from, OffsetDateTime to);
+
+    @Query("""
+        select t from FinancialTransaction t
+         where t.ownerId = :owner
+           and t.occurredAt >= :from
+           and t.occurredAt < :to
+           and t.status <> :excludedStatus
+         order by t.occurredAt desc
+        """)
+    List<FinancialTransaction> findRecentNonCancelledByOwnerInWindow(
+        @Param("owner") UUID owner,
+        @Param("from") OffsetDateTime from,
+        @Param("to") OffsetDateTime to,
+        @Param("excludedStatus") TransactionStatus excludedStatus,
+        Pageable pageable
+    );
 
     @Query("select coalesce(sum(case when t.transactionType='INCOME' then t.amount else -t.amount end),0) from FinancialTransaction t where t.ownerId=:owner and t.account.id=:account and t.status='POSTED'")
     BigDecimal sumPostedSignedByAccount(@Param("owner") UUID owner, @Param("account") UUID account);
