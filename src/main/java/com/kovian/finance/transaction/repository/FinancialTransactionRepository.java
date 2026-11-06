@@ -32,7 +32,7 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
 
 
     @Query(value = """
-        select cast(occurred_at as date) as date,
+        select cast(occurred_at as date) as occurred_date,
                coalesce(sum(case
                    when transaction_type = 'INCOME' then amount
                    when transaction_type = 'EXPENSE' then -amount
