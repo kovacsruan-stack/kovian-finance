@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 
 describe('currency locale', () => {
   it('uses the active document language instead of a fixed locale', () => {
-    const source = readFileSync(resolve(process.cwd(), 'src/App.tsx'), 'utf8')
+    const source = readFileSync(resolve(process.cwd(), 'src/pages/FinancePage.tsx'), 'utf8')
     expect(source).toContain('document.documentElement.lang')
     expect(source).not.toContain("toLocaleString('pt-BR'")
   })

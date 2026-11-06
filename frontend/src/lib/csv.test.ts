@@ -10,6 +10,8 @@ describe('CSV serialization', () => {
     expect(safeCsvCell('=SUM(A1:A2)')).toBe('"\'=SUM(A1:A2)"')
     expect(safeCsvCell('+CMD')).toBe('"\'+CMD"')
     expect(safeCsvCell('-CMD')).toBe('"\'-CMD"')
+    expect(safeCsvCell('  =SUM(A1:A2)')).toBe('"\'  =SUM(A1:A2)"')
+    expect(safeCsvCell('\t=SUM(A1:A2)')).toBe('"\'\t=SUM(A1:A2)"')
   })
 
   it('builds a quoted CSV document', () => {

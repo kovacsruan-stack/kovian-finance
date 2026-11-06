@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-const routes = ['/contas', '/transacoes', '/transferencias', '/cartoes', '/orcamentos', '/metas', '/relatorios', '/recorrentes', '/categorias', '/configuracoes', '/previsao', '/patrimonio', '/inteligencia', '/dividas', '/notificacoes', '/import-export']
+const routes = ['/', '/contas', '/transacoes', '/metas', '/relatorios', '/cartoes', '/categorias', '/configuracoes', '/previsao', '/patrimonio', '/inteligencia', '/dividas', '/notificacoes', '/transferencias', '/import-export', '/calendario', '/gestao']
 
 test('Finance core routes render without a 404 page', async ({ page }) => {
   for (const route of routes) {
@@ -25,7 +25,7 @@ test('Finance ecosystem links are safe on local shell', async ({ page }) => {
   const count = await links.count()
   for (let index = 0; index < count; index += 1) {
     const href = await links.nth(index).getAttribute('href')
-    expect(href).toMatch(/^https?:\\/\\/|^\\/)
+    expect(href).toMatch(/^https?:\/\/|^\//)
   }
 })
 
