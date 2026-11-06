@@ -30,6 +30,29 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
         Pageable pageable
     );
 
+
+    @Query(value = """
+        select cast(occurred_at as date) as date,
+               coalesce(sum(case
+                   when transaction_type = 'INCOME' then amount
+                   when transaction_type = 'EXPENSE' then -amount
+                   else 0
+               end), 0) as net
+          from financial_transactions
+         where owner_id = :owner
+           and occurred_at >= :from
+           and occurred_at < :to
+           and status <> :excludedStatus
+         group by cast(occurred_at as date)
+         order by cast(occurred_at as date) asc
+        """, nativeQuery = true)
+    List<DailyCashFlowProjection> findDailyCashFlowByOwnerInWindow(
+        @Param("owner") UUID owner,
+        @Param("from") OffsetDateTime from,
+        @Param("to") OffsetDateTime to,
+        @Param("excludedStatus") String excludedStatus
+    );
+
     @Query("select coalesce(sum(case when t.transactionType='INCOME' then t.amount else -t.amount end),0) from FinancialTransaction t where t.ownerId=:owner and t.account.id=:account and t.status='POSTED'")
     BigDecimal sumPostedSignedByAccount(@Param("owner") UUID owner, @Param("account") UUID account);
 
