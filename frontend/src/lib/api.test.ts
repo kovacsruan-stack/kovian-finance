@@ -2,6 +2,15 @@ import { describe, expect, it, beforeEach, vi } from 'vitest'
 import { FinanceApiError, createAccount, createTransfer, getAccounts, getOwnerId, importCsv } from './api'
 import { getDashboardWindow } from './queries'
 
+function setAuthenticatedSession() {
+  const payload = btoa(JSON.stringify({
+    sub: 'owner-123',
+    exp: Math.floor(Date.now() / 1000) + 3600,
+  }))
+  localStorage.setItem('access_token', `header.${payload}.signature`)
+  localStorage.setItem('kovian_anonymous_owner_id', 'owner-123')
+}
+
 describe('finance api', () => {
   beforeEach(() => {
     localStorage.clear()
@@ -15,23 +24,20 @@ describe('finance api', () => {
   })
 
   it('preserves backend error code, status and request id', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'ACCOUNT_LOCKED' }), {
       status: 423,
       headers: { 'content-type': 'application/json' },
     })))
 
-    await expect(getAccounts('owner-123')).rejects.toMatchObject<Partial<FinanceApiError>>({
-      status: 423,
-      code: 'ACCOUNT_LOCKED',
-    })
     const error = await getAccounts('owner-123').catch(value => value as FinanceApiError) as FinanceApiError
+    expect(error).toMatchObject<Partial<FinanceApiError>>({ status: 423, code: 'ACCOUNT_LOCKED' })
     expect(error).toBeInstanceOf(FinanceApiError)
     expect(error.requestId).toBeTruthy()
   })
 
   it('adds no-store and request correlation headers', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([]), {
       status: 200,
       headers: { 'content-type': 'application/json' },
@@ -47,18 +53,18 @@ describe('finance api', () => {
   })
 
   it('normalizes network failures into a structured api error', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('socket closed')))
 
     await expect(getAccounts('owner-123')).rejects.toMatchObject({
       status: 0,
       code: 'NETWORK_ERROR',
-      message: 'socket closed',
+      message: 'Não foi possível conectar ao serviço financeiro. Verifique a conexão e tente novamente.',
     })
   })
 
   it('uses the backend request id and message when available', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
       code: 'VALIDATION_ERROR',
       message: 'Invalid amount.',
@@ -73,12 +79,12 @@ describe('finance api', () => {
     expect(error.message).toBe('Invalid amount.')
   })
   it('fails closed when a successful account payload violates the API contract', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([{ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'not-a-number', status: 'ACTIVE' }]), { status: 200 })))
     await expect(getAccounts('owner-123')).rejects.toThrow()
   })
   it('preserves structured multipart import errors', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'IMPORT_TOO_LARGE', message: 'File exceeds limit.' }), {
       status: 413,
       headers: { 'content-type': 'application/json', 'X-Request-ID': 'import-request-7' },
@@ -90,7 +96,7 @@ describe('finance api', () => {
     expect(error.requestId).toBe('import-request-7')
   })
   it('normalizes malformed successful JSON into a structured response error', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{', { status: 200, headers: { 'content-type': 'application/json' } })))
     const error = await getAccounts('owner-123').catch(value => value as FinanceApiError)
     expect(error).toBeInstanceOf(FinanceApiError)
@@ -98,12 +104,12 @@ describe('finance api', () => {
     expect(error.status).toBe(200)
   })
   it('fails closed on malformed mutation responses', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'account-1', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', currentBalance: 'invalid', status: 'ACTIVE' }), { status: 200 })))
     await expect(createAccount({ ownerId: 'owner-123', name: 'Conta', accountType: 'CHECKING', currency: 'BRL', openingBalance: 0 })).rejects.toThrow()
   })
   it('sends the trimmed account name and opening balance to the account endpoint', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ code: 'VALIDATION_ERROR' }), {
       status: 400,
       headers: { 'content-type': 'application/json' },
@@ -130,11 +136,11 @@ describe('finance api', () => {
   })
 
   it('sends an idempotency key for transfers and validates the response', async () => {
-    localStorage.setItem('access_token', 'header.e30.signature')
+    setAuthenticatedSession()
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       id: '11111111-1111-1111-1111-111111111111',
-      fromAccountId: '22222222-2222-2222-2222-222222222222',
-      toAccountId: '33333333-3333-3333-3333-333333333333',
+      fromAccountId: '22222222-2222-4222-8222-222222222222',
+      toAccountId: '33333333-3333-4333-8333-333333333333',
       amount: 100,
       description: 'Reserva mensal',
       status: 'POSTED',
